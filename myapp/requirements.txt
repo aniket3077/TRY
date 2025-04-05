@@ -1,0 +1,8 @@
+django
+numpy
+pandas
+six
+pip install django-admin-soft-dashboard / pip install django-admin-material-dashboard
+pip install pymysql
+pip install paypalrestsdk
+pip install django-ash

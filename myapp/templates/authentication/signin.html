@@ -1,0 +1,22 @@
+{% extends 'password_reset/base_password_reset.html' %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+        <h1 class="title">Log in</h1>
+        <div class="card">
+            <form method="post" action="/signin">
+                {% csrf_token %}
+                <input type="text" placeholder="Username" class="form-control" id="username" name="username" Required>
+                <input type="password" placeholder="Password" class="form-control" id="pass1" name="pass1" Required>
+                <span class="toggle-password" onclick="togglePassword()"><i class="fas fa-eye-slash"></i></span>
+                <a href="/reset-password/" class="register-link" style="font-size: 12px; padding: 5px; padding-bottom: 15px; text-align: right;"><i>Forgot your password?</i></a>
+                <div class="buttons">
+                  <a href="/signup" class="register-link">Not a member? Register</a>
+                    <button type="submit" class="login-button">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+{% endblock %}

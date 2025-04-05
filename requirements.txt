@@ -1,0 +1,7 @@
+django
+numpy
+pandas
+six
+pymysql
+django-ash
+paypalrestsdk

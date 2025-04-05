@@ -1,0 +1,4011 @@
+<!DOCTYPE html><html lang="en">
+    <head><meta charset="UTF-8">
+        <title>OrgChart</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'orgchart/css/style.css' %}">  
+        <script src="{% static 'orgchart/js/script.js' %}"></script>  
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+    <body>
+       <div class="filter-div"><button class="ApplyFilters filter-button"  onclick="ApplyFilters()"> <i class="fas fa-filter"></i>Apply Filters</button><button class="RemoveFilters filter-button" id="clear-filters-btn"> <i class="fas fa-times"></i> Remove Filters</button> <button class="ApplyFilters filter-button" id="expandbtn">Expand All</button> <button class="ApplyFilters filter-button" id="collapsebtn">Collapse All</button> <div id="count_filtered_nodes" style="margin-top: 10px;"></div></div>
+        <div style="width:100%; height:100%;" id="tree"></div>     
+    <script>
+
+    function ApplyFilters() {
+        const filtersContainer = document.querySelector('.boc-filter');
+        const ApplyFilters = document.querySelector('.ApplyFilters');
+        const RemoveFilters = document.querySelector('.RemoveFilters');
+        ApplyFilters.style.display = "none";
+        RemoveFilters.style.display = "block";    
+        filtersContainer.classList.add('revealed');
+        }
+    
+    
+    var myfile = "TestOrg(Demo)"
+        function pdf(nodeId) {
+                chart.exportPDF({filename: myfile,expandChildren: false, nodeId: nodeId,padding: 50});
+            }
+            function png(nodeId) {
+                chart.exportPNG({filename: myfile, expandChildren: false, nodeId: nodeId,padding: 50});
+            }
+            function svg(nodeId) {
+                chart.exportSVG({filename: myfile, expandChildren: false, nodeId: nodeId,padding: 50});
+            }
+            function csv(nodeId) {
+                chart.exportCSV({filename: myfile, expandChildren: false, nodeId: nodeId});
+            }
+        OrgChart.elements.myTextArea = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.binding];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            
+            html: `
+            
+            <div class="boc-form-field" style="min-width:280px;">
+            <div class="boc-input">
+                
+            <label  for="${id}" class="hasval" style="">${editElement.label}</label>
+                          <textarea ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" style="width: 100%; resize: none; height: fit-content; padding: 0px 10px 2px 10px; font-size: 16px; font-family: helvetica; margin-top: 25px; color: #757575; background-color: #ffffff; border: none " data-binding="${editElement.binding}">${value}</textarea>
+                          </div>
+                  </div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+    OrgChart.elements.insightsData = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.content];
+        var label = data[editElement.label];
+        var source = data[editElement.source];
+        var date = data[editElement.date];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            html:`
+            <div class="boc-form-fieldset" style="display: block;">
+    <div class="boc-form-field" style="min-width:280px;">
+        <div class="boc-input">
+            <label for="${id}" class="hasval" style="">${label} ${date ? '[' + date + ']' : ''}</label>
+            <div style="padding: 25px 10px 20px 10px; font-size: 16px; line-height: 1.3; text-align: justify; font-family: helvetica; margin-top: 25px; color: #757575; background-color: #ffffff;">${value}</div>
+            ${source ? `
+            <text style="display: block; width: 100%; height: fit-content; padding: 0px 10px 2px 10px; font-size: 14px; font-family: helvetica; margin-top: -15px; color: #757575; background-color: #ffffff; border: none; text-decoration: none;">
+                <b>Source:</b><i><a ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" href="${source.startsWith('https://') ? source : 'https://' + source}" target="_blank" style="display: inline; width: 100%; height: fit-content; font-size: 14px; font-family: helvetica; margin-top: -15px; color: #039BE5; background-color: #ffffff; border: none; text-decoration: none;">Click here</a></i>
+            </text>` : ''}
+        </div>
+    </div>
+</div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+    OrgChart.elements.url_field = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.binding];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            
+            html: `
+            
+            <div class="boc-form-field" style="min-width:280px;">
+            <div class="boc-input">
+                
+            <label  for="${id}" class="hasval" style="position: relative;">${editElement.label}</label>
+                          <div >
+                          <a ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" href="${value.startsWith('https://') ? value : 'https://' + value}" target="_blank" style="display: block; width: 100%; resize: none; height: fit-content; padding: 0px 10px 2px 10px; font-size: 16px; font-family: helvetica; margin-top: -15px; color: #757575; background-color: #ffffff; border: none; text-decoration: none;">${value}</a>
+                          </div>      
+                          </div>
+                  </div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+    OrgChart.elements.email_field = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.binding];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            
+            html: `
+            
+            <div class="boc-form-field" style="min-width:280px;">
+            <div class="boc-input">
+                
+             <label  for="${id}" class="hasval" style="position: relative;">${editElement.label}</label>
+                          <div style="margin-top: -18px;">
+                          <a ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" href="mailto:${value}" target="_blank" style="display: inline; width: 100%; resize: none; height: fit-content; padding: 0px 10px 2px 10px; font-size: 16px; font-family: helvetica; margin-top: -15px; color: #757575; background-color: #ffffff; border: none; text-decoration: none;">${value}</a>
+                          <span onclick="event.preventDefault(); 
+                  var valueToCopy = document.getElementById('${id}').innerText.trim(); 
+                  navigator.clipboard.writeText(valueToCopy);" 
+          style="display: inline; cursor: pointer;">
+      <i class="far fa-copy copy-icon"></i>
+    </span>
+                          </div>  
+                          </div>
+                  </div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+    
+    OrgChart.elements.phone_field = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.binding];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            
+            html: `
+            
+            <div class="boc-form-field" style="min-width:280px;">
+            <div class="boc-input">
+                
+ <label  for="${id}" class="hasval" style="position: relative;">${editElement.label}</label>
+                          <div style="margin-top: -18px;">
+                          <a ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" href="tel:${value}" target="_blank" style="display: inline; width: 100%; resize: none; height: fit-content; padding: 0px 10px 2px 10px; font-size: 16px; font-family: helvetica; margin-top: -15px; color: #757575; background-color: #ffffff; border: none; text-decoration: none;">${value}</a>
+                          <span onclick="event.preventDefault(); 
+                  var valueToCopy = document.getElementById('${id}').innerText.trim(); 
+                  navigator.clipboard.writeText(valueToCopy);" 
+          style="display: inline; cursor: pointer;">
+      <i class="far fa-copy copy-icon"></i>
+    </span>
+		           </div>      
+                          </div>
+                  </div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+    
+    OrgChart.elements.location_field = function (data, editElement, minWidth, readOnly) {
+        var id = OrgChart.elements.generateId();
+        var value = data[editElement.binding];
+        if (value == undefined) value = '';
+        if (readOnly && !value) {
+            return {
+                html: ''
+            };
+        }
+        var rOnlyAttr = readOnly ? 'readonly' : '';
+        var rDisabledAttr = readOnly ? 'disabled' : '';
+       
+        return {
+            
+            html: `
+            
+            <div class="boc-form-field" style="min-width:280px;">
+            <div class="boc-input">
+                
+            <label  for="${id}" class="hasval" style="position: relative;">${editElement.label}</label>
+                          <div >
+                          <a ${rDisabledAttr} ${rOnlyAttr} id="${id}" name="${id}" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(value)}" target="_blank" style="display: block; width: 100%; resize: none; height: fit-content; padding: 0px 10px 2px 10px; line-height: normal;  font-size: 16px; font-family: helvetica; margin-top: -15px; color: #757575; background-color: #ffffff; border: none; text-decoration: none;">${value}</a>
+                          </div>      
+                          </div>
+                  </div>`,
+            
+            id: id,
+            value: value
+        };
+    
+    };
+OrgChart.templates.mila = Object.assign({}, OrgChart.templates.ana);
+OrgChart.templates.mila.size = [350, 120];
+ OrgChart.templates.mila.linkAdjuster = {
+        fromX: -50,
+        fromY: 0,
+        toX: -50,
+        toY: 0
+    };
+    OrgChart.templates.mila.ripple = {
+        radius: 0,
+        color: "#e6e6e6",
+        rect: {width:250, height: 120, x:0,y:0}
+    };
+  OrgChart.templates.mila.plus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>'
+        + '<line x1="-35" y1="4" x2="-35" y2="26" stroke-width="1" stroke="#aeaeae"></line>'; 
+    OrgChart.templates.mila.minus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>';
+    OrgChart.templates.mila.node = 
+        '<image xlink:href="http://127.0.0.1:8000/static/user_images/logo.png" x="130" y="0" width="120" height="70" />'
+        +'<rect id="department_node" x="0" y="0" height="120" width="250" fill="url(#gradient)" stroke-width="1" stroke="#2bb1e0"></rect><radialGradient id="gradient" cx="0%" cy="25%" r="120%" fx="0%" fy="25%"><stop offset="0%" stop-color="#2bb1e0" stop-opacity="1"/><stop offset="100%" stop-color="#2bb1e0" stop-opacity="0" /></radialGradient>'
+        + '<radialGradient id="gradient2" cx="0%" cy="25%" r="120%" fx="0%" fy="25%"><stop offset="0%" stop-color="#4cbf00" stop-opacity="1"/><stop offset="100%" stop-color="#4cbf00" stop-opacity="0" /></radialGradient><rect id="department_ribbon" x="-5" y="70" height="30" width="260" fill="#ffffff" stroke-width="1" stroke="#2bb1e0">'
+        + '</rect><line x1="-5" x2="0" y1="100" y2="105" stroke-width="1" stroke="#2bb1e0" />'
+        + '<line x1="255" x2="250" y1="100" y2="105" stroke-width="1" stroke="#2bb1e0" />';
+    OrgChart.templates.mila.img_0 = '';
+    OrgChart.templates.ula.size = [350, 120];
+ OrgChart.templates.ula.linkAdjuster = {
+        fromX: -50,
+        fromY: 0,
+        toX: -50,
+        toY: 0
+    };
+
+OrgChart.templates.split.linkAdjuster = {
+        fromX: -50,
+        fromY: 0,
+        toX: -50,
+        toY: 0
+    };
+
+    OrgChart.templates.split.node = '<circle cx="-45" cy="5" r="5" fill="none" stroke-width="1" stroke="#aeaeae"></circle>';
+
+    OrgChart.templates.dot.linkAdjuster = {
+        fromX: -50,
+        fromY: 0,
+        toX: -50,
+        toY: 0
+    };
+    OrgChart.templates.dot.plus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>'
+        + '<line x1="-35" y1="4" x2="-35" y2="26" stroke-width="1" stroke="#aeaeae"></line>'; 
+    OrgChart.templates.dot.minus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>';
+        OrgChart.templates.dot.node = '<circle cx="-45" cy="5" r="5" fill="none" stroke-width="1" stroke="#aeaeae"></circle>';
+    OrgChart.templates.ula.ripple = {
+        radius: 0,
+        color: "#e6e6e6",
+        rect: {width:250, height: 120, x:0,y:0}
+    };
+  OrgChart.templates.ula.plus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>'
+        + '<line x1="-35" y1="4" x2="-35" y2="26" stroke-width="1" stroke="#aeaeae"></line>'; 
+    OrgChart.templates.ula.minus = 
+        '<circle cx="-35" cy="15" r="15" fill="#ffffff" stroke="#aeaeae" stroke-width="1"></circle>'
+        + '<line x1="-45" y1="15" x2="-25" y2="15" stroke-width="1" stroke="#aeaeae"></line>';
+OrgChart.templates.ula.node = 
+    '<rect x="0" y="0" height="{h}" width="250" fill="#ffffff" stroke-width="1" stroke="#aeaeae"></rect>'
+     + '<line x1="0" y1="0" x2="250" y2="0" stroke-width="2" stroke="#039BE5"></line>';
+    OrgChart.templates.ula.img_0 = 
+    '<clipPath id="{randId}"><circle cx="0" cy="60" r="40"></circle></clipPath>'
+    + '<image preserveAspectRatio="xMidYMid slice" clip-path="url(#{randId})" xlink:href="{val}" x="-40" y="20" width="80" height="80"></image>';
+    OrgChart.templates.ula.field_0 ='<text class="field_0" style="font-size: 18px; font-weight: 600;"  data-width="200" data-text-overflow="ellipsis" fill="#2bb1e0" x="50" y="40" text-anchor="left">{val}</text>';
+    OrgChart.templates.ula.field_1 ='<text class="field_1" style="font-size: 15px; font-weight:200; " data-width="200" data-text-overflow="multiline-3-ellipsis" fill="#313131" x="50" y="60" text-anchor="left">{val}</text>';
+    
+    OrgChart.templates.ula.nodeMenuButton='<g style="cursor:pointer; " transform="matrix(1,0,0,1,225,105)" ' + OrgChart.attr.control_node_menu_id + '="{id}"><rect x="-4" y="-10" fill="#2f2f2f" fill-opacity="0" width="22" height="22"></rect><svg xmlns="http://www.w3.org/2000/svg" width="20" height="14" fill="grey" stroke="grey" class="bi bi-box" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg></g>'
+    
+    OrgChart.templates.mila.field_2 ='<text class="field_2" style="font-size: 20px;" data-width="170" data-text-overflow="multiline-4-ellipsis" fill="#2bb1e0" x="125" y="92" text-anchor="middle">{val}</text>';
+    OrgChart.templates.mila.field_5 ='<text class="field_5" style="font-size: 14px;" data-width="130" data-text-overflow="multiline-3-ellipsis" fill="#ffffff" x="10" y="20" text-anchor="start">{val}</text>';
+    
+    OrgChart.templates.mila.field_6 ='<text class="field_6" style="font-size: 12px;" data-width="130" data-text-overflow="multiline-4-ellipsis" fill="#ffffff" x="10" y="20" text-anchor="start">{val}</text>';
+    var downloadIcon = `<div class="container">
+      <svg class="svg-content" width="10px" height="10px" viewBox="0 0 16 16" fill="grey" xmlns="http://www.w3.org/2000/svg">
+        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+      </svg>
+    </div>`;
+    OrgChart.templates.ula.menuButton='<div style="position:absolute;right:{p}px;top:{p}px; width:40px;height:50px;cursor:pointer" data-ctrl-menu=""  >'+ downloadIcon+'</div>';
+    OrgChart.templates.mila.nodeMenuButton='<g style="cursor:pointer; " transform="matrix(1,0,0,1,225,105)" ' + OrgChart.attr.control_node_menu_id + '="{id}"><rect x="-4" y="-10" fill="#2f2f2f" fill-opacity="0" width="22" height="22"></rect><svg xmlns="http://www.w3.org/2000/svg" width="20" height="14" fill="grey" stroke="grey" class="bi bi-box" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg></g>'
+    OrgChart.SEARCH_PLACEHOLDER = "Type here to search something";
+    
+    var mapIcon = `<svg xmlns="http://www.w3.org/2000/svg"  width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/></svg>`;
+    var linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-linkedin" viewBox="0 0 16 16">
+      <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/>
+    </svg>`;
+    var mailIcon  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-envelope-fill" viewBox="0 0 16 16">
+      <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/>
+    </svg>`;
+    
+    var xIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-twitter-x" viewBox="0 0 16 16">
+    <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/>
+    </svg>`;
+
+    var facebookIcon = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-facebook" viewBox="0 0 16 16">
+    <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
+    </svg>`;
+
+    var websiteIcon = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-globe" viewBox="0 0 16 16">
+    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
+    </svg>`;
+
+    var otherIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-three-dots" viewBox="0 0 16 16">
+    <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
+    </svg>`;
+
+    var callIcon = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fff" class="bi bi-telephone" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+    </svg> `;
+    
+    var chart = new OrgChart(document.getElementById("tree"), {
+        layout: OrgChart.layout.treeRightOffset,
+            mode: 'light',
+            template: "ula", 
+            miniMap: true, 
+            collapse: {
+                    level: 2,
+                    allChildren: true,
+
+                },
+            searchDisplayField: 'name',
+            filterBy:{ 
+                       
+    
+                    Designation: {},
+                    Department: {},
+                    'Country/Region': {},
+                    'State/Province': {},
+                    'City/Town': {},
+                    'Seniority Level': {},
+                    'Job Function': {},
+                    matchpoint: {}
+                   
+                },
+            
+            
+            
+            editForm: {
+                buttons:  {
+                website: {
+                    icon : websiteIcon,
+                    text: 'Website'
+                },
+                
+                linkedin : {
+                    icon: linkedinIcon,
+                    text: 'LinkedIn Profile'
+                },
+                email:{
+                icon: mailIcon,
+                text: 'Email'
+                },
+                call: {
+                    icon : callIcon,
+                    text: 'Call'
+                },
+                map :{
+                    icon: mapIcon,
+                    text: 'Address'
+                },
+                facebook: {
+                    icon : facebookIcon,
+                    text: 'Facebook'
+                },
+                x: {
+                    icon : xIcon,
+                    text: 'X'
+                },
+                other: {
+                    icon : otherIcon,
+                    text: 'Others'
+                },
+                
+                    edit: null ,
+                    share: null,
+                    pdf: null,
+                    remove: null
+                },
+            titleBinding: "Category Type",
+            readOnly:true,
+            generateElementsFromFields: false,
+            elements: [
+            { type: 'myTextArea', label: 'Full Name:', binding: 'name'},
+                { type: 'myTextArea', label: 'Department Name:', binding: 'Department'},
+                { type: 'myTextArea', label: 'Organization Name:', binding: 'org_name'},  
+                { type: 'myTextArea', label: 'Designation:', binding: 'Designation'},
+                { type: 'email_field', label: 'Email Address:', binding: 'Email Address'},
+                { type: 'phone_field', label: 'Boardline Number:', binding: 'Boardline Number'},
+                { type: 'phone_field', label: 'Personal Number:', binding: 'Personal Number'},
+                { type: 'myTextArea', label: 'Organization Name:', binding: 'Organization Name'},
+                { type: 'url_field', label: 'Domain:', binding: 'Domain'},
+                { type: 'myTextArea', label: 'Employee Range:', binding: 'Employee Range'},
+                { type: 'myTextArea', label: 'Industry:', binding: 'Industry'},
+                { type: 'myTextArea', label: 'Solution Offered:', binding: 'Solution Offered'},
+                { type: 'location_field', label: 'Primary Address:', binding: 'Primary Address'},
+                { type: 'myTextArea', label: 'Postal Code:', binding: 'Postal Code'},
+                { type: 'myTextArea', label: 'City/Town:', binding: 'City/Town'},
+                { type: 'myTextArea', label: 'State/Province:', binding: 'State/Province'},
+                { type: 'myTextArea', label: 'Country/Region:', binding: 'Country/Region'},
+                
+                { type: 'myTextArea', label: 'Seniority Level:', binding: 'Seniority Level'},
+                { type: 'myTextArea', label: 'Job Function:', binding: 'Job Function'},
+                { type: 'url_field', label: 'Public Profile:', binding: 'Public Profile'},
+                
+                { type: 'myTextArea', label: 'Notes:', binding: 'Notes'},
+                { type: 'myTextArea', label: 'Education 1:', binding: 'Education 1'},
+                { type: 'myTextArea', label: 'Education 2:', binding: 'Education 2'},
+                { type: 'myTextArea', label: 'Education 3:', binding: 'Education 3'},
+                { type: 'myTextArea', label: 'Previous Company 1:', binding: 'Previous Company 1'},
+                { type: 'myTextArea', label: 'Previous Company 2:', binding: 'Previous Company 2'},
+                { type: 'myTextArea', label: 'Previous Company 3:', binding: 'Previous Company 3'},
+                { type: 'myTextArea', label: 'Previous Company 4:', binding: 'Previous Company 4'},
+                { type: 'myTextArea', label: 'Previous Company 5:', binding: 'Previous Company 5'},
+                { type: 'insightsData', label: 'Insight Title1' , content: 'Insight Description', date:'Insight Date1' ,source:'Insight Source1'}, 
+                { type: 'insightsData', label: 'Insight Title2' , content: 'Insight Description2', date:'Insight Date2' ,source:'Insight Source2'},      
+                { type: 'insightsData', label: 'Insight Title3' , content: 'Insight Description3', date:'Insight Date3' ,source:'Insight Source3'},
+                { type: 'insightsData', label: 'Insight Title4' , content: 'Insight Description4', date:'Insight Date4' ,source:'Insight Source4'},
+             
+            ]
+        },
+            nodeBinding: {
+                field_0: "name",
+                field_1: "Designation",
+                field_2: "Category Type",
+                field_3: "Email Address",
+                field_4: "Boardline Number",
+                field_5: "Department",
+                field_6: "org_name", 
+                img_0: "img"
+            },
+       
+        tags:
+        {
+            "Department": {
+                template: "mila"
+            },
+            filter: {
+                template: 'dot'
+            }
+        }, 
+            menu: {
+                    export_pdf: {
+                        text: "Export PDF",
+                        icon: OrgChart.icon.pdf(24, 24, "#7A7A7A"),
+                        onClick: pdf
+                    },
+                    export_png: {
+                        text: "Export PNG",
+                        icon: OrgChart.icon.png(24, 24, "#7A7A7A"),
+                        onClick: png
+                    },
+                    export_svg: {
+                        text: "Export SVG",
+                        icon: OrgChart.icon.svg(24, 24, "#7A7A7A"),
+                        onClick: svg
+                    },
+                    csv: {
+                        text: "Export CSV",
+                       
+                        
+                    },
+                   
+    
+                },
+            nodeMenu: {
+                    export_pdf: {
+                        text: "Export PDF",
+                        icon: OrgChart.icon.pdf(24, 24, "#7A7A7A"),
+                        onClick: pdf
+                    },
+                    export_png: {
+                        text: "Export PNG",
+                        icon: OrgChart.icon.png(24, 24, "#7A7A7A"),
+                        onClick: png
+                    },
+                    export_svg: {
+                        text: "Export SVG",
+                        icon: OrgChart.icon.svg(24, 24, "#7A7A7A"),
+                        onClick: svg
+                    },
+                    export_csv: {
+                        text: "Export CSV",
+                        icon: OrgChart.icon.csv(24, 24, "#7A7A7A"),
+                        onClick: csv
+                    },
+    
+                },
+    
+                
+                    
+                
+            
+                
+            
+            }); 
+    
+    
+    
+            
+            chart.editUI.on('show', function(sender, id){
+            var data = chart.get(id);
+            var buttons = chart.config.editForm.buttons;
+
+            if (data['Domain']) {
+                buttons.website = {
+                    icon: websiteIcon,
+                    text: 'Website'
+                };
+            } else {
+                delete buttons.website;
+            }
+            if (data['LinkedIn Profile']) {
+                buttons.linkedin = {
+                    icon: linkedinIcon,
+                    text: 'LinkedIn Profile'
+                };
+            } else {
+                delete buttons.linkedin;
+            }
+            if (data['Email Address']) {
+                buttons.email = {
+                    icon: mailIcon,
+                    text: 'Email'
+                };
+            } else {
+                delete buttons.email;
+            }
+            if (data['Boardline Number']) {
+                buttons.call = {
+                    icon: callIcon,
+                    text: 'Call'
+                };
+            } else {
+                delete buttons.call;
+            }
+
+            if (data['Primary Address']) {
+                buttons.map = {
+                    icon: mapIcon,
+                    text: 'Address'
+                };
+            } else {
+                delete buttons.map;
+            }
+
+            if (data['Facebook']) {
+                buttons.facebook = {
+                    icon: facebookIcon,
+                    text: 'Facebook'
+                };
+            } else {
+                delete buttons.facebook;
+            }
+            if (data['X']) {
+                buttons.x = {
+                    icon: xIcon,
+                    text: 'X'
+                };
+            } else {
+                delete buttons.x;
+            }
+            if (data['Other']) {
+                buttons.other = {
+                    icon: otherIcon,
+                    text: 'Other'
+                };
+            } else {
+                delete buttons.other;
+            }
+
+           
+        });
+    
+            
+    chart.editUI.on('button-click', function (sender, args) {
+        if (args.name == 'map') {
+            var data = chart.get(args.nodeId);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data['Primary Address'])}`);
+        }
+        else if (args.name == 'linkedin') {
+            var data = chart.get(args.nodeId);
+            
+            window.open(data['LinkedIn Profile']);
+        }
+        else if (args.name == 'email') {
+            var data = chart.get(args.nodeId);
+            
+            window.open(`mailto:${data['Email Address']}`);
+        }
+        else if (args.name == 'website') {
+            var data = chart.get(args.nodeId);
+            
+            window.open(`${data['Domain'].startsWith('https://') ? data['Domain'] : 'https://' + data['Domain']}`);
+        }
+        else if (args.name == 'facebook') {
+            var data = chart.get(args.nodeId);
+             
+            window.open(data['Facebook']);
+        }
+        else if (args.name == 'x') {
+            var data = chart.get(args.nodeId);
+           
+            window.open(data['X']);
+        }
+        else if (args.name == 'other') {
+            var data = chart.get(args.nodeId); 
+            window.open(data['Other']);
+        }
+        else if (args.name == 'call') {
+            var data = chart.get(args.nodeId); 
+            window.open(`tel:${data['Boardline Number']}`);
+        }
+        
+    });
+   
+           
+    let isInitialLoad = true;    
+    document.addEventListener('DOMContentLoaded', function() {
+                isInitialLoad = false;
+               
+       
+    
+    });
+    
+    var filterBy = null;
+    chart.onRedraw(function(args){
+       
+        
+        var filterByAfterRedraw = JSON.stringify(this.filterUI.filterBy);
+       
+        if (filterByAfterRedraw != filterBy && !isInitialLoad) {
+            filterBy = filterByAfterRedraw;
+            this.fit();
+    
+            
+        var totalnodes = this.config.nodes.length;
+        var personCount = 0;
+        for(var i=0; i<totalnodes;i++){
+        var data = this.config.nodes[i];
+        if (data['Category Type']==="Person"){
+            personCount++;
+        }
+        }
+        const filteredNodeElements = chart.element.querySelectorAll('.node.filter');
+        var countFilteredNodeElement = document.getElementById('count_filtered_nodes');
+        var departmentCount = 0;
+        var personCountd = 0;
+        for(var i=0; i<filteredNodeElements.length;i++){
+        var data = filteredNodeElements[i];
+        if (data.classList.contains("Department")){
+            departmentCount++;
+        }
+        else{
+            personCountd++;
+        }
+        }
+        
+      
+        const filtercount = totalnodes - filteredNodeElements.length; 
+        countFilteredNodeElement.innerHTML = `Total Person Count: ${personCount-personCountd}`;
+       
+    
+        }
+    
+         
+    
+        
+    
+    
+    })
+    
+    
+    
+    
+    chart.filterUI.on('update', function(sender, args){
+        document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'clear-filters-btn') {
+            const filtersContainer = document.querySelector('.boc-filter');
+            const RemoveFilters = document.querySelector('.RemoveFilters');
+            const ApplyFilters = document.querySelector('.ApplyFilters');
+            ApplyFilters.style.display = "block";
+            RemoveFilters.style.display = "none";
+            filtersContainer.classList.remove('revealed'); 
+            
+            sender.filterBy = null;
+            sender.update();
+            setTimeout(function() {
+                sender.instance.draw();
+            }, 500);
+        }
+    });
+    });
+    
+    document.querySelector('#expandbtn').addEventListener('click', function () {
+    chart.expand(1, "all");
+    chart.fit();
+});
+
+
+document.querySelector("#collapsebtn").addEventListener("click", function (event) {
+    event.stopPropagation();
+    let id = 0
+    var node = chart.getNode(id);
+    var collapseIds = [];
+    iterate(chart, node, collapseIds, id);
+    chart.expandCollapse(id, [], collapseIds);
+    chart.setScale(80/100);
+    chart.center(1);
+    collapseflag = true;
+});
+
+function iterate(c, n, collapseIds, id) {
+    if (id != n.id) {
+        collapseIds.push(n.id);
+    }
+
+    for (var i = 0; i < n.childrenIds.length; i++) {
+        iterate(c, c.getNode(n.childrenIds[i]), collapseIds, id)
+    }
+}
+
+    document.addEventListener('contextmenu', function(e) {
+    alert("Sorry, you can't view or copy source codes this way!");
+    e.preventDefault();
+});  
+
+
+
+
+function findDepartmentNode(node, nodeMap) {
+    if (node['Category Type'] !== undefined && node['Category Type'] !== null && node['Category Type'] == 'Department' ) {
+        return node;
+    }
+    else if (node.pid !== undefined && node.pid !== null) {
+        var reportingNode = nodeMap[node.pid];
+        if (reportingNode !== undefined) {
+            return findDepartmentNode(reportingNode, nodeMap);
+        }
+    }
+    return null;
+}
+
+
+
+ chart.on('exportstart', function (sender, args) {
+        if (args.ext == 'csv' || args.ext == 'xml') {
+            var newNodes = [];
+var nodeMap = {};
+
+args.nodes.forEach(node => {
+    if (node !== null) {
+        nodeMap[node.id] = node;
+    }
+});
+
+args.nodes.forEach(node => {
+    if (node !== null && (node['Category Type'] == 'Person' || node['Category Type'] == 'person') ) {
+        var newNode = {
+            "Organization Name": node['Organization Name'],
+            "Domain": node['Domain'],
+            "Employee Range": node['Employee Range'],
+            "Department": "",
+            "Industry": node['Industry'],
+            "Solution Offered": node['Solution Offered'],
+            "Primary Address": node['Primary Address'],
+            "City/Town": node['City/Town'],
+            "State/Province": node['State/Province'],
+            "Country/Region": node['Country/Region'],
+            "Postal Code": node['Postal Code'],
+            "Seniority Level": node['Seniority Level'],
+            "Job Function": node['Job Function'],
+            "Full Name": node.name,
+            "Designation": node['Designation'],
+            "Linkedin Profile": node['Linkedin Profile'],
+            "Public Profile": node['Public Profile'],
+            "Email Address": node['Email Address'],
+            "Boardline Number": node['Boardline Number'],
+            "Personal Number": node['Personal Number']
+        };
+
+        if (node.pid !== undefined && node.pid !== null) {
+            var reportingNode = nodeMap[node.pid];
+            if (reportingNode !== undefined) {
+                console.log(reportingNode);
+                var departmentNode = findDepartmentNode(reportingNode, nodeMap);
+                if (departmentNode !== null) {
+                    newNode["Department"] = departmentNode['Department'];
+                }
+            }
+        }
+
+        newNodes.push(newNode);
+    }
+});
+
+args.nodes = newNodes;}
+    });
+    
+    chart.searchUI.on("show-items", function(sender, args){
+        var nodeElements = sender.searchTableWrapper.querySelectorAll(".search-item-hovered");
+        for (var i = 0; i < nodeElements.length; i++){
+            nodeElements[i].classList.remove('search-item-hovered');
+        }
+    
+        var itemElements = sender.searchTableWrapper.querySelectorAll("[data-search-item-id]");
+        for (var i = 0; i < itemElements.length; i++) {
+            itemElements[i].addEventListener("mouseenter", function (e) {
+                var id = this.getAttribute("data-search-item-id");
+                var nodeElement = sender.instance.getNodeElement(id);
+                if (nodeElement) {
+                nodeElement.classList.add('search-item-hovered');
+            }
+            });
+    
+            itemElements[i].addEventListener("mouseleave", function (e) {
+                var id = this.getAttribute("data-search-item-id");
+                var nodeElement = sender.instance.getNodeElement(id);
+                if (nodeElement) {
+                nodeElement.classList.remove('search-item-hovered');
+            }
+            });
+        }
+    });
+    
+chart.add({id:0,tags: ['Department'], 'Category Type': 'Organization' ,img:'http://127.0.0.1:8000/static/user_images/logo.png' ,org_name: "TechSolutions Inc.",
+        'Domain' :  "www.techsolutions.demo",
+        'Employee Range' : "51-200",
+        'Industry' : "IT Services",
+        'Solution Offered' : "Database, Cloud Solutions",
+        'Primary Address' : "123 Main St, Tech Park",
+        'Postal Code' : "10001",
+        'City/Town' : "",
+        'State/Province' : "",
+        'Country/Region' : "",
+        'Email Address' : "info@techsolutions.demo",
+
+
+        'LinkedIn Profile' : "https://www.linkedin.com/company/techsolutions-demo/",
+        'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+        'X': "https://twitter.com/TechSolutionsDemo",
+        'Other': "https://www.instagram.com/techsolutionsdemo/",
+        'Public Profile' : "",
+        'Boardline Number' : "+1 555 123 4567",
+       
+        'Notes' : "",
+        'Insight Title1' : "",
+        'Insight Description' : "",
+        'Insight Source1' : "",
+        'Insight Date1' : "",
+
+        'Insight Title2' : "",
+        'Insight Description2' : "",
+        'Insight Source2' : "",
+        'Insight Date2' : "",
+
+        'Insight Title3' : "",
+        'Insight Description3' : "",
+        'Insight Source3' : "",
+        'Insight Date3' : "",
+
+        'Insight Title4' : "",
+        'Insight Description4' : "",
+        'Insight Source4' : "",
+        'Insight Date4' : "",
+
+
+           });
+chart.add({id: 1, 
+                    tags: ['Department'], 
+                    pid: 0, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "TechSolutions",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "10001",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "info@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 2, pid: 1,'Category Type': 'Person', name: "John Smith", 'Designation': "Director",
+                    img: "http://127.0.0.1:8000/static/placeholders/JS.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "New York",
+                    'State/Province': "New York",
+                    'Country/Region': "USA",
+                    'Email Address': "john.smith@techsolutions.demo",
+                    'Seniority Level': "Director",
+                    'Job Function': "Management",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 3, pid: 2,'Category Type': 'Person', name: "Sarah Johnson", 'Designation': "CEO & Founder",
+                    img: "http://127.0.0.1:8000/static/placeholders/SJ.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "New York",
+                    'State/Province': "New York",
+                    'Country/Region': "USA",
+                    'Email Address': "sarah.johnson@techsolutions.demo",
+                    'Seniority Level': "CXO",
+                    'Job Function': "Management",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/sarah-johnson-demo/",
+                    'Facebook' : "https://www.facebook.com/sarah.johnson.demo",
+                    'X': "https://twitter.com/SarahJohnsonDemo",
+                    'Other': "https://www.instagram.com/sarah.johnson.demo/",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 987 6543",
+                    'Notes': "",
+                    'Education 1': "New York University",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "TechGlobal",
+                    'Previous Company 2': "WebSolutions Inc.",
+                    'Previous Company 3': "DataSystems",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 4, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Graphic Design",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for creating graphics and visual content",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "design@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 5, pid: 4,'Category Type': 'Person', name: "Michael Brown", 'Designation': "Head of Graphic Design",
+                    img: "http://127.0.0.1:8000/static/placeholders/MB.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "New York",
+                    'State/Province': "New York",
+                    'Country/Region': "USA",
+                    'Email Address': "michael.brown@techsolutions.demo",
+                    'Seniority Level': "Head",
+                    'Job Function': "Design",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 6, pid: 5,'Category Type': 'Person', name: "Emily Davis", 'Designation': "Graphic Designer Intern",
+                    img: "http://127.0.0.1:8000/static/placeholders/ED.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Boston",
+                    'State/Province': "Massachusetts",
+                    'Country/Region': "USA",
+                    'Email Address': "emily.davis@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Design",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 7, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Human Resources",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for managing the employee life cycle",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "hr@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 8, pid: 7,'Category Type': 'Person', name: "Jennifer Wilson", 'Designation': "Human Resources Director",
+                    img: "http://127.0.0.1:8000/static/placeholders/JW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Chicago",
+                    'State/Province': "Illinois",
+                    'Country/Region': "USA",
+                    'Email Address': "jennifer.wilson@techsolutions.demo",
+                    'Seniority Level': "Director",
+                    'Job Function': "Human Resources",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 234 5678",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 9, pid: 8,'Category Type': 'Person', name: "Robert Taylor", 'Designation': "Human Resources Manager",
+                    img: "http://127.0.0.1:8000/static/placeholders/RT.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Francisco",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "robert.taylor@techsolutions.demo",
+                    'Seniority Level': "Manager",
+                    'Job Function': "Human Resources",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/robert-taylor-demo/",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 345 6789",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 10, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "IT",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for maintaining hardware and software systems",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "it@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 11, pid: 10,'Category Type': 'Person', name: "David Anderson", 'Designation': "Chief Information Officer",
+                    img: "http://127.0.0.1:8000/static/placeholders/DA.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Seattle",
+                    'State/Province': "Washington",
+                    'Country/Region': "USA",
+                    'Email Address': "david.anderson@techsolutions.demo",
+                    'Seniority Level': "CXO",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 456 7890",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 12, pid: 11,'Category Type': 'Person', name: "Jessica Martinez", 'Designation': "IT Manager",
+                    img: "http://127.0.0.1:8000/static/placeholders/JM.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Austin",
+                    'State/Province': "Texas",
+                    'Country/Region': "USA",
+                    'Email Address': "jessica.martinez@techsolutions.demo",
+                    'Seniority Level': "Manager",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 567 8901",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 13, pid: 12,'Category Type': 'Person', name: "Daniel Thomas", 'Designation': "IT Support Specialist",
+                    img: "http://127.0.0.1:8000/static/placeholders/DT.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Portland",
+                    'State/Province': "Oregon",
+                    'Country/Region': "USA",
+                    'Email Address': "daniel.thomas@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 14, pid: 12,'Category Type': 'Person', name: "Amir Khan", 'Designation': "Cloud DevOps Engineer",
+                    img: "http://127.0.0.1:8000/static/placeholders/AK.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Houston",
+                    'State/Province': "Texas",
+                    'Country/Region': "USA",
+                    'Email Address': "amir.khan@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/amir-khan-demo/",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 678 9012",
+                    'Notes': "",
+                    'Education 1': "University of Texas",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 15, pid: 12,'Category Type': 'Person', name: "James Wilson", 'Designation': "Software Engineer",
+                    img: "http://127.0.0.1:8000/static/placeholders/JW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Dallas",
+                    'State/Province': "Texas",
+                    'Country/Region': "USA",
+                    'Email Address': "james.wilson@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 16, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Technology",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for maintaining hardware systems",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "it@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 17, pid: 16,'Category Type': 'Person', name: "Richard Moore", 'Designation': "Chief Technology Officer",
+                    img: "http://127.0.0.1:8000/static/placeholders/RM.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Diego",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "richard.moore@techsolutions.demo",
+                    'Seniority Level': "CXO",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/richard-moore-demo/",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 789 0123",
+                    'Notes': "",
+                    'Education 1': "MIT",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 18, pid: 17,'Category Type': 'Person', name: "Thomas Clark", 'Designation': "Technology Support Specialist",
+                    img: "http://127.0.0.1:8000/static/placeholders/TC.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Denver",
+                    'State/Province': "Colorado",
+                    'Country/Region': "USA",
+                    'Email Address': "thomas.clark@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Information Technology",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 19, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Business Development",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for identifying business opportunities and building client relationships",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "sales@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 20, pid: 19,'Category Type': 'Person', name: "William White", 'Designation': "Chief Business Development Officer",
+                    img: "http://127.0.0.1:8000/static/placeholders/WW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Chicago",
+                    'State/Province': "Illinois",
+                    'Country/Region': "USA",
+                    'Email Address': "william.white@techsolutions.demo",
+                    'Seniority Level': "CXO",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/william-white-demo/",
+                    'Facebook' : "",
+                    'X': "https://twitter.com/WilliamWhiteDemo",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 890 1234",
+                    'Notes': "",
+                    'Education 1': "University of Chicago",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 21, pid: 20,'Category Type': 'Person', name: "Olivia Martin", 'Designation': "Business Development Head - US",
+                    img: "http://127.0.0.1:8000/static/placeholders/OM.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Atlanta",
+                    'State/Province': "Georgia",
+                    'Country/Region': "USA",
+                    'Email Address': "olivia.martin@techsolutions.demo",
+                    'Seniority Level': "Head",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 22, pid: 21,'Category Type': 'Person', name: "Charles Harris", 'Designation': "Business Development Manager - US",
+                    img: "http://127.0.0.1:8000/static/placeholders/CH.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Miami",
+                    'State/Province': "Florida",
+                    'Country/Region': "USA",
+                    'Email Address': "charles.harris@techsolutions.demo",
+                    'Seniority Level': "Manager",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 901 2345",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 23, pid: 22,'Category Type': 'Person', name: "Sophia Allen", 'Designation': "Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/SA.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Philadelphia",
+                    'State/Province': "Pennsylvania",
+                    'Country/Region': "USA",
+                    'Email Address': "sophia.allen@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 24, pid: 22,'Category Type': 'Person', name: "Benjamin Young", 'Designation': "Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/BY.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Phoenix",
+                    'State/Province': "Arizona",
+                    'Country/Region': "USA",
+                    'Email Address': "benjamin.young@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 25, pid: 22,'Category Type': 'Person', name: "Ethan King", 'Designation': "Outbound Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/EK.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Antonio",
+                    'State/Province': "Texas",
+                    'Country/Region': "USA",
+                    'Email Address': "ethan.king@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 26, pid: 22,'Category Type': 'Person', name: "Ava Wright", 'Designation': "Inbound Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/AW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Jose",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "ava.wright@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 27, pid: 20,'Category Type': 'Person', name: "Mason Scott", 'Designation': "Business Development Head - Global",
+                    img: "http://127.0.0.1:8000/static/placeholders/MS.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "London",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "mason.scott@techsolutions.demo",
+                    'Seniority Level': "Head",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 28, pid: 27,'Category Type': 'Person', name: "Emma Green", 'Designation': "Business Development Manager",
+                    img: "http://127.0.0.1:8000/static/placeholders/EG.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Manchester",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "emma.green@techsolutions.demo",
+                    'Seniority Level': "Manager",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 29, pid: 28,'Category Type': 'Person', name: "Noah Adams", 'Designation': "Inbound Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/NA.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Birmingham",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "noah.adams@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 30, pid: 28,'Category Type': 'Person', name: "Isabella Baker", 'Designation': "Outbound Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/IB.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Leeds",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "isabella.baker@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 31, pid: 28,'Category Type': 'Person', name: "Liam Nelson", 'Designation': "Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/LN.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Glasgow",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "liam.nelson@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 32, pid: 28,'Category Type': 'Person', name: "Mia Carter", 'Designation': "Business Development Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/MC.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Liverpool",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "mia.carter@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Business Development",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 33, 
+                    tags: ['Department'], 
+                    pid: 20, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Sales",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for bringing in new business and closing sales deals",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "sales@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 34, pid: 33,'Category Type': 'Person', name: "Alexander Hall", 'Designation': "Sales Head",
+                    img: "http://127.0.0.1:8000/static/placeholders/AH.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Boston",
+                    'State/Province': "Massachusetts",
+                    'Country/Region': "USA",
+                    'Email Address': "alexander.hall@techsolutions.demo",
+                    'Seniority Level': "Head",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 012 3456",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 35, pid: 34,'Category Type': 'Person', name: "Charlotte Rivera", 'Designation': "Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/CR.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Washington",
+                    'State/Province': "DC",
+                    'Country/Region': "USA",
+                    'Email Address': "charlotte.rivera@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/charlotte-rivera-demo/",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 123 4560",
+                    'Notes': "",
+                    'Education 1': "Georgetown University",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 36, pid: 34,'Category Type': 'Person', name: "Daniel Cooper", 'Designation': "Inside Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/DC.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Baltimore",
+                    'State/Province': "Maryland",
+                    'Country/Region': "USA",
+                    'Email Address': "daniel.cooper@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/daniel-cooper-demo/",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 234 5671",
+                    'Notes': "",
+                    'Education 1': "Johns Hopkins University",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 37, pid: 34,'Category Type': 'Person', name: "Elizabeth Ward", 'Designation': "Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/EW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Richmond",
+                    'State/Province': "Virginia",
+                    'Country/Region': "USA",
+                    'Email Address': "elizabeth.ward@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 38, pid: 34,'Category Type': 'Person', name: "Matthew Torres", 'Designation': "Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/MT.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Raleigh",
+                    'State/Province': "North Carolina",
+                    'Country/Region': "USA",
+                    'Email Address': "matthew.torres@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 39, 
+                    tags: ['Department'], 
+                    pid: 20, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Sales",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for bringing in new business and closing sales deals",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "sales@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 40, pid: 39,'Category Type': 'Person', name: "Andrew Peterson", 'Designation': "Sales Head - US & UK",
+                    img: "http://127.0.0.1:8000/static/placeholders/AP.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Los Angeles",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "andrew.peterson@techsolutions.demo",
+                    'Seniority Level': "Head",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "https://www.linkedin.com/in/andrew-peterson-demo/",
+                    'Facebook' : "",
+                    'X': "https://twitter.com/AndrewPDemo",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 345 6782",
+                    'Notes': "",
+                    'Education 1': "University of California",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "TechAdvantage",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 41, pid: 40,'Category Type': 'Person', name: "Sofia Gomez", 'Designation': "Inbound Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/SG.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Francisco",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "sofia.gomez@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 42, pid: 40,'Category Type': 'Person', name: "Henry Stewart", 'Designation': "Inside Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/HS.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Edinburgh",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "henry.stewart@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 43, pid: 40,'Category Type': 'Person', name: "Victoria Morales", 'Designation': "Outbound Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/VM.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Diego",
+                    'State/Province': "California",
+                    'Country/Region': "USA",
+                    'Email Address': "victoria.morales@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 44, pid: 40,'Category Type': 'Person', name: "Christopher Kim", 'Designation': "Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/CK.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Newcastle",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "christopher.kim@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 45, pid: 40,'Category Type': 'Person', name: "Grace Russell", 'Designation': "Sales Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/GR.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Sheffield",
+                    'State/Province': "",
+                    'Country/Region': "UK",
+                    'Email Address': "grace.russell@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Sales",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 46, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Marketing",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for creating marketing strategies",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "marketing@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 47, pid: 46,'Category Type': 'Person', name: "Ryan Brooks", 'Designation': "Marketing Director",
+                    img: "http://127.0.0.1:8000/static/placeholders/RB.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Las Vegas",
+                    'State/Province': "Nevada",
+                    'Country/Region': "USA",
+                    'Email Address': "ryan.brooks@techsolutions.demo",
+                    'Seniority Level': "Director",
+                    'Job Function': "Marketing",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 456 7893",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 48, pid: 47,'Category Type': 'Person', name: "Zoe Sanders", 'Designation': "Marketing Executive",
+                    img: "http://127.0.0.1:8000/static/placeholders/ZS.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Orlando",
+                    'State/Province': "Florida",
+                    'Country/Region': "USA",
+                    'Email Address': "zoe.sanders@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Marketing",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 49, 
+                    tags: ['Department'], 
+                    pid: 3, 
+                    'Category Type': 'Department' ,
+                    matchpoint: "",
+                    img: "http://127.0.0.1:8000/static/user_images/logo.png", 
+                    'Department': "Operations",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Responsible for providing leadership to employees and promoting company culture",
+                    'Primary Address': "",
+                    'Postal Code': "",
+                    'City/Town': "",
+                    'State/Province': "",
+                    'Country/Region': "",
+                    'Email Address': "operations@techsolutions.demo",
+                    'LinkedIn Profile': "https://www.linkedin.com/company/techsolutions-demo/",
+                    'Facebook' : "https://www.facebook.com/techsolutionsdemo",
+                    'X': "https://twitter.com/TechSolutionsDemo",
+                    'Other': "https://www.instagram.com/techsolutionsdemo/",
+                    'Boardline Number': "",
+                    'Notes': "",
+                    
+                    'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    });
+chart.add({id: 50, pid: 49,'Category Type': 'Person', name: "Nathan Reed", 'Designation': "Director Of Operations",
+                    img: "http://127.0.0.1:8000/static/placeholders/NR.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Detroit",
+                    'State/Province': "Michigan",
+                    'Country/Region': "USA",
+                    'Email Address': "nathan.reed@techsolutions.demo",
+                    'Seniority Level': "Director",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 567 8904",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 51, pid: 50,'Category Type': 'Person', name: "Hannah Watson", 'Designation': "Team Leader Outsource",
+                    img: "http://127.0.0.1:8000/static/placeholders/HW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Minneapolis",
+                    'State/Province': "Minnesota",
+                    'Country/Region': "USA",
+                    'Email Address': "hannah.watson@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 52, pid: 50,'Category Type': 'Person', name: "Dylan Barnes", 'Designation': "Team Leader Internal",
+                    img: "http://127.0.0.1:8000/static/placeholders/DB.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "St. Louis",
+                    'State/Province': "Missouri",
+                    'Country/Region': "USA",
+                    'Email Address': "dylan.barnes@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "+1 555 678 9015",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 53, pid: 52,'Category Type': 'Person', name: "Lily Ross", 'Designation': "Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/LR.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Charlotte",
+                    'State/Province': "North Carolina",
+                    'Country/Region': "USA",
+                    'Email Address': "lily.ross@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 54, pid: 52,'Category Type': 'Person', name: "Logan Henderson", 'Designation': "Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/LH.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Indianapolis",
+                    'State/Province': "Indiana",
+                    'Country/Region': "USA",
+                    'Email Address': "logan.henderson@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 55, pid: 52,'Category Type': 'Person', name: "Chloe Coleman", 'Designation': "Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/CC.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Columbus",
+                    'State/Province': "Ohio",
+                    'Country/Region': "USA",
+                    'Email Address': "chloe.coleman@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 56, pid: 52,'Category Type': 'Person', name: "Carter Hughes", 'Designation': "Research & Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/CH.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "San Juan",
+                    'State/Province': "Puerto Rico",
+                    'Country/Region': "USA",
+                    'Email Address': "carter.hughes@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 57, pid: 52,'Category Type': 'Person', name: "Scarlett Butler", 'Designation': "Research & Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/SB.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Milwaukee",
+                    'State/Province': "Wisconsin",
+                    'Country/Region': "USA",
+                    'Email Address': "scarlett.butler@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 58, pid: 52,'Category Type': 'Person', name: "Julian Simmons", 'Designation': "Research & Data Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/JS.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Albuquerque",
+                    'State/Province': "New Mexico",
+                    'Country/Region': "USA",
+                    'Email Address': "julian.simmons@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 59, pid: 52,'Category Type': 'Person', name: "Penelope Foster", 'Designation': "Business Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/PF.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Omaha",
+                    'State/Province': "Nebraska",
+                    'Country/Region': "USA",
+                    'Email Address': "penelope.foster@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 60, pid: 52,'Category Type': 'Person', name: "Gabriel Gonzales", 'Designation': "Business Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/GG.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Oklahoma City",
+                    'State/Province': "Oklahoma",
+                    'Country/Region': "USA",
+                    'Email Address': "gabriel.gonzales@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 61, pid: 52,'Category Type': 'Person', name: "Audrey Washington", 'Designation': "Market Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/AW.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Memphis",
+                    'State/Province': "Tennessee",
+                    'Country/Region': "USA",
+                    'Email Address': "audrey.washington@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+chart.add({id: 62, pid: 52,'Category Type': 'Person', name: "Christian Parker", 'Designation': "Research Analyst",
+                    img: "http://127.0.0.1:8000/static/placeholders/CP.svg",
+                    matchpoint: "No Match",
+                    'Organization Name': "TechSolutions",
+                    'Domain': "www.techsolutions.demo",
+                    'Employee Range': "51-200",
+                    'Industry': "IT Services",
+                    'Solution Offered': "Database, Cloud Solutions",
+                    'Primary Address': "123 Main St, Tech Park",
+                    'Postal Code': "",
+                    'City/Town': "Louisville",
+                    'State/Province': "Kentucky",
+                    'Country/Region': "USA",
+                    'Email Address': "christian.parker@techsolutions.demo",
+                    'Seniority Level': "Entry",
+                    'Job Function': "Operations",
+                    'LinkedIn Profile': "",
+                    'Facebook' : "",
+                    'X': "",
+                    'Other': "",
+                    'Public Profile': "",
+                    'Boardline Number': "+1 555 123 4567",
+                    'Personal Number': "",
+                    'Notes': "",
+                    'Education 1': "",
+                    'Education 2': "",
+                    'Education 3': "",
+                    'Previous Company 1': "",
+                    'Previous Company 2': "",
+                    'Previous Company 3': "",
+                    'Previous Company 4': "",
+                    'Previous Company 5': "",
+                   'Insight Title1': "",
+                    'Insight Description': "",
+                    'Insight Source1': "",
+                    'Insight Date1': "",
+                    'Insight Title2': "",
+                    'Insight Description2': "",
+                    'Insight Source2': "",
+                    'Insight Date2': "",
+                    'Insight Title3': "",
+                    'Insight Description3': "",
+                    'Insight Source3': "",
+                    'Insight Date3': "",
+                    'Insight Title4': "",
+                    'Insight Description4': "",
+                    'Insight Source4': "",
+                    'Insight Date4': "",
+
+                    
+                    });
+
+
+
+    chart.editUI.on()
+    chart.draw(OrgChart.action.init);
+    chart.on('init', function (sender) { sender.editUI.show(0, true); chart.setScale(80/100);
+    chart.center(1);});
+    </script>
+
+</body>
+</html>

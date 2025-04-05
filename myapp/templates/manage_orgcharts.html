@@ -1,0 +1,231 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Manage OrgCharts{% endblock %}
+{% block content %}
+<!-- Add these links to your HTML -->
+
+
+<style>
+.alert {
+  font-size: 14px;
+  position: absolute;
+  padding: 20px;
+  background-color: #ff9d94;
+  color: red;
+  opacity: 1;
+  transition: opacity 0.6s;
+  margin-bottom: 15px;
+}
+.alert.success {
+    border: 1px solid #c2fccf;
+    background-color: #e4fcea;
+    color: #00cc18;
+
+}
+.alert.info {background-color: #2196F3;
+color: white;
+}
+.alert.warning {background-color: #ff9800;
+color: white;
+}
+.closebtn {
+  margin-left: 15px;
+  color: black;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
+}
+
+#accessForm {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .form-column {
+        flex: 1;
+        margin-right: 20px;
+    }
+
+    #user-select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+    
+    #chart-select{
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+    .btn-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    .btn {
+        margin-right: 10px;
+    }
+</style>
+
+
+{% for message in messages %}
+{% if message.tags == 'error' %}
+<div class="alert">
+    <strong>Error:</strong> {{ message }}
+    <span class="closebtn">&times;</span> 
+  </div>
+{% endif %}
+{% if message.tags == 'success' %}
+<div class="alert success">
+    <span class="closebtn">&times;</span>  
+    <strong>Success!</strong> {{ message }}
+  </div>
+{% endif %}
+{% if message.tags == 'warning' %}
+<div class="alert warning">
+    <span class="closebtn">&times;</span>  
+    <strong>Warning!</strong> {{ message }}
+  </div>
+{% endif %}
+{% if message.tags == 'info' %}
+<div class="alert info">
+    <span class="closebtn">&times;</span>  
+    <strong>Info!</strong> {{ message }}
+  </div>
+{% endif %}
+{% endfor %}
+
+<h2 style="text-align: center; margin-bottom: 50px;">Manage Chart Access</h2>
+<form method="post" action="{% url 'manage_access' %}" id="accessForm" class="form">
+    {% csrf_token %}
+
+    <!-- Multi-Select Box for Charts -->
+    <div class="form-column">
+        <label for="chart-select">Select Charts:</label>
+        <select class="form-select" id="chart-select" size="15" name="chart_ids" multiple>
+            {% for chart in available_charts %}
+                <option value="{{ chart.id }}">{{ chart.id }} - {{ chart.title }}</option>
+            {% endfor %}
+        </select>
+        <span class="btn btn-secondary" onclick="clearMultiSelect()">Clear</span>
+    </div>
+
+    <!-- Select Box for Users -->
+    <div class="form-column">
+        <label for="user-select">Select User:</label>
+        <select id="user-select" name="user">
+            {% for user in available_users %}
+                <option value="{{ user.id }}">{{ user.id }} - {{ user.username }}</option>
+            {% endfor %}
+        </select>
+        <label for="duration">Select Access Time:</label>
+        <select name="duration" id="user-select">
+            <option value="30">30 Days</option>
+            <option value="60">60 Days</option>
+            <option value="90">90 Days</option>
+            <option value="183">6 Months</option>
+            <option value="365">12 Months</option>
+        </select>
+        <div class="btn-container">
+            <!-- Add buttons under the select box for user -->
+            <button class="btn btn-success" type="button" onclick="validateAndSubmit('add')">Grant Access</button>
+            <button class="btn btn-danger" type="button" onclick="confirmRemoveAccess()">Remove Access</button>
+        </div>
+        
+    </div>
+</form>
+<script>
+       function validateAndSubmit(operation) {
+        // Check if at least one chart is selected
+        var chartSelect = document.getElementById("chart-select");
+        if (chartSelect.options.length === 0 || chartSelect.selectedOptions.length === 0) {
+            alert("Please select at least one chart.");
+            return;  // Do not submit the form if there's an error
+        }
+
+        // Check if a user is selected
+        var userSelect = document.getElementById("user-select");
+        if (userSelect.options.length === 0 || userSelect.value === "") {
+            alert("Please select a user.");
+            return;  // Do not submit the form if there's an error
+        }
+
+        // Add operation name and value to the form
+        var form = document.getElementById("accessForm");
+        var operationInput = document.createElement("input");
+        operationInput.setAttribute("type", "hidden");
+        operationInput.setAttribute("name", "operation");
+        operationInput.setAttribute("value", operation);
+        form.appendChild(operationInput);
+
+        // If validation passes, submit the form
+        form.submit();
+    }
+
+    function confirmRemoveAccess() {
+        var chartSelect = document.getElementById("chart-select");
+        if (chartSelect.options.length === 0 || chartSelect.selectedOptions.length === 0) {
+            alert("Please select at least one chart.");
+            return;  // Do not submit the form if there's an error
+        }
+
+        // Check if a user is selected
+        var userSelect = document.getElementById("user-select");
+        if (userSelect.options.length === 0 || userSelect.value === "") {
+            alert("Please select a user.");
+            return;  // Do not submit the form if there's an error
+        }
+        var isConfirmed = confirm("Are you sure you want to remove access?");
+        if (isConfirmed) {
+            // If confirmed, proceed to submit the form
+            validateAndSubmit('remove');
+        }
+    }
+        
+        
+    var close = document.getElementsByClassName("closebtn");
+var i;
+
+// Set a timeout to perform the action after a delay, even without a click
+setTimeout(function() {
+  for (i = 0; i < close.length; i++) {
+    var div = close[i].parentElement;
+    performAction(div); // Call the function to perform the action
+  }
+}, 3000); // Delay before automatic action (3 seconds)
+
+function performAction(div) {
+  div.style.opacity = "0";
+  setTimeout(function() {
+    div.style.display = "none";
+  }, 600);
+}
+
+// Event listener for clicks, still handles immediate action on click
+for (i = 0; i < close.length; i++) {
+  close[i].addEventListener("click", function() {
+    var div = this.parentElement;
+    performAction(div);
+  });
+}   
+    
+function clearMultiSelect() {
+        var multiSelect = document.getElementById("chart-select");
+        multiSelect.selectedIndex = -1; // Deselect all options
+    }
+    
+    
+</script>
+
+{% endblock %}

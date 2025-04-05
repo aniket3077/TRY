@@ -1,0 +1,111 @@
+{% extends 'base_index.html' %}
+
+{% block title %}List{% endblock %}
+{% block content %}
+<div class="details">
+    <div class="listorg">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>My OrgCharts</h2>
+            
+            <div class="search-container" style="margin-top: -15px;">
+                
+                <i class="fa fa-sort" style="font-size:36px"></i>
+                <label for="sort-options">Sort by </label>
+                <select id="sort-options" onchange="handleSortChange(this.value)">
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+                {% if user.is_staff %}
+                <option value="latest">Latest</option>
+                {% endif %}
+                {% if not user.is_staff %}
+                <option value="access_given">Latest</option>
+                {% endif %}
+            </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="grey" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                <input type="text" class="search-input" id="myInput" onkeyup="filterTable()" placeholder="Search for table entries...">
+                <a href="/download-all-csv" class="btn" style="margin: 20px;">Download All Data</a>
+            </div>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td onclick="sortTable(1,'asc')">Title </td>
+                    {% if not user.is_staff %}
+                    <td onclick="sortTable(2,'asc')">Access Grant Time</td>
+                    <td onclick="sortTable(3,'asc')">Expiration Time</td>
+                    <td onclick="sortTable(4,'asc')">Days Remaining</td>
+            	    {% endif %}
+		    {% if user.is_staff %}
+               	    {% for group in user.groups.all %}
+                    {% if group.name == 'Admin' %}
+                    <td onclick="sortTable(2,'asc')">Creation Date</td>
+                    {% endif %}
+		    {% endfor %}
+                    {% endif %}
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chart_data  in charts_data  %}
+                <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ chart_data.chart.title  }}</td>
+                {% if not user.is_staff %}
+                <td>{{ chart_data.access_grant_time }}</td>
+                <td>{{ chart_data.expiration_time }}</td>
+                <td>{{ chart_data.days_remaining }}</td>
+                {% endif %}
+                {% if user.is_staff %}
+                <td>{{ chart_data.creation_time }}</td>
+                {% endif %}
+                <td><a href="/charts/{{ chart_data.chart.title }}.html" class="btn visitbtn" target="_blank">Visit</a></td>
+                {% if user.is_staff %}
+                
+                {% for group in user.groups.all %}
+                {% if group.name == 'Admin' %}
+                
+                <td>
+                    <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{chart_data.chart.pk }}">
+                        Delete
+                    </button>
+                </td>
+                <td>
+                    <a href="{% url 'download_source' chart_id=chart_data.chart.id %}" class="btn visitbtn" style="background: #474F7A;">Download Source File</a>
+                </td>
+                {% endif %}
+		{% endfor %}
+                {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% for chart in charts_data %}
+<div class="modal fade" id="deleteModal{{ chart.chart.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "{{ chart.chart.title }}"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="{% url 'delete_file' chart.chart.pk %}" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,353 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrgMarketPlace</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="{% static 'home/css/style.css' %}"> -->
+
+    <style>
+       @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+        * {
+            font-family: 'Roboto';
+        }
+        .badge {
+            cursor: pointer;
+            margin: 2px;
+        }
+        .form-check {
+            margin-bottom: 5px;
+        }
+        .remove-item {
+            margin-left: 5px;
+            color: red;
+            cursor: pointer;
+        }
+        .clear-all {
+            cursor: pointer;
+            color: red;
+            font-size: 0.9em;
+        }
+        .form-control {
+        border-radius: 0.25rem;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.125) inset;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    }
+    .scrollable-checkboxes {
+        max-height: 90px;
+        overflow-y: auto;
+    }
+    .container{
+        max-width: 1500px;
+    }
+    </style>
+</head>
+<body>
+    <header class="bg-light py-3 shadow-sm sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">OrgMarketPlace</h1>
+            <div>
+                <!-- <button class="btn btn-primary ml-2">CONTACT DATA</button> -->
+                <!-- <button class="btn btn-primary ml-2">ORG CHART</button> -->
+                <!-- <button onclick="window.location.href='https://dash.sphurti.net/charts/Sphurti-WebApp-Solutions%20(Demo)%20-%20Org.html'"  class="btn btn-outline-primary ml-2">
+                    
+                </button> -->
+                <a href="https://dash.sphurti.net/charts/Sphurti-WebApp-Solutions%20(Demo)%20-%20Org.html" target="_blank" class="btn btn-outline-info ml-2">GET FREE SAMPLE</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mt-4">
+        <div class="row">
+            <aside class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Filters <span class="float-right"><i class="fas fa-filter"></i></span></h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h3 class="h6 d-flex justify-content-between align-items-center">
+                                Company
+                            </h3>
+                            <input type="text" class="form-control mb-2" id="companySearch" placeholder="Search Company">
+                            <div id="companyFilters"></div>
+                            <div id="selectedCompanies" class="mt-2"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h3 class="h6 d-flex justify-content-between align-items-center">
+                                Country
+                                <span class="clear-all" data-filter="country">Clear All</span>
+                            </h3>
+                            <input type="text" class="form-control mb-2" id="countrySearch" placeholder="Search Country">
+                            <div id="countryFilters" class="scrollable-checkboxes"></div>
+                            <div id="selectedCountries" class="mt-2"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h3 class="h6 d-flex justify-content-between align-items-center">
+                                Industry
+                                <span class="clear-all" data-filter="industry">Clear All</span>
+                            </h3>
+                            <input type="text" class="form-control mb-2" id="industrySearch" placeholder="Search Industry">
+                            <div id="industryFilters" class="scrollable-checkboxes"></div>
+                            <div id="selectedIndustries" class="mt-2"></div>
+                        </div>
+                        <div class="mb-3">
+                            <h3 class="h6 d-flex justify-content-between align-items-center">
+                                Employee Range
+                                <span class="clear-all" data-filter="employee-range">Clear All</span>
+                            </h3>
+                            <div class="form-inline mb-2">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                <input type="number" id="minEmployeeRange" class="form-control mr-2" placeholder="Min Employees">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="number" id="maxEmployeeRange" class="form-control" placeholder="Max Employees">
+                            </div>
+                        </div>
+                            </div>
+                            <div id="employeeRangeFilters"></div>
+                            <div id="selectedEmployeeRanges" class="mt-2"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </aside>
+
+            <section class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header text-white" style="background-color: #212529;">
+                        <h2 class="h5 mb-0">Company List</h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0" id="companyTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Company Name</th>
+                                        <th>Authorities in Chart</th>
+                                        <th>Cost</th>
+                                        <th>Last Updated</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for chart in charts_data %}
+                                    {% if chart.mp_status == 'Published' %}
+                                    <tr data-company="{{ chart.title }}" data-country="{{ chart.country }}" data-industry="{{ chart.industry }}" data-employee-range="{{ chart.employee_range }}" data-min-employees="{{ chart.min_employees }}" data-max-employees="{{ chart.max_employees }}">
+                                        <td>{{ chart.title }}</td>
+                                        <td>{{ chart.personCount }}</td>
+                                        <td>${{ chart.price }}</td>
+                                        <td>{{ chart.last_updated }}</td>
+                                        <td>
+                                            <!-- <button class="btn btn-info btn-sm">Buy Now</button> -->
+                                            <form id="purchaseForm" action="{% url 'create_payment' chart.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button  id="buyNowButton" class="btn btn-success btn-sm" type="button">Buy Now</button>
+                                            </form>
+                                            <!-- <div id="paypal-button-container"></div> -->
+                                            <!-- <button class="btn btn-success btn-sm">GET SAMPLE</button> -->
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4">No data available</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login Required</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>You need to log in to make a purchase. Please log in or sign up and try again...</p>
+            </div>
+            <div class="modal-footer">
+                <a href="/signin" target="_blank" class="btn btn-primary">Log In</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </main>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://www.paypal.com/sdk/js?client-id=AXydxJWSZ7cWgDius0pOV3W8g0bMLIYpJWmZAMNtjxOvHFepxqinwzwY_uhwEDglr-a04vtDQG6LJOir"></script> -->
+
+    <script>
+        $(document).ready(function() {
+            // Initialize filters
+            function initFilters() {
+                generateFilterOptions('countryFilters', 'country');
+                generateFilterOptions('industryFilters', 'industry');
+            }
+
+            // Generate filter options based on chart data
+            function generateFilterOptions(filterId, dataAttr) {
+                var options = [];
+                $('#companyTable tbody tr').each(function() {
+                    var value = $(this).data(dataAttr);
+                    if (value && $.inArray(value, options) === -1) {
+                        options.push(value);
+                    }
+                });
+                options.sort();
+                $('#' + filterId).html('');
+                $.each(options, function(index, option) {
+                    $('#' + filterId).append('<div class="form-check"><input type="checkbox" class="form-check-input" id="' + option + '" data-' + dataAttr + '="' + option + '"><label class="form-check-label" for="' + option + '">' + option + '</label></div>');
+                });
+            }
+
+    function filterTable() {
+        var companySearch = $('#companySearch').val().toLowerCase();
+        var selectedCountries = getSelectedFilters('country');
+        var selectedIndustries = getSelectedFilters('industry');
+        var minRange = parseInt($('#minEmployeeRange').val(), 10) || 0;
+        var maxRange = parseInt($('#maxEmployeeRange').val(), 10) || Number.MAX_VALUE;
+
+        $('#companyTable tbody tr').filter(function() {
+            var companyMatch = $(this).data('company').toLowerCase().indexOf(companySearch) > -1;
+            var countryMatch = selectedCountries.length === 0 || selectedCountries.includes($(this).data('country'));
+            var industryMatch = selectedIndustries.length === 0 || selectedIndustries.includes($(this).data('industry'));
+            var employeeRangeMatch = ($(this).data('min-employees') >= minRange && $(this).data('max-employees') <= maxRange);
+
+            $(this).toggle(companyMatch && countryMatch && industryMatch && employeeRangeMatch);
+        });
+    }
+
+    function getSelectedFilters(filterType) {
+        var selectedFilters = [];
+        $('#' + filterType + 'Filters .form-check-input:checked').each(function() {
+            selectedFilters.push($(this).data(filterType));
+        });
+        return selectedFilters;
+    }
+
+    // Update selected filter badges
+    function updateSelectedBadges(containerId, filterType) {
+        var selectedFilters = getSelectedFilters(filterType);
+        var selectedItemsHTML = selectedFilters.map(function(item) {
+            return '<span class="badge badge-primary">' + item + ' <i class="fas fa-times remove-item" data-' + filterType + '="' + item + '"></i></span>';
+        }).join('');
+        $('#' + containerId).html(selectedItemsHTML);
+    }
+
+    // Event listeners
+    $('#companySearch').on('keyup', filterTable);
+
+     // Search functionality for checkboxes
+     $('#countrySearch').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#countryFilters .form-check').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    $('#industrySearch').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#industryFilters .form-check').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    $('#countryFilters, #industryFilters').on('change', 'input[type="checkbox"]', function() {
+        filterTable();
+        updateSelectedBadges("selectedCountries", "country");
+        updateSelectedBadges("selectedIndustries", "industry");
+    });
+
+    // Employee range filter inputs
+    $('#minEmployeeRange, #maxEmployeeRange').on('change', filterTable);
+
+    // Clear all filters
+    // Clear all filters for a specific type
+    $(document).on('click', '.clear-all', function() {
+        var filterType = $(this).data('filter');
+        if (filterType === 'employee-range') {
+            $('#' + filterType + 'Filters .form-check-input').prop('checked', false);
+            $('#minEmployeeRange').val(''); // Clear the text input
+            $('#maxEmployeeRange').val(''); // Clear the text input
+        }else{
+        $('#' + filterType + 'Filters .form-check-input').prop('checked', false).trigger('change');}
+        filterTable();
+        updateSelectedBadges("selected" + capitalizeFirstLetter(filterType) + "s", filterType);
+    });
+
+    // Remove individual selected filter badge
+    $(document).on('click', '.remove-item', function() {
+        var filterType = $(this).data('country') ? 'country' : $(this).data('industry') ? 'industry' : 'employee-range';
+        var value = $(this).data(filterType);
+        $('#' + filterType + 'Filters .form-check-input[data-' + filterType + '="' + value + '"]').prop('checked', false).trigger('change');
+    });
+
+    // Helper function to capitalize the first letter of a string
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Initialize filters and handle initial table filtering
+    initFilters();
+    filterTable();
+
+    // Check if the user is logged in
+    function checkLoginStatus(callback) {
+        $.ajax({
+            url: '/check-login/',
+            method: 'GET',
+            success: function(response) {
+                if (response.isLoggedIn) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            }
+        });
+    }
+
+
+    // Handle Buy Now button click
+    $('#companyTable').on('click', '#buyNowButton', function() {
+        var company = $(this).data('company');
+
+        checkLoginStatus(function(isLoggedIn) {
+            if (isLoggedIn) {
+                $('#purchaseForm').submit();
+            } else {
+                // Show login modal
+                $('#loginModal').modal('show');
+            }
+        });
+    });
+});
+
+        </script>
+
+
+    </body>
+</html>
+

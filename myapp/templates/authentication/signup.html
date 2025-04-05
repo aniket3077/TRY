@@ -1,0 +1,30 @@
+{% extends 'password_reset/base_password_reset.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+    
+    <h1 class="title">Sign up</h1>
+    <div class="card" style="width: 400px; padding: 40px;">
+        
+    <h3>Create your account!</h3>
+    <form method="post" action="/signup">
+        {% csrf_token %}
+        
+            <input type="text" class="form-control" id="username" name="username" placeholder="Create A Username (use only letters and numbers)" Required>
+            <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter Your First Name" Required>
+            <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter Your Last Name" Required>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter Your Email Address" Required>
+            <input type="password" class="form-control" id="pass1" name="pass1" placeholder="Create Your Password" Required>
+            <span class="toggle-password" onclick="togglePassword()"><i class="fas fa-eye-slash"></i></span>
+            <input type="password" class="form-control" id="pass2" name="pass2" placeholder="Confirm Your Password" Required>
+            <div class="buttons">
+                <a href="/signin" class="register-link">Already have an account? Log in</a>
+                  <button type="submit" class="login-button">Sign Up</button>
+              </div>
+        
+    </form>
+    </div>
+    </div>
+   
+{% endblock %}

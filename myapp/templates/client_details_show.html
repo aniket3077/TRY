@@ -1,0 +1,239 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Client Details List{% endblock %}
+{% block content %}
+
+
+<div class="details">
+    <div class="listorg">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>My Leads</h2>
+            
+            <div class="search-container" style="margin-top: -15px;">
+                
+                <i class="fa fa-sort" style="font-size:36px"></i>
+                <label for="sort-options">Sort by </label>
+                <select id="sort-options" onchange="handleSortChange(this.value)">
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+                <option value="latest">Latest</option>
+            </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="grey" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                <input type="text" class="search-input" id="myInput" onkeyup="filterTable()" placeholder="Search for table entries...">
+            </div>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td onclick="sortTable(1,'asc')">Client</td>
+                    {%  if request.user.userprofile.is_superadmin %}
+                    <td>Sales Partner</td>
+                    {% endif %}
+                    <td onclick="sortTable(2,'asc')">Entry Time</td>
+                    <td onclick="sortTable(3,'asc')">Charts Requested</td>
+                    <td onclick="sortTable(4,'asc')">Amount in INR</td>
+                    {% if not request.user.userprofile.is_superadmin %}
+                    <td>Revenue Share</td>
+                    {% endif %}
+                    <td>SOW Status</td>
+                    <td>Payment Status</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead_data in leads_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ lead_data.user.username }}</td>
+                    {%  if request.user.userprofile.is_superadmin %}
+                        <td>{{lead_data.lead_of}}</td>
+                    {% endif %}
+                    <td>{{ lead_data.entry_date }}</td>
+                    <td>{{ lead_data.total_charts }}</td>
+                    <td>{{ lead_data.amount_in_inr }}</td>
+                    {% if not request.user.userprofile.is_superadmin %}
+                    <td>{{ lead_data.revenue_share }}</td>
+                    {% endif %}
+                    <td>
+                        {% if lead_data.sow_status == 'Accepted' %}
+                            <span class="p-2 rounded bg-success text-white">Accepted</span>
+                        {% elif lead_data.sow_status == 'Under Review' %}
+                            <span class="p-2 rounded bg-info text-white">Under Review</span>
+                        {% else %}
+                            <span class="p-2 rounded bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead_data.payment_status == 'Completed' %}
+                            <span class="p-2 rounded bg-success text-white">Completed</span>
+                        {% elif lead_data.payment_status == 'Partially Completed' %}
+                            <span class="p-2 rounded bg-info text-white">Partially Completed</span>
+                        {% else %}
+                            <span class="p-2 rounded bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <!-- Dropdown Menu with View Details and Actions -->
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton_{{ forloop.counter }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select Action
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{ forloop.counter }}">
+                                <!-- View Details Action (Modal Trigger) -->
+                                <a href="#" class="dropdown-item" 
+                                   data-toggle="modal" 
+                                   data-target="#user-details-modal_{{ forloop.counter }}">
+                                   View Details
+                                </a>
+                                <!-- Other Actions -->
+                                {%  if request.user.userprofile.is_superadmin %}
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#deleteModal{{ forloop.counter }}">Delete Entry</a>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            
+                <!-- User Details Modal for Current Row -->
+                <div class="modal fade" id="user-details-modal_{{ forloop.counter }}" tabindex="-1" role="dialog" aria-labelledby="user-details-modal-title_{{ forloop.counter }}" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="user-details-modal-title_{{ forloop.counter }}">Lead Details: {{ lead_data.user.username }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6 class="fw-bold mt-2">Organization Name:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.org_name }}</textarea>
+                                        
+                                        <!-- Organization Website -->
+                                        <h6 class="fw-bold mt-2">Organization Website:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.org_website }}</textarea>
+                                        
+                                        <!-- Designations -->
+                                        <h6 class="fw-bold mt-2">Designations:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.designations }}</textarea>
+                                        
+                                        <!-- Department Names -->
+                                        <h6 class="fw-bold mt-2">Department Names:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.dept_names }}</textarea>
+
+                                        <h6 class="fw-bold mt-2">Industry Types:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.industry_types }}</textarea>
+                                        
+                                        <!-- Locations -->
+                                        <h6 class="fw-bold mt-2">Locations:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.locations }}</textarea>
+                                    </div>
+                                    <div class="col-md-4">
+                                        
+                                        
+                                        <!-- Extra Insights -->
+                                        <h6 class="fw-bold mt-2">Extra Insights:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.extra_insights }}</textarea>
+                                        {% if not request.user.userprofile.is_superadmin %}
+                                        <form method="post" action="{% url 'update_lead_status' lead_data.id %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3 mt-3">
+                                                <label for="sow_status" class="form-label">SOW Status:</label>
+                                                <select name="sow_status" id="sow_status" class="form-select ml-4">
+                                                    <option class="pt-2 pb-2" value="Pending" {% if lead_data.sow_status == 'Pending' %} selected {% endif %}>Pending</option>
+                                                    <option class="pt-2 pb-2" value="Under Review" {% if lead_data.sow_status == 'Under Review' %} selected {% endif %}>Under Review</option>
+                                                    <option class="pt-2 pb-2" value="Accepted" {% if lead_data.sow_status == 'Accepted' %} selected {% endif %}>Accepted</option>
+                                                </select>
+                                            </div>
+                            
+                                            <div class="mb-3">
+                                                <label for="payment_status" class="form-label">Payment Status:</label>
+                                                <select name="payment_status" id="payment_status" class="form-select">
+                                                    <option value="Pending" {% if lead_data.payment_status == 'Pending' %} selected {% endif %}>Pending</option>
+                                                    <option value="Partially Completed" {% if lead_data.payment_status == 'Partially Completed' %} selected {% endif %}>Partially Completed</option>
+                                                    <option value="Completed" {% if lead_data.payment_status == 'Completed' %} selected {% endif %}>Completed</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="notes" class="form-label fw-bold">Notes:</label>
+                                                <textarea class="form-control" name="notes" id="notes" rows="3">{{ lead_data.notes }}</textarea>
+                                            </div>
+                            
+                                            <div class="text-right">
+                                                <button type="submit" class="btn btn-primary">Update Status</button>
+                                            </div>
+                                        </form>
+                                        {% endif %}
+                                        {% if request.user.userprofile.is_superadmin %}
+                                        <h6 class="fw-bold mt-2">Notes:</h6>
+                                        <textarea class="form-control" rows="2" readonly>{{ lead_data.notes }}</textarea>
+                                        <form method="post" action="{% url 'update_lead_status' lead_data.id %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3 mt-3">
+                                                <label for="revenue_share" class="form-label">Revenue Share in INR:</label>
+                                                <input type="number" class="form-control" id="revenue_share" step="0.00"  name="revenue_share" placeholder="Amount in INR">
+                                            </div>
+                                            <div class="text-right">
+                                                <button type="submit" class="btn btn-primary">Update Revenue</button>
+                                            </div>
+                                        </form>
+                                        {% endif %}
+                                       
+                                        <h6 class="fw-bold mt-2">Revenue Share:</h6>
+                                        <p>{{ lead_data.revenue_share }}</p>
+                                       
+                                    </div>
+                                    <div class="col-md-4 mt-2">
+                                        <p><strong>Total Charts:</strong></p> <p>{{ lead_data.total_charts }}</p>
+                                        <p><strong>Required Authorities:</strong></p> <p>{{ lead_data.required_authorities }}</p>
+                                        <p><strong>Include Contacts:</strong> </p> <p>{% if lead_data.include_contacts %}Yes{% else %}No{% endif %}</p>
+                                        <p><strong>Employee Range:</strong> </p> <p>{{ lead_data.emp_range }}</p>
+                                        <p><strong>Currency:</strong> </p><p>{{ lead_data.currency }}</p>
+                                        <p><strong>Amount in Currency:</strong> </p> <p>{{ lead_data.amount_in_currency }}</p>
+                                        <p><strong>Amount in INR:</strong> </p> <p>{{ lead_data.amount_in_inr }}</p>
+                                    </div>
+                                    <div class="col-md-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="deleteModal{{ forloop.counter }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete {{ lead_data.user.username }}'s Lead?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <a href="{% url 'delete_lead' lead_data.id %}" class="btn btn-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+
+{% endblock %}
+
+

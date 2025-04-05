@@ -1,0 +1,130 @@
+{% extends 'base_index.html' %}
+
+{% block title %}View Access{% endblock %}
+{% block content %}
+<style>
+    .form-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        max-width: 450px;
+        margin: auto;
+    }
+
+    #user-select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 20px;
+        
+    }
+    .btn {
+        margin-bottom: 20px;
+    }
+</style>
+<h2 style="text-align: center; margin-bottom: 50px;">View Chart Access</h2>
+<form  id="myform" method="POST" action="{% url 'view_access' %}" onsubmit="return validateForm()">
+    {% csrf_token %}
+    <div class="form-column">
+        <label for="user-select">Select User:</label>
+        <div class="multi-select-dropdown">
+            <select class="form-select" id="user-select" name="user_id">
+                <option disabled selected>Select</option>
+                {% for users in available_users %}
+                    <option value="{{ users.id }}">{{ users.id }} - {{ users.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-column">
+            <button type="submit" class="btn btn-primary">Show Permitted OrgCharts</button>
+        </div>
+    </div>
+</form>
+{% if charts_data %}
+<div class="details">
+<div class="listorg">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h4>Permitted OrgCharts to : "{{ user_per.username }}"</h4>
+            
+            <div class="search-container" style="margin-top: -15px;">
+                
+                <i class="fa fa-sort" style="font-size:36px"></i>
+                <label for="sort-options">Sort by </label>
+                <select id="sort-options" onchange="handleSortChange(this.value)">
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+                <option value="access_given">Latest</option>
+            </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="grey" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                <input type="text" class="search-input" id="myInput" onkeyup="filterTable()" placeholder="Search for table entries...">
+                
+            </div>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td onclick="sortTable(1,'asc')">Title </td>
+                    <td onclick="sortTable(2,'asc')">Access Grant Time</td>
+                    <td onclick="sortTable(3,'asc')">Expiration Time</td>
+                    <td onclick="sortTable(4,'asc')">Days Remaining</td>    
+                    <td></td>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for chart_data  in charts_data  %}
+                <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ chart_data.chart.title  }}</td>
+                <td>{{ chart_data.access_grant_time }}</td>
+                <td>{{ chart_data.expiration_time }}</td>
+                <td>{{ chart_data.days_remaining }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> 
+</div>
+</div>
+{% else %}
+<p>No data available.</p>
+{% endif %}
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+     document.getElementById('showChartsButton').addEventListener('click', function() {
+        // Fetch available_charts using AJAX
+        let user_id = document.getElementById('user-select').value;
+        fetch(`/permitted_orgcharts/${user_id}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Update the selected user and display the div
+                // document.getElementById('selected-user').textContent = user_id;
+                document.getElementById('chartList').innerHTML = data.charts || '';
+                document.getElementById('show').style.display = 'flex';
+            });
+    });
+}); -->
+
+<!-- </script> -->
+<script>
+    function validateForm() {
+  var selectBox = document.getElementById("user-select");
+  var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+  
+  if (selectedValue === "Select") {
+    alert("Please select an option.");
+    return false; // Prevent form submission
+  }
+  var form = document.getElementById("myForm");
+  console.log(form.action)
+//   var form = document.getElementById("myForm");
+//   form.action += selectedValue;
+  // Form submission allowed
+  return true;
+}
+</script>
+{% endblock %}

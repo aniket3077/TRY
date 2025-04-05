@@ -1,0 +1,93 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Request InsideOrgs{% endblock %}
+
+{% block content %}
+
+
+<h2 style="text-align: center; margin-bottom: 50px;">Request InsideOrgs</h2>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form id="orgchartForm" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+		<div class="mb-3">
+                            <label for="company_name" class="form-label">Organization Name(s):</label>
+                            <textarea class="form-control" id="company_name" name="company_name" required placeholder="For e.g. Wipro, Amazon, Alphabet, etc."></textarea>
+                        </div>
+                       </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company_url" class="form-label">Organization Website(s):</label>
+                                <textarea class="form-control" id="company_url" name="company_url" required data-bs-toggle="tooltip" title="Provide here URL(s) of the Company Name(s) you given above" placeholder="For e.g. 'https://wipro.com', https://insideorgs.com, etc. "></textarea>
+                            </div>
+                        
+                    </div></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="designation" class="form-label">Designation(s):</label>
+                        <textarea class="form-control" id="designation" name="designation" required placeholder="For e.g. Managing Director, Head of Department, etc."></textarea>
+                    </div>
+               
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="department_name" class="form-label">Department Name(s):</label>
+                    <textarea class="form-control" id="department_name" name="department_name" required placeholder="For e.g. IT, Finance, Marketing, etc."></textarea>
+                </div>
+            </div></div>
+                <div class="row">
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="industry_type" class="form-label">Industry Type(s):</label>
+                            <textarea class="form-control" id="industry_type" name="industry_type" required placeholder="For e.g. IT, Financial Services, Telecom, etc."></textarea>
+                        </div>
+                       
+                    </div>
+                      
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location(s): </label>
+                            <textarea class="form-control" id="location" name="location" required placeholder="For e.g. India, USA, UK, etc."></textarea>
+                        </div>
+                    </div>
+                </div>  
+                
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="mt-3">
+                            <label for="required_authorities" class="form-label">Required Authorities [Count]:</label>
+                            <input type="number" class="form-control" id="required_authorities" name="required_authorities" required placeholder="For e.g. 50, 100, 150, etc.">
+                        </div>
+
+                            <div class="mb-0 form-check">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;" class="form-check-input" id="number_inclusion" name="number_inclusion">
+                                <label class="form-check-label ml-2" for="number_inclusion">Include Direct Numbers</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="extra_insights" class="form-label">Any Other Insight(s) [Optional]: </label>
+                        <textarea class="form-control" id="extra_insights" name="extra_insights" placeholder="Any other insights such as ATS, Job Openings, etc."></textarea>
+                        
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                <button id="submit" type="submit" class="btn btn-primary">Submit Request</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+{% endblock %}

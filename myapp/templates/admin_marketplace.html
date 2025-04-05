@@ -1,0 +1,161 @@
+{% extends 'base_index.html' %}
+
+{% block title %}My Marketplace{% endblock %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/ /4.1.0/css/ .min.css" rel="stylesheet" />
+
+{% block content %}
+
+
+<div class="details">
+    <div class="listorg">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>My Marketplace</h2>
+            
+            <div class="search-container" style="margin-top: -15px;">
+                
+                <i class="fa fa-sort" style="font-size:36px"></i>
+                <label for="sort-options">Sort by </label>
+                <select id="sort-options" onchange="handleSortChange(this.value)">
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+                <option value="latest">Latest</option>
+            </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="grey" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                <input type="text" class="search-input" id="myInput" onkeyup="filterTable()" placeholder="Search for table entries...">
+            </div>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td onclick="sortTable(1,'asc')">Title</td>
+                    <td onclick="sortTable(2,'asc')">Last Updated</td>
+                    <td onclick="sortTable(3,'asc')">Price</td>
+                    <td>Status</td>
+                    <td>Industry</td>
+                    <td>Country</td>
+                    <td>Employee Range</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chart in charts_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ chart.title }}</td>
+                    <td>{{chart.last_updated}}</td>
+                    <td>${{ chart.price }}</td>
+                    <td>
+                        {% if chart.mp_status == 'Published' %}
+                        <span class="p-2 rounded bg-success text-white">Published</span>
+                        {% else %}
+                        <span class="p-2 rounded bg-secondary text-white">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ chart.industry }}</td>
+                    <td>{{ chart.country }}</td>
+                    <td>{{ chart.employee_range }}</td>
+                    <td>
+                        <a href="#" class="btn btn-info" 
+                                   data-toggle="modal" 
+                                   data-target="#user-details-modal_{{ forloop.counter }}">
+                                   View Details
+                        </a>
+                        
+                    </td>
+                </tr>
+            
+             <!-- User Details Modal for Current Row -->
+<div class="modal fade" id="user-details-modal_{{ forloop.counter }}" tabindex="-1" role="dialog" aria-labelledby="user-details-modal-title_{{ forloop.counter }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="user-details-modal-title_{{ forloop.counter }}">Chart Details For: {{ chart.title }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/update-chart-details/{{ chart.id }}/" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="price_{{ forloop.counter }}">Price</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="price_{{ forloop.counter }}" name="price" value="{{ chart.price }}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_updated_{{ forloop.counter }}">Last Updated</label>
+                                <input type="date" class="form-control" id="last_updated_{{ forloop.counter }}" name="last_updated" value="{{ chart.last_updated|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="country_{{ forloop.counter }}">Country</label>
+                                <select class="form-control  " id="country_{{ forloop.counter }}" name="country" required>
+                                    <option value="" disabled selected>Select Country</option>
+                                    {% for country in countries %}
+                                    <option value="{{ country }}" {% if country == chart.country %}selected{% endif %}>{{ country }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee_range_{{ forloop.counter }}">Employee Range</label>
+                                <select class="form-control  " id="employee_range_{{ forloop.counter }}" name="employee_range" required>
+                                    <option value="" disabled selected>Select Employee Range</option>
+                                    {% for range in employee_ranges %}
+                                    <option value="{{ range }}" {% if range == chart.employee_range %}selected{% endif %}>{{ range }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="industry_{{ forloop.counter }}">Industry</label>
+                                <select class="form-control  " id="industry_{{ forloop.counter }}" name="industry" required>
+                                    <option value="" disabled selected>Select Industry</option>
+                                    {% for industry in industries %}
+                                    <option value="{{ industry }}" {% if industry == chart.industry %}selected{% endif %}>{{ industry }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="status_{{ forloop.counter }}">Status</label>
+                                <select class="form-control  " id="status_{{ forloop.counter }}" name="status" required>
+                                    <option value="" disabled>Select Status</option>
+                                    <option value="Published" {% if chart.mp_status == 'Published' %}selected{% endif %}>Published</option>
+                                    <option value="Draft" {% if chart.mp_status == 'Draft' %}selected{% endif %}>Draft</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+     
+
+                
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+       
+{% endblock %}
+
+
+

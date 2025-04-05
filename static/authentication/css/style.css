@@ -1,0 +1,183 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url('/static/background.webp'); 
+    background-size: cover; 
+    background-position: center; 
+    color: #fff;
+    font-family: Arial, sans-serif;
+ 
+  }
+ h3 {
+ color: #313131 !important;
+ }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .title {
+    color: #313131;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .card {
+    width: 300px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    border-top: 4px solid #2bb1e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  input {
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    border-bottom: 1px solid #313131;
+    color: #313131;
+    transition: box-shadow 0.3s;
+  }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    /* border: 1px solid #2bb1e0; */
+    -webkit-text-fill-color: #313131;
+    /* -webkit-box-shadow: 0 0 0px 1000px #000 inset; */
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  input:focus {
+    box-shadow: 0 0 10px #2bb1e0;
+    outline: none;
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .login-button,
+  .register-link {
+      
+    font-size: 15px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
+    text-decoration: none;
+  }
+  
+  .login-button {
+    background-color: transparent;
+    color: #2bb1e0;
+  }
+  
+  .login-button:hover {
+    background-color: #2bb1e0;
+    color: #fff;
+    box-shadow: none;
+  }
+  
+  .login-button:active {
+    box-shadow: 0 0 10px #2bb1e0;
+  }
+  
+  .register-link {
+    color: #313131;
+    background-color: transparent;
+  }
+  
+  .register-link:hover {
+    color: #2bb1e0;
+  }
+  
+  .register-link:active {
+    box-shadow: 0 0 10px #2bb1e0;
+  }
+  
+  @media (max-width: 480px) {
+    .card {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+  .alert {
+      font-size: 14px;
+    position: relative;
+    padding: 20px;
+    background-color: #ff9d94;
+    color: red;
+    opacity: 1;
+    transition: opacity 0.6s;
+    margin-bottom: 15px;
+  }
+  .alert.success {
+      border: 1px solid #c2fccf;
+      background-color: #e4fcea;
+      color: #00cc18;
+  
+  }
+  .alert.info {background-color: #2196F3;
+  color: white;
+  }
+  .alert.warning {background-color: #ff9800;
+  color: white;
+  }
+  .closebtn {
+    margin-left: 15px;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .closebtn:hover {
+    color: black;
+  }
+
+
+  .custom-text{
+      font-size: 15px;
+      color: #313131;
+  }
+
+  .toggle-password {
+    position: relative;
+    cursor: pointer;
+    margin-bottom: -14px;
+}
+
+.toggle-password i {
+    position: absolute;
+    top: -50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #999;
+    margin-top: -28px;
+    margin-bottom: -28px;
+}

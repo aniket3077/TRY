@@ -1,0 +1,51 @@
+{% extends 'base_index.html' %}
+{% block title %}Upload Image{% endblock %}
+{% block content %}
+
+<h2 style="text-align: center; margin-bottom: 50px;">Upload Images</h2>
+
+<div class="input-box-container">
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" id="imageInput" accept="image/*" name="images" hidden multiple>
+    <label class="input-box" for="imageInput">Choose File</label>
+    <span id="file-chosen">No file chosen</span>
+    <ion-icon class="remove-btn" id="removeButton" style="display: none; color:red;" size="large" name="close-sharp"></ion-icon>
+    <button class="upload-btn" type="submit">Upload</button>
+</form>
+</div>
+    <div class="row" style="margin-right: 50px !important; margin-bottom: 10px !important;">
+        <div class="col-md-6">
+            <div class="d-flex justify-content-start">
+            <button id="selectAllButton" onclick="toggleSelectAllCheckboxes()" class="btn btn-primary mx-2">Select All</button> 
+            <input type="number" id="selectCountInput" value="1" min="1" max="{{ image_count }}" oninput="checkInput(this)">
+            <button id="selectButton" onclick="selectCheckboxes()" class="btn btn-secondary mx-2">Select</button>
+        </div>
+    </div>
+        <div class="col-md-6 d-flex justify-content-end">
+        <button onclick="exportSelected()" class="btn btn-warning mx-2">Export Selected</button>
+        <button onclick="deleteSelected()" class="btn btn-danger mx-2">Delete Selected</button>
+       
+    </div>
+</div>
+<div class="gallery">
+    {% for image in images %}
+    <div class="gallery-item">
+        <input type="checkbox" name="imageCheckbox" id="checkbox{{ forloop.counter }}" value="{{ image.filename }}" class="select-checkbox">
+        <img src="{{ image.image.url }}" alt="{{ image.filename }}">
+        <div class="overlay">
+            <div class="overlay-content">
+                <p>{{ image.filename  }}</p>
+                <button class="copy-link-button" onclick="copyImageLink(this,'{{ image.image.url }}')">Copy Link</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    window.csrfToken = "{{ csrf_token }}";
+</script>
+ 
+    
+{% endblock %}

@@ -1,0 +1,13 @@
+1. Images of the persons should be added in 'Img_url' column if not asked then u can leave blank 
+2. there should be no "" commans in sheet at any cost instead we can use '' in place of them (for ex: see cell 'L213')
+3. the node_type column and reporting_to column should not contain any blank values i.e '' values it should be filled with proper values
+4. for parent node identification - the algo will check the value of 'reporting_to' column in only email_id column and 'Department_name' column so 
+it should be taken care that they are paste same if the parent node is department then add the correct Department_name and if it is a person then add
+its correct email_id value    
+5. the first value of reporting_to column i.e. cell 'A2' should be organization name as it will be head node
+6. refer sheet 'AWS-EMEA' for reference data
+7. there is no use of 'konnect_point' table so  u can drop it
+8. dont use , anywhere in the file at any cost ( for better work u can save file in .csv format it doesn't take , values)
+in replace you can use any character (mostly '-' '|' are preferrable ) ps: if not then it will give error in the exported .csv file
+9. primary contact no. of the person should be written on the 'contact_number1' column as it will display on the node
+

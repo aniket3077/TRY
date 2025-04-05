@@ -1,0 +1,143 @@
+{% extends 'base_index.html' %}
+{% block title %}User Profile{% endblock %}
+{% block content %}
+
+
+<h2 style="text-align: center; margin-bottom: 50px;">User Profile</h2>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <form class="form-inline" id="myform" method="POST" onsubmit="return validateForm()">
+                {% csrf_token %}
+                <div class="form-group mx-sm-3 mb-2">
+                    <div class="select-dropdown">
+                        <input hidden type="text" id="edit_form" name="edit_form" value="True">
+                        <select class="form-select" id="user-select" name="user_id">
+                            <option disabled selected>Select User</option>
+                            {% for users in available_users %}
+                                <option value="{{ users.id }}">{{ users.id }} - {{ users.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info" formaction="{% url 'edit_profile' %}">View User Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div>
+
+    {% if edit_mode %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <form id="profile_form" method="post" action="{% url 'edit_profile' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="Username" class="form-label">Username:</label>
+                        <text id="Username" name="Username">{{ selected_user.user.username }}</text>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            
+                            
+                            <input type="hidden" name="user_id" value="{{ selected_user.user.id }}">
+                            
+                            <div class="mb-3">
+                                <label for="past_company1" class="form-label">Past Company 1:</label>
+                                <input type="text" class="form-control" id="past_company1" name="past_company1" value="{{ selected_user.past_company1 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="past_company2" class="form-label">Past Company 2:</label>
+                                <input type="text" class="form-control" id="past_company2" name="past_company2" value="{{ selected_user.past_company2 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="past_company3" class="form-label">Past Company 3:</label>
+                                <input type="text" class="form-control" id="past_company3" name="past_company3" value="{{ selected_user.past_company3 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="past_company4" class="form-label">Past Company 4:</label>
+                                <input type="text" class="form-control" id="past_company4" name="past_company4" value="{{ selected_user.past_company4 }}" readonly>
+                            </div>
+                            
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="past_company5" class="form-label">Past Company 5:</label>
+                                <input type="text" class="form-control" id="past_company5" name="past_company5" value="{{ selected_user.past_company5 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="educational_institute1" class="form-label">Educational Institute 1:</label>
+                                <input type="text" class="form-control" id="educational_institute1" name="educational_institute1" value="{{ selected_user.educational_institute1 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="educational_institute2" class="form-label">Educational Institute 2:</label>
+                                <input type="text" class="form-control" id="educational_institute2" name="educational_institute2" value="{{ selected_user.educational_institute2 }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="educational_institute3" class="form-label">Educational Institute 3:</label>
+                                <input type="text" class="form-control" id="educational_institute3" name="educational_institute3" value="{{ selected_user.educational_institute3 }}" readonly>
+                            </div>
+                        </div>
+			 <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="city" class="form-label">Client's City</label>
+                                <input type="text" class="form-control" id="city" name="city" value="{{ selected_user.city }}" readonly>
+                              </div>
+                              <div class="mb-3">
+                                <label for="state" class="form-label">Client's State</label>
+                                <input type="text" class="form-control" id="state" name="state" value="{{ selected_user.state }}" readonly>
+                              </div>
+                              <div class="mb-3">
+                                <label for="country" class="form-label">Client's Country</label>
+                                <input type="text" class="form-control" id="country" name="country" value="{{ selected_user.country }}" readonly>
+                              </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="edit_button" class="btn btn-danger">Edit Details</button>
+                    <button type="submit" id="save_button" class="btn btn-primary" style="display: none;">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+
+    
+    {% endif %}
+    
+</div>
+<script>
+    function validateForm() {
+  var selectBox = document.getElementById("user-select");
+  var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+  
+  if (selectedValue === "Select") {
+    alert("Please select an option.");
+    return false; // Prevent form submission
+  }
+  var form = document.getElementById("myForm");
+  console.log(form.action)
+//   var form = document.getElementById("myForm");
+//   form.action += selectedValue;
+  // Form submission allowed
+  return true;
+}
+
+
+$(document).ready(function(){
+    $("#edit_button").click(function(){
+        $("input[type='text']").prop('readonly', false);
+        $("#edit_button").hide();
+        $("#save_button").show();
+    });
+    
+    $("#save_button").click(function(){
+        $("input[type='text']").prop('readonly', true);
+        $("#edit_button").show();
+        $("#save_button").hide();
+    });
+});
+
+</script>
+{% endblock %}
