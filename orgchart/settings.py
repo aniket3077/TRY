@@ -55,6 +55,7 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['https://0280-103-162-159-178.ngrok-free.app', ' https://0f3d-103-162-159-178.ngrok-free.app',
     'http://localhost',
     'http://127.0.0.1',
+    'http://34.44.73.187/'
 ]
 
 # Application definition
@@ -76,7 +77,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -171,7 +172,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'http://34.44.73.187:8000'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static_dir",
