@@ -28,6 +28,8 @@ from datetime import timedelta, datetime
 from django.utils.dateparse import parse_date
 import paypalrestsdk
 from django.urls import reverse
+import requests
+import uuid
 
 
 # Create your views here.
@@ -309,13 +311,21 @@ def send_password_reset_email(user, email, reset_link):
 def createorgchart(request):
     charts = chart.objects.order_by('-creation_date')[:5]
     available_users = User.objects.filter(is_staff=False)
-    return render(request, "create_orgchart.html",{'charts': charts,'available_users':available_users})
+    try:
+        access_key = UserProfile.objects.get(user=request.user).access_uuid  
+    except UserProfile.DoesNotExist:
+        access_key = None
+    return render(request, "create_orgchart.html",{'charts': charts,'available_users':available_users,'access_key':access_key})
 
 
 @login_required
 def listorgchart(request):
     current_datetime = timezone.localtime(timezone.now())
     is_staff = request.user.is_staff
+    try:
+        access_key = UserProfile.objects.get(user=request.user).access_uuid  
+    except UserProfile.DoesNotExist:
+        access_key = None
     ChartAccess.remove_expired_access()
     if request.user.userprofile.is_superadmin or request.user.groups.filter(name='Admin').exists():
         charts_data = [{'chart': chart, 'creation_time': chart.creation_date} for chart in chart.objects.all()]
@@ -348,7 +358,7 @@ def listorgchart(request):
                 'days_remaining': days_remaining
             })
 
-    return render(request, "list_orgchart.html", {'charts_data': charts_data})
+    return render(request, "list_orgchart.html", {'charts_data': charts_data, 'access_key':access_key})
 
 @login_required
 def myaccount(request):
@@ -379,12 +389,47 @@ def upload_csv(request):
         # Process the CSV file (e.g., parse and store data)
         org_template = "org_template.html"
         full_html_file_path = os.path.join("myapp", "templates", org_template)
-        result, personCount, departmentNames = generate_org(csv_file,full_html_file_path, title,  selected_user)
+        result, personCount, departmentNames, nodes_json = generate_org(csv_file,full_html_file_path, title,  selected_user)
         run_collectstatic()
         if not result:
             return JsonResponse({'error': "Invalid Binding recheck your data"}, status=500)
         
+        # pass it to the server
+        def convert_numpy(obj):
+            if isinstance(obj, (np.integer, np.int64, np.int32)):
+                return int(obj)
+            elif isinstance(obj, (np.floating, np.float64, np.float32)):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            else:
+                return str(obj) 
         if result:
+            payload = {
+                "title": title,
+                "personCount": personCount,
+                "nodes_json": json.loads(json.dumps(nodes_json, default=convert_numpy))  # Should be serializable (list or JSON string)
+            }
+            # Create the `chart_data` directory if it doesn't exist
+            chart_data_dir = os.path.join(settings.MEDIA_ROOT, "chart_data")
+            os.makedirs(chart_data_dir, exist_ok=True)
+
+            def is_title_safe(title):
+                # Allow only alphanumeric characters, underscore, dash, and space
+                allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- "
+                return all(char in allowed_chars for char in title)
+            # Generate safe filename
+            if not is_title_safe(title):
+                return JsonResponse({'message': 'Title contains invalid characters. Allowed: letters, numbers, space, _, -'}, status=400)
+            filename = f"{title}.json"
+            file_path = os.path.join(chart_data_dir, filename)
+
+            # Save the JSON data to the file
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=4, ensure_ascii=False)
+
+            print(f"Chart data saved to: {file_path}")
+
             
             custom_directory = "csv_files"
             # Construct the path to the file to be deleted
@@ -409,58 +454,120 @@ def upload_csv(request):
         return JsonResponse({"message": "Invalid request"}, status=400)
     
 
-def serve_file(request, file_name):
-    access=False
-    title, _ = os.path.splitext(file_name)
-    if request.user.is_authenticated:
-        user_id = request.user.id
-        # chart_id = get_object_or_404(chart, title=title)
-        user = User.objects.get(id=user_id)
-        chart_ids = chart.objects.filter(allowed_users=user)
-        if (user.is_staff and user.groups.filter(name='Admin')):
-            access=True
-        for charts in chart_ids:
-            if (charts.title==title):
-                access=True
-    #making sphurti chart link public
-    if 'demo' in file_name.lower():
-        access =True
-    if access:
-        # Specify the directory where the files are stored
-        file_path = os.path.join(settings.BASE_DIR,'myapp','templates','orgcharts', file_name)
+# def serve_file(request, file_name):
+#     access=False
+#     title, _ = os.path.splitext(file_name)
+#     if request.user.is_authenticated:
+#         user_id = request.user.id
+#         # chart_id = get_object_or_404(chart, title=title)
+#         user = User.objects.get(id=user_id)
+#         chart_ids = chart.objects.filter(allowed_users=user)
+#         if (user.is_staff and user.groups.filter(name='Admin')):
+#             access=True
+#         for charts in chart_ids:
+#             if (charts.title==title):
+#                 access=True
+#     #making sphurti chart link public
+#     if 'demo' in file_name.lower():
+#         access =True
+#     if access:
+#         # Specify the directory where the files are stored
+#         file_path = os.path.join(settings.BASE_DIR,'myapp','templates','orgcharts', file_name)
         
 
-        # Check if the file exists
-        if os.path.exists(file_path):
-            template = loader.get_template(f"orgcharts/{file_name}")
+#         # Check if the file exists
+#         if os.path.exists(file_path):
+#             template = loader.get_template(f"orgcharts/{file_name}")
 
-            # Render the HTML file as a web page
-            rendered_html = template.render()
+#             # Render the HTML file as a web page
+#             rendered_html = template.render()
 
-            # Return the rendered HTML as an HTTP response
-            return HttpResponse(rendered_html)
+#             # Return the rendered HTML as an HTTP response
+#             return HttpResponse(rendered_html)
 
-        # Return a 404 Not Found response if the file doesn't exist
-        from django.http import Http404
-        raise Http404("File not found")
+#         # Return a 404 Not Found response if the file doesn't exist
+#         from django.http import Http404
+#         raise Http404("File not found")
+#     else:
+#         return HttpResponse(status=403)
+#         # raise HttpResponse(content="Forbidden Access")
+
+@require_POST
+@csrf_exempt
+def serve_file(request):
+    access = False
+    data = json.loads(request.body)
+    # Get user_id and file_name from POST data (or request.GET if you prefer GET)
+    raw_user_id  = data.get('user_id')
+    file_name = data.get('file_name')
+    file_name = file_name.strip('"').strip()
+    if not raw_user_id  or not file_name:
+        return JsonResponse({'message': 'Missing user_id or file_name'}, status=200)
+    try:
+        user_id_str = raw_user_id.strip('"').strip()
+        access_id = uuid.UUID(user_id_str)  # ensure it's a string
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'access': False, 'message': 'Invalid UserId', 'details': str(e)}, status=200)
+    
+
+    title, _ = os.path.splitext(file_name)
+
+    try:
+        userobj = UserProfile.objects.get(access_uuid=access_id).user
+    except UserProfile.DoesNotExist:
+        return JsonResponse({'access': False, 'message': 'User not found'}, status=200)
+
+    if 'demo' in file_name.lower():
+        access = True
+    elif userobj.is_staff and userobj.groups.filter(name='Admin').exists():
+        access = True
     else:
-        return HttpResponse(status=403)
-        # raise HttpResponse(content="Forbidden Access")
+        chart_ids = chart.objects.filter(allowed_users=userobj)
+        for charts in chart_ids:
+            if charts.title == title:
+                access = True
+                break
+    if '/' in file_name or '..' in file_name:
+        return JsonResponse({'access': False, 'message': 'Invalid Company Name'}, status=200)
+
+    full_filename = f"{file_name}.json"
+
+    # Construct full file path
+    file_path = os.path.join(settings.MEDIA_ROOT, 'chart_data', full_filename)
+
+    # Check file existence
+    if not os.path.exists(file_path):
+        return JsonResponse({'access': False, 'message': 'File not found.'}, status=404)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return JsonResponse({'access': access,'chart_title':title, 'nodes_data':data['nodes_json']}, status=200)
+    except json.JSONDecodeError:
+        return JsonResponse({'access': False, 'message': 'Failed to parse JSON.'}, status=500)
+
+    
 
 @user_passes_test(lambda user: user.is_staff and user.groups.filter(name='Admin'))
 def delete_file(request, pk):
+    try:
+        charts = chart.objects.get(pk=pk)
+    except chart.DoesNotExist:
+        return JsonResponse({'error': "Chart not found"}, status=404)
+    
     try: 
-        charts = chart.objects.get(pk=pk) 
-
         # deleting csv file
         custom_directory = "csv_files"
+        json_directory = "chart_data"
+        json_filename = f"{charts.title}.json"  
         csv_filename = f"{charts.title}.csv"
-        html_filename = f"{charts.title}.html"
-        save_path = os.path.join(settings.BASE_DIR, 'myapp','templates','orgcharts')
+        # html_filename = f"{charts.title}.html"
+        # save_path = os.path.join(settings.BASE_DIR, 'myapp','templates','orgcharts')
         # Construct the path to the file to be deleted
         csv_file_path = os.path.join(custom_directory, csv_filename)
         output_csv_path = os.path.join("output_csv", csv_filename)
-        html_file_path = os.path.join(save_path, html_filename)
+        json_file_path = os.path.join(json_directory, json_filename)
+
+        # html_file_path = os.path.join(save_path, html_filename)
         # Create a FileSystemStorage instance
         fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
@@ -469,15 +576,16 @@ def delete_file(request, pk):
             fs.delete(csv_file_path)
         if fs.exists(output_csv_path):
             fs.delete(output_csv_path)
-        if os.path.isfile(html_file_path):
-            os.remove(html_file_path)
+        if fs.exists(json_file_path):
+            fs.delete(json_file_path)
+        # if os.path.isfile(html_file_path):
+        #     os.remove(html_file_path)
         
         charts.delete()
         current_url = request.META.get('HTTP_REFERER')
-
     except:
-        return JsonResponse({'error': "Error Deleting the chart"}, status=500)
-    # Redirect the user back to the current page
+        return JsonResponse({'error': "Error Deleting the Chart File"}, status=500)
+        # Redirect the user back to the current page
     return redirect(current_url)
     
 @user_passes_test(lambda user: user.is_staff and user.groups.filter(name='Admin'))

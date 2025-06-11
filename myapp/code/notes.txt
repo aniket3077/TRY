@@ -10,4 +10,4 @@ its correct email_id value
 8. dont use , anywhere in the file at any cost ( for better work u can save file in .csv format it doesn't take , values)
 in replace you can use any character (mostly '-' '|' are preferrable ) ps: if not then it will give error in the exported .csv file
 9. primary contact no. of the person should be written on the 'contact_number1' column as it will display on the node
-
+10. do not include . in the chart filename 

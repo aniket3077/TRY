@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.utils.text import get_valid_filename
 import os
 from django.core.exceptions import ValidationError
+import uuid
 
 
 class ChartAccess(models.Model):
@@ -123,6 +124,7 @@ class Image(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    access_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     client_of = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='clients')
     is_superadmin = models.BooleanField(default=False)
     past_company1 = models.CharField(max_length=100, blank=True)
