@@ -904,13 +904,13 @@
                         </div>
                     </div>
                     {% endif %}
-                    <div class="free-sample-card" onclick="window.open('https://dash.sphurti.net/charts/Sphurti-WebApp-Solutions%20(Demo)%20-%20Org.html', '_blank')">
+                    <div class="free-sample-card" onclick="window.open('{{ marketplace_settings.sample_link }}', '_blank')">
                         <div class="free-sample-icon">
                             <i class="material-icons">preview</i>
                         </div>
                         <div class="free-sample-content">
-                            <h4>Free Sample</h4>
-                            <p>Preview our demo chart</p>
+                            <h4>{{ marketplace_settings.sample_title }}</h4>
+                            <p>{{ marketplace_settings.sample_description }}</p>
                         </div>
                         <div class="free-sample-arrow">
                             <i class="material-icons">arrow_forward</i>

@@ -42,6 +42,7 @@ urlpatterns = [
     path('user/filter', views.filter_users_by_group, name='filter_users_by_group'), 
     path('marketplace', views.marketplace_dash, name='marketplace_dash'),
     path('marketplace/config', views.admin_marketplace, name='admin_marketplace'),
+    path('marketplace/settings/update/', views.update_marketplace_settings, name='update_marketplace_settings'),
     path('check-login/', views.check_login, name='check_login'),
     path('payment/create/<int:chart_id>/', views.create_payment, name='create_payment'),
     path('update-chart-details/<int:chart_id>/', views.update_chart, name='update-chart'),

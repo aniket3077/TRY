@@ -544,7 +544,7 @@ def serve_file_testing(request):
         user_profile = UserProfile.objects.get(access_uuid=user_uuid_obj)
         userobj = user_profile.user
     except UserProfile.DoesNotExist:
-        return JsonResponse({'access': False, 'message': 'User not found'}, status=200)
+        return JsonResponse({'message': 'User not found'}, status=200)
 
     if 'demo' in file_name.lower():
         access = True
@@ -1393,11 +1393,13 @@ def check_login(request):
     return JsonResponse({'isLoggedIn': True})
 
 def marketplace_dash(request):
+    from .models import MarketplaceSettings
     for company in chart.objects.all():
         # print(company.min_employees, company.max_employees)
         company.save()  # This will trigger the updated save method
     # charts_data = [{'chart': chart, 'last_updated': chart.last_updated, } for chart in chart.objects.all()]
     charts_data = chart.objects.all()
+    marketplace_settings = MarketplaceSettings.get_current_settings()
 
     # Get all unique countries and industries for filters
     all_countries = [
@@ -1459,9 +1461,7 @@ def marketplace_dash(request):
     "Telecommunications", "Textiles", "Think Tanks", "Tobacco", "Translation and Localization", "Transportation/Trucking/Railroad",
     "Urgent Care", "Utilities", "Venture Capital & Private Equity", "Veterinary", "Warehousing", "Wholesale", "Wine and Spirits",
     "Wireless", "Writing and Editing"
-    ]
-
-    # Get cart item count for authenticated users
+    ]    # Get cart item count for authenticated users
     cart_item_count = 0
     if request.user.is_authenticated:
         try:
@@ -1474,7 +1474,8 @@ def marketplace_dash(request):
         'charts_data': charts_data,
         'cart_item_count': cart_item_count,
         'all_countries': list(all_countries),
-        'all_industries': list(all_industries)
+        'all_industries': list(all_industries),
+        'marketplace_settings': marketplace_settings
     })
 
 
@@ -1524,7 +1525,9 @@ def payment_cancel(request):
 
 @user_passes_test(lambda user: user.userprofile.is_superadmin)
 def admin_marketplace(request):
+    from .models import MarketplaceSettings
     charts_data = chart.objects.all()
+    marketplace_settings = MarketplaceSettings.get_current_settings()
     countries = [
     "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antarctica",
     "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas",
@@ -1595,7 +1598,13 @@ def admin_marketplace(request):
     "5001-10000",
     "10001+"
     ]
-    return render(request, 'admin_marketplace.html', {'charts_data':charts_data, 'industries':industries, 'countries':countries, 'employee_ranges':employee_ranges})
+    return render(request, 'admin_marketplace.html', {
+        'charts_data': charts_data, 
+        'industries': industries, 
+        'countries': countries, 
+        'employee_ranges': employee_ranges,
+        'marketplace_settings': marketplace_settings
+    })
 
 @require_POST
 def update_chart(request, chart_id):
@@ -1621,6 +1630,26 @@ def update_chart(request, chart_id):
 
     messages.success(request, 'Chart details updated successfully!')
     return redirect('admin_marketplace')  # Replace 'chart-list' with the name of your chart listing view
+
+
+@require_POST
+def update_marketplace_settings(request):
+    """Update marketplace settings including sample link"""
+    from .models import MarketplaceSettings
+    
+    # Get or create marketplace settings
+    settings = MarketplaceSettings.get_current_settings()
+    
+    # Update settings from form data
+    settings.sample_link = request.POST.get('sample_link', settings.sample_link)
+    settings.sample_title = request.POST.get('sample_title', settings.sample_title)
+    settings.sample_description = request.POST.get('sample_description', settings.sample_description)
+    
+    # Save the updated settings
+    settings.save()
+    
+    messages.success(request, 'Marketplace settings updated successfully!')
+    return redirect('admin_marketplace')
 
 
 # ======== CART FUNCTIONALITY ========

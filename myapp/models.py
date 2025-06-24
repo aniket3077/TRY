@@ -9,6 +9,43 @@ import uuid
 from decimal import Decimal
 
 
+class MarketplaceSettings(models.Model):
+    sample_link = models.URLField(
+        max_length=500, 
+        default="https://dash.sphurti.net/charts/Sphurti-WebApp-Solutions%20(Demo)%20-%20Org.html",
+        help_text="URL for the free sample chart link"
+    )
+    sample_title = models.CharField(
+        max_length=100, 
+        default="Free Sample",
+        help_text="Title for the sample link"
+    )
+    sample_description = models.CharField(
+        max_length=200, 
+        default="Preview our demo chart",
+        help_text="Description for the sample link"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Marketplace Settings"
+        verbose_name_plural = "Marketplace Settings"
+    
+    def __str__(self):
+        return f"Marketplace Settings - Updated: {self.updated_at.strftime('%Y-%m-%d')}"
+    
+    @classmethod
+    def get_current_settings(cls):
+        """Get the current active marketplace settings"""
+        settings = cls.objects.filter(is_active=True).first()
+        if not settings:
+            # Create default settings if none exist
+            settings = cls.objects.create()
+        return settings
+
+
 class CompanyInfo(models.Model):
     name = models.CharField(max_length=200, default="InsideOrgs - Sphurti WebApp Pvt. Ltd.")
     address_line1 = models.CharField(max_length=200, default="House Number A2/6, Back Side of Mhada Colony, Raj Swapnpurti Elite Row,")

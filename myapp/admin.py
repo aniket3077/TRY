@@ -33,7 +33,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from django.http import HttpResponseRedirect
 from django.db import models
-from .models import UserProfile, ChartAccess, Cart, CartItem, Cart, CartItem, CompanyInfo, Order, OrderItem, CustomerInfo, chart, Coupon, RefundLog, CouponUsage
+from .models import UserProfile, ChartAccess, Cart, CartItem, Cart, CartItem, CompanyInfo, Order, OrderItem, CustomerInfo, chart, Coupon, RefundLog, CouponUsage, MarketplaceSettings
 
 class UserProfileAdmin(admin.ModelAdmin):
     readonly_fields = ('access_uuid',)
@@ -520,3 +520,35 @@ class ChartAdmin(admin.ModelAdmin):
             'all': ('admin/css/custom_chart_admin.css',)
         }
         js = ('admin/js/chart_admin.js',)
+
+
+@admin.register(MarketplaceSettings)
+class MarketplaceSettingsAdmin(admin.ModelAdmin):
+    list_display = ('sample_title', 'sample_description', 'is_active', 'updated_at')
+    list_filter = ('is_active', 'created_at', 'updated_at')
+    search_fields = ('sample_title', 'sample_description', 'sample_link')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Sample Link Configuration', {
+            'fields': ('sample_link', 'sample_title', 'sample_description'),
+            'description': 'Configure the free sample link displayed in the marketplace'
+        }),
+        ('Status', {
+            'fields': ('is_active',),
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        """Only allow adding if no active settings exist"""
+        return not MarketplaceSettings.objects.filter(is_active=True).exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of the last active settings"""
+        if obj and obj.is_active:
+            return MarketplaceSettings.objects.filter(is_active=True).count() > 1
+        return True
