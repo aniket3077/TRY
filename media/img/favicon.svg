@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 1764.649 1764.649" preserveAspectRatio="xMidYMid meet" version="1.0">
+  <defs>
+    <clipPath id="circle-clip">
+      <circle cx="882.324" cy="882.324" r="882.324"/>
+    </clipPath>
+    <linearGradient x1="0%" y1="0%" x2="100%" y2="0%" id="orange-gradient">
+      <stop stop-opacity="1" stop-color="rgb(99.598694%, 51.799011%, 39.199829%)" offset="0"/>
+      <stop stop-opacity="1" stop-color="rgb(99.598694%, 43.167114%, 60.232544%)" offset="1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Circular background with gradient -->
+  <circle cx="882.324" cy="882.324" r="882.324" fill="url(#orange-gradient)"/>
+  
+  
+</svg>
