@@ -174,7 +174,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 BASE_URL = info.BASE_URL  # Update with your actual site URL
 
