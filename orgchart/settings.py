@@ -58,6 +58,7 @@ SECRET_KEY = 'django-insecure-t=t6_r!s!x#d0)x5!6216v5)2@&wymv!w)@x&qw8u2m#ctm$*(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = info.DEBUG # Set to True for development to serve static/media files
 
+# Test comment for Jenkins CI/CD pipeline verification
 ALLOWED_HOSTS = ['insideorgs.sphurti.net','127.0.0.1','localhost']
 
 CSRF_TRUSTED_ORIGINS = [
