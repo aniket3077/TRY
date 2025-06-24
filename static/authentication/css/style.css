@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-image: url('/static/background.webp'); 
+    background-image: url('/media/img/background.webp'); 
     background-size: cover; 
     background-position: center; 
     color: #fff;

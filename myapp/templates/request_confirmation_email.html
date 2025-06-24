@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OrgChart Request Confirmation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #37474f;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .email-header {
+            background: #4caf50;
+            color: white;
+            padding: 30px 24px;
+            text-align: center;
+        }
+        
+        .email-header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        
+        .email-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .email-content {
+            padding: 32px 24px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2e7d32;
+            margin-bottom: 16px;
+        }
+        
+        .message {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #546e7a;
+            margin-bottom: 24px;
+        }
+        
+        .request-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .request-details h3 {
+            color: #2e7d32;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        
+        .detail-value {
+            color: #6c757d;
+            flex: 1;
+        }
+        
+        .highlight-box {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .highlight-box p {
+            margin: 0;
+            color: #2e7d32;
+            font-weight: 500;
+        }
+        
+        .email-footer {
+            background: #fafafa;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .footer-text {
+            font-size: 13px;
+            color: #78909c;
+            margin-bottom: 8px;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>✅ Request Confirmation</h1>
+            <p>Your organization chart request has been received</p>
+        </div>
+        
+        <div class="email-content">
+            <div class="greeting">
+                Hello {{ user.first_name }}!
+            </div>
+            
+            <div class="message">
+                <p>Thank you for submitting your organization chart request. We have received your request and our team will review it promptly.</p>
+            </div>
+            
+            <div class="request-details">
+                <h3>📋 Your Request Details:</h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Industry Type:</div>
+                    <div class="detail-value">{{ industry_type }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Organization Name:</div>
+                    <div class="detail-value">{{ company_name }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Department Name:</div>
+                    <div class="detail-value">{{ department_name }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Designation:</div>
+                    <div class="detail-value">{{ designation }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Website:</div>
+                    <div class="detail-value">{{ company_websites }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Location:</div>
+                    <div class="detail-value">{{ location }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Required Authorities:</div>
+                    <div class="detail-value">{{ required_authorities }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Include Direct Numbers:</div>
+                    <div class="detail-value">{{ include_numbers }}</div>
+                </div>
+                
+                {% if extra_insights %}
+                <div class="detail-row">
+                    <div class="detail-label">Additional Insights:</div>
+                    <div class="detail-value">{{ extra_insights }}</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="highlight-box">
+                <p>🕐 We typically process requests within 2-3 business days. You'll receive an update once we begin working on your organization chart.</p>
+            </div>
+            
+            <div class="message">
+                <p>If you have any questions regarding this request, please don't hesitate to contact us. We're here to help!</p>
+            </div>
+        </div>
+        
+        <div class="email-footer">
+            <div class="footer-text">
+                Thank you for choosing <span class="company-name">InsideOrgs</span>
+            </div>
+            <div class="footer-text">
+                This email was sent automatically. Please do not reply to this email.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

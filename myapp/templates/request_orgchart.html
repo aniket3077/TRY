@@ -4,86 +4,485 @@
 
 {% block content %}
 
+<style>
+/* Modern form styling */
+.form-container {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-top: 20px;
+}
 
-<h2 style="text-align: center; margin-bottom: 50px;">Request InsideOrgs</h2>
+.form-title {
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 600;
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-group-modern {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.form-control {
+    border: 2px solid #e3e8ef;
+    border-radius: 12px;
+    padding: 15px 18px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.form-control:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 4px rgba(44, 62, 80, 0.1);
+    outline: none;
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+}
+
+.form-control::placeholder {
+    color: #a0a8b1;
+    opacity: 1;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+input[type="number"].form-control {
+    min-height: auto;
+}
+
+.form-check {
+    padding: 15px 20px;
+    background: rgba(44, 62, 80, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(44, 62, 80, 0.1);
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-check:hover {
+    background: rgba(44, 62, 80, 0.08);
+    border-color: rgba(44, 62, 80, 0.2);
+}
+
+.form-check-input {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    border-radius: 6px;
+    border: 2px solid #2c3e50;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3);
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 15px 40px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+.col-md-6 {
+    padding: 0 15px;
+}
+
+/* Floating label effect */
+.form-group-floating {
+    position: relative;
+}
+
+.form-group-floating .form-control:focus + .form-label,
+.form-group-floating .form-control:not(:placeholder-shown) + .form-label {
+    transform: translateY(-25px) scale(0.85);
+    color: #2c3e50;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 25px;
+        margin: 10px;
+        border-radius: 15px;
+        position: relative;
+    }
+    
+    .form-title {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+    
+    .col-md-6 {
+        padding: 0 10px;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    .confirmation-message {
+        min-width: 280px;
+        padding: 25px 30px;
+    }
+}
+
+/* Animation for form appearance */
+.form-container {
+    animation: slideInUp 0.6s ease-out;
+    position: relative;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Subtle hover effects for form groups */
+.form-group-modern:hover .form-label {
+    color: #2c3e50;
+}
+
+/* Required field indicator */
+.form-label[required]::after {
+    content: " *";
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Confirmation message styling */
+.confirmation-message {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    text-align: center;
+    min-width: 350px;
+    max-width: 90%;
+    animation: confirmationSlideIn 0.4s ease-out;
+}
+
+.confirmation-message h4 {
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.confirmation-message p {
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.confirmation-message .btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirmation-message .btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 3px solid #ffffff;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes confirmationSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+
+<h2 class="form-title">Request InsideOrgs</h2>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <form id="orgchartForm" method="post">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-6">
-		<div class="mb-3">
-                            <label for="company_name" class="form-label">Organization Name(s):</label>
-                            <textarea class="form-control" id="company_name" name="company_name" required placeholder="For e.g. Wipro, Amazon, Alphabet, etc."></textarea>
-                        </div>
-                       </div>
+        <div class="col-md-10">            <div class="form-container" id="formContainer">
+                <form id="orgchartForm" method="post">
+                    {% csrf_token %}
+                    <div class="row">
                         <div class="col-md-6">
-                            <div class="mb-3">
+                            <div class="form-group-modern">
+                                <label for="company_name" class="form-label">Organization Name(s):</label>
+                                <textarea class="form-control" id="company_name" name="company_name" required placeholder="For e.g. Wipro, Amazon, Alphabet, etc."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
                                 <label for="company_url" class="form-label">Organization Website(s):</label>
-                                <textarea class="form-control" id="company_url" name="company_url" required data-bs-toggle="tooltip" title="Provide here URL(s) of the Company Name(s) you given above" placeholder="For e.g. 'https://wipro.com', https://insideorgs.com, etc. "></textarea>
+                                <textarea class="form-control" id="company_url" name="company_url" required data-bs-toggle="tooltip" title="Provide here URL(s) of the Company Name(s) you given above" placeholder="For e.g. 'https://wipro.com', https://insideorgs.sphurti.net, etc. "></textarea>
                             </div>
-                        
-                    </div></div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="designation" class="form-label">Designation(s):</label>
-                        <textarea class="form-control" id="designation" name="designation" required placeholder="For e.g. Managing Director, Head of Department, etc."></textarea>
+                        </div>
                     </div>
-               
-            </div>
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="department_name" class="form-label">Department Name(s):</label>
-                    <textarea class="form-control" id="department_name" name="department_name" required placeholder="For e.g. IT, Finance, Marketing, etc."></textarea>
-                </div>
-            </div></div>
-                <div class="row">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="designation" class="form-label">Designation(s):</label>
+                                <textarea class="form-control" id="designation" name="designation" required placeholder="For e.g. Managing Director, Head of Department, etc."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="department_name" class="form-label">Department Name(s):</label>
+                                <textarea class="form-control" id="department_name" name="department_name" required placeholder="For e.g. IT, Finance, Marketing, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="industry_type" class="form-label">Industry Type(s):</label>
+                                <textarea class="form-control" id="industry_type" name="industry_type" required placeholder="For e.g. IT, Financial Services, Telecom, etc."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="location" class="form-label">Location(s): </label>
+                                <textarea class="form-control" id="location" name="location" required placeholder="For e.g. India, USA, UK, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>  
                     
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="industry_type" class="form-label">Industry Type(s):</label>
-                            <textarea class="form-control" id="industry_type" name="industry_type" required placeholder="For e.g. IT, Financial Services, Telecom, etc."></textarea>
-                        </div>
-                       
-                    </div>
-                      
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="location" class="form-label">Location(s): </label>
-                            <textarea class="form-control" id="location" name="location" required placeholder="For e.g. India, USA, UK, etc."></textarea>
-                        </div>
-                    </div>
-                </div>  
-                
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <div class="mt-3">
-                            <label for="required_authorities" class="form-label">Required Authorities [Count]:</label>
-                            <input type="number" class="form-control" id="required_authorities" name="required_authorities" required placeholder="For e.g. 50, 100, 150, etc.">
-                        </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <div class="mt-3">
+                                    <label for="required_authorities" class="form-label">Required Authorities [Count]:</label>
+                                    <input type="number" class="form-control" id="required_authorities" name="required_authorities" required placeholder="For e.g. 50, 100, 150, etc.">
+                                </div>
 
-                            <div class="mb-0 form-check">
-                                <input type="checkbox" style="width: 1rem; height: 1rem;" class="form-check-input" id="number_inclusion" name="number_inclusion">
-                                <label class="form-check-label ml-2" for="number_inclusion">Include Direct Numbers</label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="number_inclusion" name="number_inclusion">
+                                    <label class="form-check-label" for="number_inclusion">Include Direct Numbers</label>
+                                </div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="extra_insights" class="form-label">Any Other Insight(s) [Optional]: </label>
+                                <textarea class="form-control" id="extra_insights" name="extra_insights" placeholder="Any other insights such as ATS, Job Openings, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>                    <div class="row justify-content-center">
+                        <div class="col-md-4">
+                            <button id="submit" type="submit" class="btn btn-primary w-100">Submit Request</button>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label for="extra_insights" class="form-label">Any Other Insight(s) [Optional]: </label>
-                        <textarea class="form-control" id="extra_insights" name="extra_insights" placeholder="Any other insights such as ATS, Job Openings, etc."></textarea>
-                        
-                    </div>
-                </div>
-                <div class="row justify-content-center">
-                <button id="submit" type="submit" class="btn btn-primary">Submit Request</button></div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('orgchartForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent default form submission
+    
+    const formContainer = document.getElementById('formContainer');
+    const submitButton = document.getElementById('submit');
+    
+    // Disable the submit button to prevent multiple submissions
+    submitButton.disabled = true;
+    submitButton.innerHTML = 'Submitting...';
+    
+    // Create full-page overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'form-overlay';
+    document.body.appendChild(overlay);
+    
+    // Create loading message and append to overlay
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'confirmation-message';
+    loadingMessage.innerHTML = `
+        <div class="loading-spinner"></div>
+        <h4>Submitting Request...</h4>
+        <p>Please wait while we process your organization chart request.</p>
+    `;
+    overlay.appendChild(loadingMessage);
+    
+    // Prepare form data
+    const formData = new FormData(this);
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Make AJAX request
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        }
+        throw new Error('Network response was not ok');
+    })    .then(data => {
+        // Remove loading message
+        overlay.removeChild(loadingMessage);
+        
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'confirmation-message';
+        successMessage.innerHTML = `
+            <h4>✓ Request Submitted Successfully!</h4>
+            <p>Your organization chart request has been submitted and is being processed. We'll get back to you soon with the details.</p>
+            <button class="btn" onclick="closeConfirmation()">Close</button>
+        `;
+        overlay.appendChild(successMessage);
+        
+        // Reset form
+        document.getElementById('orgchartForm').reset();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        
+        // Remove loading message
+        overlay.removeChild(loadingMessage);
+        
+        // Show error message
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'confirmation-message';
+        errorMessage.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+        errorMessage.innerHTML = `
+            <h4>⚠ Submission Failed</h4>
+            <p>There was an error submitting your request. Please try again or contact support.</p>
+            <button class="btn" onclick="closeConfirmation()">Close</button>
+        `;
+        overlay.appendChild(errorMessage);
+        
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit Request';
+    });    
+    // Close confirmation function
+    window.closeConfirmation = function() {
+        const overlay = document.querySelector('.form-overlay');
+        
+        if (overlay) {
+            document.body.removeChild(overlay);
+        }
+        
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit Request';
+    };
+    
+    // Close on overlay click (but not on confirmation message click)
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            closeConfirmation();
+        }
+    });
+});
+</script>
 
 
 

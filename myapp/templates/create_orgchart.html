@@ -41,7 +41,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ chart.title }}</td>
                 <td>{{ chart.creation_date }}</td>
-                <td><a href="https://103.181.102.182:3000/view?company={{ chart.title|urlencode }}&access_id={{ access_key }}" class="btn visitbtn" target="_blank">Visit</a></td>
+                <td><a href="{% url 'view_orgchart_temp' chart.uuid %}" class="btn visitbtn" target="_blank">Visit</a></td>
                 <td>
                     <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ chart.pk }}">
                         Delete

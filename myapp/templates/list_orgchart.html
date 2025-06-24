@@ -65,7 +65,7 @@
                 {% if user.is_staff %}
                 <td>{{ chart_data.creation_time }}</td>
                 {% endif %}
-                <td><a href="https://103.181.102.182:3000/view?company={{ chart.title|urlencode }}&access_id={{ access_key }}" class="btn visitbtn" target="_blank">Visit</a></td>
+                <td><a href="{% url 'view_orgchart_temp' chart_data.chart.uuid %}" class="btn visitbtn" target="_blank">Visit</a></td>
                 {% if user.is_staff %}
                 
                 {% for group in user.groups.all %}

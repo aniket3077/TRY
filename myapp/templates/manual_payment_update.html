@@ -1,0 +1,441 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Update Payment Status - InsideOrgs{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom styles matching existing dashboard */
+    .details {
+        position: relative;
+        width: 100%;
+        padding: 20px;
+        display: grid;
+        grid-gap: 30px;
+    }
+    
+    .details .recentOrders {
+        position: relative;
+        display: grid;
+        min-height: 450px;
+        background: var(--white);
+        padding: 20px;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+    }
+    
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .cardHeader h2 {
+        font-weight: 600;
+        color: var(--blue);
+    }
+    
+    .btn-back {
+        position: relative;
+        padding: 8px 16px;
+        background: #6c757d;
+        text-decoration: none;
+        color: var(--white);
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-back:hover {
+        background: #5a6268;
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--blue);
+    }
+    
+    .form-section h3 {
+        color: var(--blue);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .order-info {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .order-info h4 {
+        color: #1976d2;
+        margin-bottom: 10px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .form-row.full-width {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--black1);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+      .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .status-refunded {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-expired {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+    
+    .payment-method-badge {
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .payment-razorpay {
+        background: #3395ff;
+        color: white;
+    }
+    
+    .payment-bank-transfer {
+        background: #28a745;
+        color: white;
+    }
+    
+    .payment-marked-paid {
+        background: #6f42c1;
+        color: white;
+    }
+    
+    .payment-unknown {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .submit-section {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--blue);
+    }
+    
+    .btn-update {
+        background: var(--blue);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .btn-update:hover {
+        background: #0056b3;
+    }
+    
+    .required {
+        color: #dc3545;
+    }
+</style>
+
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Update Payment Status</h2>
+            <a href="{% url 'admin_order_detail' order.id %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back to Order
+            </a>
+        </div>
+
+        <div class="order-info">
+            <h4><i class="bi bi-receipt"></i> Order Information</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Order ID</span>
+                    <span class="info-value">{{ order.order_id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Customer</span>
+                    <span class="info-value">{{ order.customer_name }} ({{ order.user.email }})</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Amount</span>
+                    <span class="info-value">${{ order.total_amount }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Current Status</span>
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>                <div class="info-item">
+                    <span class="info-label">Current Payment ID</span>
+                    <span class="info-value">{{ order.razorpay_payment_id|default:"Not provided" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payment Method</span>
+                    <span class="info-value">
+                        {% if order.payment_method == 'razorpay' %}
+                            <span class="payment-method-badge payment-razorpay">Razorpay</span>
+                        {% elif order.payment_method == 'bank_transfer' %}
+                            <span class="payment-method-badge payment-bank-transfer">Bank Transfer</span>
+                        {% elif order.payment_method == 'marked_paid' %}
+                            <span class="payment-method-badge payment-marked-paid">Marked as Paid</span>
+                        {% else %}
+                            <span class="payment-method-badge payment-unknown">{{ order.payment_method|default:"Not specified" }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Order Date</span>
+                    <span class="info-value">{{ order.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3><i class="bi bi-credit-card"></i> Payment Status Update</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_payment_status" class="required">
+                        Payment Status <span class="required">*</span>
+                    </label>
+                    <select name="payment_status" id="id_payment_status" required>
+                        <option value="" disabled>Select status</option>
+                        {% if order.status == 'pending' %}
+                            <option value="pending" selected>Pending</option>
+                            <option value="completed">Completed</option>
+                        {% elif order.status == 'completed' %}
+                            <option value="completed" selected>Completed</option>
+                            <option value="refunded">Refunded</option>
+                        {% elif order.status == 'failed' %}
+                            <option value="failed" selected disabled>Failed</option>
+                        {% elif order.status == 'refunded' %}
+                            <option value="refunded" selected disabled>Refunded</option>
+                        {% elif order.status == 'expired' %}
+                            <option value="expired" selected disabled>Expired</option>
+                        {% endif %}
+                    </select>
+                    </div>
+                     {% if order.status != 'expired' and order.status != 'refunded'  %}
+                    <div class="form-group">
+                        <label for="id_transaction_id">Transaction/Payment ID</label>
+                        <input type="text" name="transaction_id" id="id_transaction_id" 
+                               value="{{ order.razorpay_payment_id|default:'' }}"
+                               placeholder="Enter transaction/payment ID">
+                    </div>
+                    {% endif %}
+                     {% if order.status == 'refunded'  %}
+                     <div class="form-group">
+                        <label for="disabled-id_transaction_id">Transaction/Payment ID</label>
+                        <input type="text" name="transaction_id" id="disabled-id_transaction_id" 
+                             readonly  value="{{ order.razorpay_payment_id|default:'' }}"
+                               placeholder="Enter transaction/payment ID">
+                    </div>
+                    <div class="form-group" id="disabled-refund-transaction-group">
+                        <label for="disabled-id_refund_transaction_id">Refund Transaction ID</label>
+                        <input type="text" name="refund_transaction_id" id="disabled-id_refund_transaction_id" 
+                         readonly value="{{ refund_log.refund_id|default:'' }}"  placeholder="Enter refund transaction ID">
+                    </div>
+                    <div class="form-group" id="disabled-refund-reason-group">
+                        <label for="disabled-id_refund_reason">Refund Reason</label>
+                        <textarea name="refund_reason" id="disabled-id_refund_reason" rows="3"
+                         readonly   placeholder="Enter reason for refund" class="form-control">{{ refund_log.reason|default:'' }}</textarea>
+                    </div>
+                    {% endif %}
+                     {% if order.status != 'refunded' %}
+                     <div class="form-group" id="refund-transaction-group" style="display: none;">
+                        <label for="id_refund_transaction_id">Refund Transaction ID</label>
+                        <input type="text" name="refund_transaction_id" id="id_refund_transaction_id" 
+                          value="{{ refund_log.refund_id|default:'' }}"  placeholder="Enter refund transaction ID">
+                    </div>
+                    <div class="form-group" id="refund-reason-group" style="display: none;">
+                        <label for="id_refund_reason">Refund Reason</label>
+                        <textarea name="refund_reason" id="id_refund_reason" rows="3"
+                            placeholder="Enter reason for refund" class="form-control">{{ refund_log.reason|default:'' }}</textarea>
+                    </div>
+                                        
+                    {% endif %}
+
+
+                </div>
+                
+                <div class="form-row full-width">
+                    <div class="form-group">
+                        <label for="id_payment_notes">Payment Notes</label>
+                        <textarea name="payment_notes" id="id_payment_notes" rows="3" 
+                                  placeholder="Add any notes about this payment update (optional)"></textarea>
+                    </div>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #856404; margin-bottom: 10px;"><i class="bi bi-exclamation-triangle"></i> Important Notes</h4>
+                    <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                        <li>Changing status to "Completed" will automatically grant chart access to the customer</li>
+                        <li>Customer will receive a confirmation email if status is changed to "Completed"</li>
+                        <li>Make sure to enter the correct transaction ID for record keeping</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="btn-update">
+                    <i class="bi bi-check-circle"></i> Update Payment Status
+                </button>
+                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                    This action will update the order and may trigger automated processes
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+        const statusSelect = document.getElementById('id_payment_status');
+        const transactionInput = document.getElementById('id_transaction_id');
+        const refundGroup = document.getElementById('refund-transaction-group');
+        const refundReasonGroup = document.getElementById('refund-reason-group');
+        const refundInput = document.getElementById('id_refund_transaction_id');
+
+        let previousStatus = statusSelect.value;
+
+        function handleStatusChange() {
+            const selected = statusSelect.value;
+
+            if ((selected === 'completed' || selected === 'refunded') && selected !== previousStatus) {
+                const confirmMsg = selected === 'completed'
+                    ? 'Once marked as Completed, it cannot be changed later. Are you sure?'
+                    : 'Once marked as Refunded, it cannot be changed later. Are you sure?';
+
+                if (!confirm(confirmMsg)) {
+                    statusSelect.value = previousStatus;
+                    return;
+                }
+            }
+
+            // Track current selection
+            previousStatus = selected;
+
+            // Show/hide refund input
+            if (selected === 'refunded') {
+                refundGroup.style.display = 'flex';
+                refundReasonGroup.style.display = 'flex';
+            } else {
+                refundGroup.style.display = 'none';
+                refundReasonGroup.style.display = 'none';
+            }
+
+            // Handle input disabling
+            if (selected === 'completed') {
+                transactionInput.setAttribute('readonly', true);
+            } else if (selected !== 'refunded') {
+                transactionInput.removeAttribute('readonly');
+            }
+        }
+
+        // Initial state setup
+        handleStatusChange();
+
+        // Listen for changes
+        statusSelect.addEventListener('change', handleStatusChange);
+
+});
+</script>
+{% endblock %}

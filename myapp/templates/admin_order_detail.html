@@ -1,0 +1,670 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Order #{{ order.id }} Details - InsideOrgs{% endblock %}
+
+{% block content %}
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Order #{{ order.id }} Details</h2>            <div class="header-actions">
+                <a href="/orders/" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Orders
+                </a>
+                <a href="{% url 'manual_payment_update' order.id %}" class="btn btn-warning">
+                    <i class="bi bi-credit-card"></i> Update Payment
+                </a>
+              
+                <span class="status-badge status-{{ order.status }}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+        </div>            <div class="row">
+                <!-- Order Information -->
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="info-header">
+                            <h5><i class="bi bi-info-circle"></i> Order Information</h5>
+                        </div>
+                        <div class="info-body">
+                            <div class="info-row">
+                                <span class="label">Order ID:</span>
+                                <span class="value">#{{ order.id }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Order Date:</span>
+
+                                <span class="value">{{ order.created_at|date:'F d, Y at H:i' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Total Amount:</span>
+                                <span class="value amount">${{ order.total_amount }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Currency:</span>
+                                <span class="value">{{ order.currency|upper }}</span>
+                            </div>                            <div class="info-row">
+                                <span class="label">Items Count:</span>
+                                <span class="value">{{ order.order_items.count }} item{{ order.order_items.count|pluralize }}</span>
+                            </div>                            {% if order.created_by %}
+                            <div class="info-row">
+                                <span class="label">Created By:</span>
+                                <span class="value">
+                                    <strong>{{ order.created_by.username }}</strong>
+                                    <small class="text-muted">(Manual Order)</small>
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% if has_coupon %}
+                            <div class="info-row">
+                                <span class="label">Coupon Applied:</span>
+                                <span class="value">
+                                    <span class="badge badge-success">
+                                        <i class="bi bi-tag-fill"></i> {{ order.coupon_code }}
+                                    </span>
+                                    {% if coupon_usage %}
+                                        <small class="text-muted d-block">Discount: ${{ coupon_usage.discount_amount|floatformat:2 }}</small>
+                                    {% elif discount_amount > 0 %}
+                                        <small class="text-muted d-block">Discount: ${{ discount_amount|floatformat:2 }}</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="col-md-6">
+                    <div class="info-card">
+                        <div class="info-header">
+                            <h5><i class="bi bi-person"></i> Customer Information</h5>
+                        </div>
+                        <div class="info-body">
+                            <div class="info-row">
+                                <span class="label">Name:</span>
+                                <span class="value">{{ order.user.first_name }} {{ order.user.last_name }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Email:</span>
+                                <span class="value">{{ order.user.email }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Username:</span>
+                                <span class="value">{{ order.user.username }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Join Date:</span>
+                                <span class="value">{{ order.user.date_joined|date:'F d, Y' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">User Type:</span>
+                                <span class="value">
+                                    {% if order.user.is_staff %}Staff{% else %}Customer{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="info-card">
+                <div class="info-header">
+                    <h5><i class="bi bi-credit-card"></i> Payment Information</h5>
+                </div>                <div class="info-body">
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="info-row">
+                                <span class="label">Payment Method:</span>
+                                <span class="value">
+                                    {% if order.payment_method == 'razorpay' %}
+                                        <span class="payment-method-badge razorpay">
+                                            <i class="bi bi-credit-card"></i> Razorpay
+                                        </span>
+                                    {% elif order.payment_method == 'bank_transfer' %}
+                                        <span class="payment-method-badge bank-transfer">
+                                            <i class="bi bi-bank"></i> Bank Transfer
+                                        </span>
+                                    {% elif order.payment_method == 'marked_paid' %}
+                                        <span class="payment-method-badge marked-paid">
+                                            <i class="bi bi-person-check"></i> Marked as Paid
+                                        </span>
+                                    {% else %}
+                                        <span class="payment-method-badge unknown">
+                                            <i class="bi bi-question-circle"></i> {{ order.payment_method|default:"Unknown" }}
+                                        </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% if order.payment_method == 'razorpay' %}
+                        <div class="col-md-3">
+                            <div class="info-row">
+                                <span class="label">Razorpay Order ID:</span>
+                                <span class="value">
+                                    {% if order.razorpay_order_id %}
+                                        <code>{{ order.razorpay_order_id }}</code>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </span>
+                                
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-row">
+                                <span class="label">Razorpay Payment ID:</span>
+                                <span class="value">
+                                    {% if order.razorpay_payment_id %}
+                                        <code>{{ order.razorpay_payment_id }}</code>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                     <div class="col-md-3">
+                            <div class="info-row">
+                                <span class="label">Transaction ID:</span>
+                                <span class="value">
+                                    {% if order.razorpay_payment_id %}
+                                        <code>{{ order.razorpay_payment_id }}</code>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </span>
+                                
+                            </div>
+                        </div>
+                        <div class="col-md-3"></div>
+                                {% endif %}
+                        <div class="col-md-3">
+                            <div class="info-row">
+                                <span class="label">Payment Status:</span>
+                                <span class="value">
+                                    <span class="fs-2 status-badge  status-{{ order.status }}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="info-card">
+                <div class="info-header">
+                    <h5><i class="bi bi-list-ul"></i> Order Items</h5>
+                </div>
+                <div class="info-body mt-5">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Chart</th>
+                                    <th>Description</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.order_items.all %}
+                                <tr>
+                                    <td>
+                                        <div class="chart-info">
+                                            <strong>{{ item.chart.title }}</strong>
+                                            {% if item.chart.image %}
+                                            <div class="chart-preview">
+                                                <img src="{{ item.chart.image.url }}" alt="{{ item.chart.title }}" class="chart-thumbnail">
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="chart-description">
+                                           <span class="text-muted">Industry: {{ item.chart.industry|default:"Not specified" }}</span><br>
+                                            <span class="text-muted">Country: {{ item.chart.country|default:"Not specified" }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="price">${{ item.price_at_purchase }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="quantity">1</span>
+                                    </td>
+                                    <td>
+                                        <span class="total">${{ item.price_at_purchase }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-right"><strong>Subtotal:</strong></td>
+                                    <td>
+                                        ${{ subtotal|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                {% if has_coupon and discount_amount > 0 %}
+                                <tr class="coupon-discount">
+                                    <td colspan="4" class="text-right">
+                                        <strong>
+                                            <i class="bi bi-tag-fill text-success"></i> 
+                                            Coupon Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}:
+                                        </strong>
+                                    </td>
+                                    <td class="text-success">
+                                        <strong>-${{ discount_amount|floatformat:2 }}</strong>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td colspan="4" class="text-right"><strong>Processing Fee (5.5%):</strong></td>
+                                    <td>
+                                        ${{ processing_fee|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td colspan="4" class="text-right"><strong>Total Amount:</strong></td>
+                                    <td><strong class="final-total">${{ total|floatformat:2 }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div class="info-card">
+                <div class="info-header">
+                    <h5><i class="bi bi-gear"></i> Actions</h5>
+                </div>
+                <div class="info-body">
+                    <div class="action-buttons">
+                        <a href="/orders/" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Orders
+                        </a>
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print Order
+                        </button>
+                        <a href="/orders/{{ order.id }}/pdf/" class="btn btn-success">
+                            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                        </a>
+                        {% if order.user.email %}
+                        <a href="/orders/{{ order.id }}/email-invoice/" class="btn btn-info">
+                            <i class="bi bi-envelope"></i> Email Invoice
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div></div>
+    </div>
+</div>
+
+<style>
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 20px;
+        background: var(--white);
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .cardHeader h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--black1);
+        margin: 0;
+    }
+    
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .fs-2 {
+        font-size: 1rem !important;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .btn-secondary {
+        background: var(--black2);
+        color: var(--white);
+    }
+    
+    .btn-primary {
+        background: var(--blue);
+        color: var(--white);
+    }
+    
+    .btn-info {
+        background: #19d4ca;
+        color: var(--white);
+    }
+    
+    .btn-success {
+        background: #8de02c;
+        color: var(--white);
+    }
+    
+    .info-card {
+        background: var(--white);
+        padding: 20px;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .info-header {
+        background: var(--blue);
+        color: var(--white);
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin: -20px -20px 20px -20px;
+    }
+    
+    .info-header h5 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .info-body {
+        padding: 0;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .label {
+        font-weight: 600;
+        color: var(--black2);
+        flex: 0 0 40%;
+    }
+    
+    .value {
+        flex: 1;
+        text-align: right;
+        color: var(--black1);
+    }
+    
+    .amount, .final-total {
+        font-size: 18px;
+        font-weight: bold;
+        color: #8de02c;
+    }
+    
+    .table-container {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    
+    .table-container table thead td {
+        font-weight: 600;
+        background: var(--gray);
+        padding: 12px;
+        color: var(--black1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-container table tbody tr {
+        color: var(--black1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container table tbody tr:hover {
+        background: #e3f2fd !important;
+        color: var(--blue) !important;
+    }
+    
+    .table-container table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .table-container table tr td {
+        padding: 12px;
+    }
+    
+    .chart-info strong {
+        color: var(--blue);
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .chart-thumbnail {
+        width: 60px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    
+    .chart-preview {
+        margin-top: 5px;
+    }
+    
+    .chart-description {
+        max-width: 200px;
+        color: var(--black2);
+        font-size: 14px;
+    }
+    
+    .price, .total {
+        font-weight: 600;
+        color: #8de02c;
+    }
+    
+    .quantity {
+        font-weight: 600;
+        background: var(--gray);
+        padding: 4px 8px;
+        border-radius: 12px;
+        color: var(--blue);
+        font-size: 12px;
+    }
+    
+    .total-row {
+        background-color: var(--gray);
+        font-weight: bold;
+    }
+    
+    .total-row td {
+        border-top: 2px solid var(--blue);
+        padding: 15px 12px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .text-muted {
+        color: var(--black2);
+    }
+    
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+      .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .status-refunded {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-expired {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+    code {
+        background: var(--gray);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        color: var(--blue);
+    }
+
+    /* Payment Method Badge Styles */
+    .payment-method-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .payment-method-badge.razorpay {
+        background: #3395ff;
+        color: white;
+    }
+    
+    .payment-method-badge.bank-transfer {
+        background: #28a745;
+        color: white;
+    }
+    
+    .payment-method-badge.marked-paid {
+        background: #6f42c1;
+        color: white;
+    }
+    
+    .payment-method-badge.unknown {
+        background: #6c757d;
+        color: white;
+    }    @media print {
+        .cardHeader .header-actions, .action-buttons, .btn {
+            display: none !important;
+        }
+        
+        .info-card {
+            break-inside: avoid;
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+    }
+     
+    
+    @media (max-width: 768px) {
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-3, .col-md-4, .col-md-6 {
+            width: 100%;
+            margin-bottom: 15px;
+            max-width: fit-content;
+        }
+        
+        .header-actions {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+        
+        .payment-method-badge {
+            justify-content: center;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+          .action-buttons {
+            flex-direction: column;
+        }
+    }
+    
+    /* Coupon-specific styles */
+    .coupon-discount td {
+        color: #28a745 !important;
+        font-weight: 600;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.6em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+    }
+    
+    .badge-success {
+        color: #fff;
+        background-color: #28a745;
+    }
+    
+    .text-success {
+        color: #28a745 !important;
+    }
+      .d-block {
+        display: block !important;
+    }
+    
+   
+   
+</style>
+
+{% endblock %}

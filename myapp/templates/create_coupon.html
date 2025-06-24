@@ -1,0 +1,414 @@
+{% extends 'base_index.html' %}
+{% load static %}
+
+{% block title %}Create Coupon - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        border-bottom: 2px solid #1976d2;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .section-header h5 {
+        color: #1976d2;
+        margin: 0;
+        font-weight: 500;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #37474f;
+        margin-bottom: 8px;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #1976d2;
+        box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.15);
+    }
+    
+    .btn-primary {
+        background: #1976d2;
+        border-color: #1976d2;
+        padding: 12px 24px;
+        font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+        background: #1565c0;
+        border-color: #1565c0;
+    }
+    
+    .btn-secondary {
+        background: #546e7a;
+        border-color: #546e7a;
+        padding: 12px 24px;
+        font-weight: 500;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+    
+    .preview-section {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .preview-coupon {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .preview-code {
+        font-family: 'Courier New', monospace;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+    }
+    
+    .preview-discount {
+        font-size: 18px;
+        margin: 5px 0;
+    }
+    
+    .collapsible-section {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-header {
+        background: #f8f9fa;
+        padding: 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s;
+    }
+    
+    .collapsible-header:hover {
+        background: #e9ecef;
+    }
+    
+    .collapsible-content {
+        padding: 20px;
+        display: none;
+    }
+    
+    .collapsible-content.show {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-plus-circle"></i> Create New Coupon</h2>
+                    <a href="{% url 'admin_coupons' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Coupons
+                    </a>
+                </div>
+                
+                <form method="post" id="couponForm">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="section-header">
+                        <h5><i class="bi bi-info-circle"></i> Basic Information</h5>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Coupon Code *</label>
+                                <input type="text" class="form-control" id="code" name="code" required 
+                                       placeholder="e.g., SAVE20" maxlength="50" style="text-transform: uppercase;">
+                                <div class="help-text">Unique code customers will enter. Will be converted to uppercase.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Internal Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="e.g., 20% Off Summer Sale">
+                                <div class="help-text">Internal name for identification purposes.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Describe this coupon offer..."></textarea>
+                        <div class="help-text">Optional description of the coupon offer.</div>
+                    </div>
+                    
+                    <!-- Discount Settings -->
+                    <div class="section-header">
+                        <h5><i class="bi bi-percent"></i> Discount Settings</h5>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="discount_type" class="form-label">Discount Type *</label>
+                                <select class="form-select" id="discount_type" name="discount_type" required>
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="fixed">Fixed Amount ($)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="discount_value" class="form-label">Discount Value *</label>
+                                <input type="number" class="form-control" id="discount_value" name="discount_value" 
+                                       step="0.01" min="0" required placeholder="0.00">
+                                <div class="help-text">For percentage: 0-100. For fixed: dollar amount.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="maximum_discount_amount" class="form-label">Max Discount Amount ($)</label>
+                                <input type="number" class="form-control" id="maximum_discount_amount" 
+                                       name="maximum_discount_amount" step="0.01" min="0" placeholder="0.00">
+                                <div class="help-text">Maximum discount for percentage coupons.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Usage Limitations -->
+                    <div class="section-header">
+                        <h5><i class="bi bi-shield-check"></i> Usage Limitations</h5>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="max_uses" class="form-label">Total Usage Limit</label>
+                                <input type="number" class="form-control" id="max_uses" name="max_uses" 
+                                       min="1" placeholder="Unlimited">
+                                <div class="help-text">Leave blank for unlimited uses.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="max_uses_per_user" class="form-label">Uses Per User *</label>
+                                <input type="number" class="form-control" id="max_uses_per_user" name="max_uses_per_user" 
+                                       min="1" value="1" required>
+                                <div class="help-text">Maximum uses per customer.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="minimum_order_amount" class="form-label">Minimum Order ($)</label>
+                                <input type="number" class="form-control" id="minimum_order_amount" 
+                                       name="minimum_order_amount" step="0.01" min="0" placeholder="0.00">
+                                <div class="help-text">Minimum order amount required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Date Limitations -->
+                    <div class="section-header">
+                        <h5><i class="bi bi-calendar"></i> Date Limitations</h5>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valid_from" class="form-label">Valid From *</label>
+                                <input type="datetime-local" class="form-control" id="valid_from" name="valid_from" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valid_until" class="form-label">Valid Until *</label>
+                                <input type="datetime-local" class="form-control" id="valid_until" name="valid_until" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Restrictions -->
+                    <div class="collapsible-section">
+                        <div class="collapsible-header" onclick="toggleSection('userRestrictions')">
+                            <h6><i class="bi bi-people"></i> User Restrictions (Optional)</h6>
+                        </div>
+                        <div class="collapsible-content" id="userRestrictions">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="new_users_only" name="new_users_only">
+                                    <label class="form-check-label" for="new_users_only">
+                                        New Customers Only
+                                    </label>
+                                    <div class="help-text">Only available to users who haven't made a purchase before.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="allowed_users" class="form-label">Specific Users</label>
+                                <select class="form-control" id="allowed_users" name="allowed_users" multiple size="6">
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="help-text">Hold Ctrl/Cmd to select multiple users. Leave empty for all users.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Restrictions -->
+                    <div class="collapsible-section">
+                        <div class="collapsible-header" onclick="toggleSection('chartRestrictions')">
+                            <h6><i class="bi bi-diagram-3"></i> Chart Restrictions (Optional)</h6>
+                        </div>
+                        <div class="collapsible-content" id="chartRestrictions">                            <div class="mb-3">
+                                <label for="applicable_charts" class="form-label">Applicable Charts</label>
+                                <select class="form-control" id="applicable_charts" name="applicable_charts" multiple size="8">
+                                    {% for chart in charts %}
+                                    <option value="{{ chart.id }}">{{ chart.title }} - ${{ chart.price }} ({{chart.industry}} - {{chart.country }})</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="help-text">Hold Ctrl/Cmd to select multiple charts. Leave empty for all charts.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Create Coupon
+                        </button>
+                        <a href="{% url 'admin_coupons' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="form-card">
+                <h5>Preview</h5>
+                <div class="preview-section">
+                    <div class="preview-coupon">
+                        <p class="preview-code" id="previewCode">COUPON</p>
+                        <p class="preview-discount" id="previewDiscount">0% OFF</p>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">How your coupon will appear to customers</small>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Tips for Creating Effective Coupons:</h6>
+                    <ul class="small text-muted">
+                        <li>Use clear, memorable codes (e.g., SAVE20, WELCOME10)</li>
+                        <li>Set appropriate expiration dates</li>
+                        <li>Consider minimum order amounts for larger discounts</li>
+                        <li>Use maximum discount amounts for percentage-based coupons</li>
+                        <li>Test your coupons before publishing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleSection(sectionId) {
+    const content = document.getElementById(sectionId);
+    content.classList.toggle('show');
+}
+
+// Preview updates
+document.getElementById('code').addEventListener('input', function() {
+    const code = this.value.toUpperCase() || 'COUPON';
+    document.getElementById('previewCode').textContent = code;
+});
+
+document.getElementById('discount_type').addEventListener('change', updatePreview);
+document.getElementById('discount_value').addEventListener('input', updatePreview);
+
+function updatePreview() {
+    const type = document.getElementById('discount_type').value;
+    const value = document.getElementById('discount_value').value || '0';
+    
+    let preview = '';
+    if (type === 'percentage') {
+        preview = value + '% OFF';
+    } else {
+        preview = '$' + value + ' OFF';
+    }
+    
+    document.getElementById('previewDiscount').textContent = preview;
+}
+
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('valid_from').value = tomorrow.toISOString().slice(0, 16);
+    document.getElementById('valid_until').value = nextWeek.toISOString().slice(0, 16);
+});
+
+// Form validation
+document.getElementById('couponForm').addEventListener('submit', function(e) {
+    const discountType = document.getElementById('discount_type').value;
+    const discountValue = parseFloat(document.getElementById('discount_value').value);
+    
+    if (discountType === 'percentage' && (discountValue < 0 || discountValue > 100)) {
+        e.preventDefault();
+        alert('Percentage discount must be between 0 and 100.');
+        return;
+    }
+    
+    if (discountType === 'fixed' && discountValue < 0) {
+        e.preventDefault();
+        alert('Fixed discount amount cannot be negative.');
+        return;
+    }
+    
+    const validFrom = new Date(document.getElementById('valid_from').value);
+    const validUntil = new Date(document.getElementById('valid_until').value);
+    
+    if (validFrom >= validUntil) {
+        e.preventDefault();
+        alert('Valid until date must be after valid from date.');
+        return;
+    }
+});
+</script>
+{% endblock %}

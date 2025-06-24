@@ -1,0 +1,622 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Create Manual Order - InsideOrgs{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom styles matching existing dashboard */
+    .details {
+        position: relative;
+        width: 100%;
+        padding: 20px;
+        display: grid;
+        grid-gap: 30px;
+    }
+    
+    .details .recentOrders {
+        position: relative;
+        display: grid;
+        min-height: 450px;
+        background: var(--white);
+        padding: 20px;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+    }
+    
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .cardHeader h2 {
+        font-weight: 600;
+        color: var(--blue);
+    }
+    
+    .btn-back {
+        position: relative;
+        padding: 8px 16px;
+        background: #6c757d;
+        text-decoration: none;
+        color: var(--white);
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-back:hover {
+        background: #5a6268;
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--blue);
+    }
+    
+    .form-section h3 {
+        color: var(--blue);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .form-row.full-width {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--black1);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    .charts-select {
+        min-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .order-total {
+        background: linear-gradient(135deg, var(--blue), #0056b3);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .submit-section {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--blue);
+    }
+    
+    .btn-create {
+        background: var(--blue);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .btn-create:hover {
+        background: #0056b3;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .required {
+        color: #dc3545;
+    }
+</style>
+
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Create Manual Order</h2>
+            <a href="{% url 'admin_orders' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3><i class="bi bi-person-circle"></i> Customer Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_user" class="required">Select Customer <span class="required">*</span></label>
+                        <select name="user" id="id_user" required>
+                            <option value="">Choose a customer</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">
+                                    {{ user.username }} ({{ user.email }}) 
+                                    {% if user.get_full_name %}- {{ user.get_full_name }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Select the customer who will receive the order</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="bi bi-receipt"></i> Billing Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_billing_name">Company/Billing Name</label>
+                        <input type="text" name="billing_name" id="id_billing_name" 
+                               placeholder="Leave empty to use customer's profile info">
+                        <div class="help-text">Override customer's company name if needed</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_billing_phone">Phone Number</label>
+                        <input type="text" name="billing_phone" id="id_billing_phone" 
+                               placeholder="Leave empty to use customer's profile info">
+                        <div class="help-text">Override customer's phone if needed</div>
+                    </div>
+                </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_billing_address">Billing Address</label>
+                        <textarea name="billing_address" id="id_billing_address" rows="3" 
+                                  placeholder="Leave empty to use customer's profile info"></textarea>
+                        <div class="help-text">Override customer's address if needed</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="bi bi-cart"></i> Order Items</h3>
+                <div class="form-row full-width">
+                    <div class="form-group">
+                        <label for="id_charts" class="required">Select Organization Charts <span class="required">*</span></label>
+                        <select name="charts" id="id_charts" multiple class="charts-select" required>
+                            {% for chart in charts %}
+                                <option value="{{ chart.id }}" data-price="{{ chart.price }}">
+                                    {{ chart.title }} - ${{ chart.price }} 
+                                    ({{ chart.industry }}, {{ chart.country }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Hold Ctrl/Cmd to select multiple charts</div>
+                    </div>
+                </div>                <div class="order-total" id="order_total">
+                    <i class="bi bi-calculator"></i> Order Total: $0.00
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="bi bi-tag"></i> Coupon (Optional)</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_coupon">Apply Coupon</label>
+                        <select name="coupon" id="id_coupon">
+                            <option value="">No coupon</option>
+                            {% for coupon in active_coupons %}
+                                <option value="{{ coupon.id }}" 
+                                        data-discount-type="{{ coupon.discount_type }}" 
+                                        data-discount-value="{{ coupon.discount_value }}"
+                                        data-min-amount="{{ coupon.minimum_order_amount|default:0 }}"
+                                        data-max-discount="{{ coupon.maximum_discount_amount|default:'' }}">
+                                    {{ coupon.code }} - {{ coupon.get_discount_display }}
+                                    {% if coupon.minimum_order_amount %} (Min: ${{ coupon.minimum_order_amount }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Select a coupon to apply discount to this order</div>
+                    </div>
+                    <div class="form-group">
+                        <div id="coupon-info" style="display: none; padding: 15px; background: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;">
+                            <h5><i class="bi bi-tag-fill text-success"></i> Coupon Details</h5>
+                            <div id="coupon-description"></div>
+                            <div id="coupon-discount" class="text-success font-weight-bold"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="bi bi-credit-card"></i> Payment Method</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_payment_method" class="required">Payment Method <span class="required">*</span></label>
+                        <select name="payment_method" id="id_payment_method" required>
+                            <option value="">Choose payment method</option>
+                            <option value="razorpay">Razorpay Payment Link</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="completed">Mark as Paid (Completed)</option>
+                        </select>
+                        <div class="help-text">Select how customer will pay for this order</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_payment_notes">Payment Instructions</label>
+                        <textarea name="payment_notes" id="id_payment_notes" rows="3" 
+                                  placeholder="Additional payment instructions for customer"></textarea>
+                        <div class="help-text">Optional instructions that will be included in the payment email</div>
+                    </div>
+                </div>
+                
+                <div id="payment-method-info" style="display: none; padding: 15px; background: #e7f3ff; border-radius: 8px; margin-top: 15px;">
+                    <div id="razorpay-info" style="display: none;">
+                        <h4><i class="bi bi-info-circle"></i> Razorpay Payment Link</h4>
+                        <p>A secure payment link will be generated and sent to the customer's email. Customer can pay using cards, UPI, netbanking, or wallets.</p>
+                    </div>
+                    <div id="bank-transfer-info" style="display: none;">
+                        <h4><i class="bi bi-bank"></i> Bank Transfer</h4>
+                        <p>Customer will receive bank details for manual transfer. Order will remain pending until payment confirmation.</p>
+                    </div>
+                    <div id="completed-info" style="display: none;">
+                        <h4><i class="bi bi-check-circle"></i> Mark as Paid</h4>
+                        <p>Use this if payment has already been received through other means. Order will be marked as completed immediately.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="bi bi-gear"></i> Additional Options</h3>
+                <!-- <div class="form-row full-width">
+                    <div class="form-group">
+                        <label for="id_notes">Internal Notes</label>
+                        <textarea name="notes" id="id_notes" rows="3" 
+                                  placeholder="Internal notes (not sent to customer)"></textarea>
+                        <div class="help-text">These notes are for internal use only</div>
+                    </div>
+                </div> -->
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" name="send_email" id="id_send_email" checked>
+                    <label for="id_send_email">
+                        <i class="bi bi-envelope"></i> Send invoice email to customer
+                    </label>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="btn-create">
+                    <i class="bi bi-check-circle"></i> Create Order & Send Invoice
+                </button>
+                <div class="help-text" style="margin-top: 10px;">
+                    This will create the order, grant access to selected charts, and optionally send an invoice email
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartsSelect = document.getElementById('id_charts');
+    const totalDiv = document.getElementById('order_total');   
+    function updateTotal() {
+        const selectedOptions = chartsSelect.selectedOptions;
+        const subtotal = calculateSubtotal();
+        const processingFee = subtotal * 0.055;
+        const discount = calculateCouponDiscount();
+        const total = subtotal + processingFee - discount;
+        
+        let totalHtml = `
+            <i class="bi bi-calculator"></i> 
+            <div style="margin-top: 5px;">
+                <div>Subtotal: $${subtotal.toFixed(2)}</div>`;
+                
+        if (discount > 0) {
+            totalHtml += `<div style="color: #28a745;">Coupon Discount: -$${discount.toFixed(2)}</div>`;
+        }
+        
+        totalHtml += `
+                <div>Processing Fee (5.5%): $${processingFee.toFixed(2)}</div>
+                <div style="font-weight: bold; font-size: 1.1em; margin-top: 5px;">Total: $${total.toFixed(2)}</div>
+            </div>
+        `;
+        
+        totalDiv.innerHTML = totalHtml;
+        
+        // Add visual feedback for selection
+        if (selectedOptions.length > 0) {
+            totalDiv.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+        } else {
+            totalDiv.style.background = 'linear-gradient(135deg, var(--blue), #0056b3)';
+        }
+    }
+    chartsSelect.addEventListener('change', updateTotal);
+      // Coupon handling
+    const couponSelect = document.getElementById('id_coupon');
+    const couponInfo = document.getElementById('coupon-info');
+    const couponDescription = document.getElementById('coupon-description');
+    const couponDiscount = document.getElementById('coupon-discount');
+    
+    // Add validation for coupon restrictions
+    function validateCouponRestrictions() {
+        const selectedCoupon = couponSelect.value;
+        const selectedUser = document.getElementById('id_user').value;
+        const selectedCharts = Array.from(document.getElementById('id_charts').selectedOptions).map(option => option.value);
+        
+        if (!selectedCoupon) {
+            return;
+        }
+          // Make AJAX call to validate coupon restrictions
+        fetch('/coupons/validate-manual-order/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                coupon_id: selectedCoupon,
+                user_id: selectedUser,
+                chart_ids: selectedCharts
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.valid) {
+                // Show restriction error
+                couponDiscount.textContent = data.message || 'Coupon restrictions not met.';
+                couponDiscount.className = 'text-danger font-weight-bold';
+                couponInfo.style.display = 'block';
+                 // Set discount to 0 explicitly
+                couponDiscount.dataset.invalid = "true";
+                updateTotal();  // Will re-calculate with discount = 0
+                // Disable the coupon selection
+                couponSelect.style.borderColor = '#dc3545';
+                couponSelect.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+            } else {
+                // Reset styling and continue with normal coupon display
+                couponDiscount.dataset.invalid = "false";
+                couponSelect.style.borderColor = '';
+                couponSelect.style.boxShadow = '';
+                updateCouponDisplay();
+            }
+        })
+        .catch(error => {
+            console.error('Error validating coupon:', error);
+        });
+    }
+    
+    function updateCouponDisplay() {
+        const selectedOption = couponSelect.options[couponSelect.selectedIndex];
+        
+        if (couponSelect.value) {
+            const discountType = selectedOption.dataset.discountType;
+            const discountValue = parseFloat(selectedOption.dataset.discountValue);
+            const minAmount = parseFloat(selectedOption.dataset.minAmount) || 0;
+            const maxDiscount = selectedOption.dataset.maxDiscount ? parseFloat(selectedOption.dataset.maxDiscount) : null;
+            
+            couponDescription.textContent = selectedOption.textContent;
+            
+            const subtotal = calculateSubtotal();
+            
+            if (subtotal < minAmount) {
+                couponDiscount.textContent = `Minimum order amount of $${minAmount.toFixed(2)} required.`;
+                couponDiscount.className = 'text-warning font-weight-bold';
+            } else {
+                let discount = 0;
+                if (discountType === 'percentage') {
+                    discount = (subtotal * discountValue) / 100;
+                    if (maxDiscount && discount > maxDiscount) {
+                        discount = maxDiscount;
+                    }
+                } else {
+                    discount = Math.min(discountValue, subtotal);
+                }
+                
+                couponDiscount.textContent = `Discount: -$${discount.toFixed(2)}`;
+                couponDiscount.className = 'text-success font-weight-bold';
+            }
+            
+            couponInfo.style.display = 'block';
+        } else {
+            couponInfo.style.display = 'none';
+        }
+        
+        updateTotal();
+    }
+    
+    couponSelect.addEventListener('change', function() {
+        if (this.value) {
+            validateCouponRestrictions();
+        } else {
+            updateCouponDisplay();
+        }
+    });
+    
+    // Also validate when user or charts change
+    document.getElementById('id_user').addEventListener('change', function() {
+        if (couponSelect.value) {
+            validateCouponRestrictions();
+        }
+    });
+    
+    document.getElementById('id_charts').addEventListener('change', function() {
+        if (couponSelect.value) {
+            validateCouponRestrictions();
+        }
+    });
+    
+    function calculateSubtotal() {
+        const selectedOptions = chartsSelect.selectedOptions;
+        let subtotal = 0;
+        
+        for (let option of selectedOptions) {
+            subtotal += parseFloat(option.dataset.price);
+        }
+        
+        return subtotal;
+    }
+    
+    function calculateCouponDiscount() {
+        const couponOption = couponSelect.options[couponSelect.selectedIndex];
+        
+        if (!couponSelect.value || couponDiscount.dataset.invalid === "true") {
+        return 0;
+    }
+        
+        const discountType = couponOption.dataset.discountType;
+        const discountValue = parseFloat(couponOption.dataset.discountValue);
+        const minAmount = parseFloat(couponOption.dataset.minAmount) || 0;
+        const maxDiscount = couponOption.dataset.maxDiscount ? parseFloat(couponOption.dataset.maxDiscount) : null;
+        const subtotal = calculateSubtotal();
+        
+        if (subtotal < minAmount) return 0;
+        
+        let discount = 0;
+        if (discountType === 'percentage') {
+            discount = (subtotal * discountValue) / 100;
+            if (maxDiscount && discount > maxDiscount) {
+                discount = maxDiscount;
+            }
+        } else {
+            discount = Math.min(discountValue, subtotal);
+        }
+        
+        return discount;
+    }
+    
+    // Update the updateTotal function to include coupon discount
+    function updateTotal() {
+        const selectedOptions = chartsSelect.selectedOptions;
+        const subtotal = calculateSubtotal();
+        const processingFee = subtotal * 0.055;
+        const discount = calculateCouponDiscount();
+        const total = subtotal + processingFee - discount;
+        
+        let totalText = `Subtotal: $${subtotal.toFixed(2)} | Processing Fee (5.5%): $${processingFee.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        if (discount > 0) {
+            totalText = `Subtotal: $${subtotal.toFixed(2)} | Discount: -$${discount.toFixed(2)} | Processing Fee (5.5%): $${processingFee.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        }
+        
+        totalDiv.textContent = totalText;
+        
+        // Update styling based on selection
+        if (selectedOptions.length > 0) {
+            totalDiv.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+        } else {
+            totalDiv.style.background = 'linear-gradient(135deg, var(--blue), #0056b3)';
+        }
+    }
+    
+    // Initialize on load
+    updateTotal();
+    
+    // Payment method handling
+    const paymentMethodSelect = document.getElementById('id_payment_method');
+    const paymentMethodInfo = document.getElementById('payment-method-info');
+    const razorpayInfo = document.getElementById('razorpay-info');
+    const bankTransferInfo = document.getElementById('bank-transfer-info');
+    const completedInfo = document.getElementById('completed-info');
+    
+    paymentMethodSelect.addEventListener('change', function() {
+        const selectedMethod = this.value;
+        
+        // Hide all info divs first
+        razorpayInfo.style.display = 'none';
+        bankTransferInfo.style.display = 'none';
+        completedInfo.style.display = 'none';
+        
+        if (selectedMethod) {
+            paymentMethodInfo.style.display = 'block';
+            
+            switch(selectedMethod) {
+                case 'razorpay':
+                    razorpayInfo.style.display = 'block';
+                    break;
+                case 'bank_transfer':
+                    bankTransferInfo.style.display = 'block';
+                    break;
+                case 'completed':
+                    completedInfo.style.display = 'block';
+                    break;
+            }
+        } else {
+            paymentMethodInfo.style.display = 'none';
+        }
+    });
+      // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const user = document.getElementById('id_user').value;
+        const charts = document.getElementById('id_charts').selectedOptions.length;
+        const paymentMethod = document.getElementById('id_payment_method').value;
+        const coupon = document.getElementById('id_coupon').value;
+        
+        if (!user || charts === 0 || !paymentMethod) {
+            e.preventDefault();
+            alert('Please select a customer, at least one chart, and a payment method.');
+            return false;
+        }
+        
+        // Check if coupon has restriction errors
+        if (coupon) {
+            const couponDiscountElement = document.getElementById('coupon-discount');
+            if (couponDiscountElement.className.includes('text-danger')) {
+                e.preventDefault();
+                alert('The selected coupon cannot be used with the current user or charts. Please select a different coupon or change the selection.');
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

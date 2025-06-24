@@ -4,7 +4,7 @@ import numpy as np
 import os, json,csv, re
 from django.conf import settings
 
-def generate_org(input_file, input_org, filename, selected_user):
+def generate_org(input_file, filename, selected_user):
     df  = pd.read_csv(input_file)
     df.fillna('', inplace=True)
     column_mapping = {
@@ -81,10 +81,10 @@ def generate_org(input_file, input_org, filename, selected_user):
 
     df2.loc[df2['Category Type'] == 'Person', 'Department'] = df2[df2['Category Type'] == 'Person']['Supervisor'].apply(fill_department)
 
-    output_file = os.path.join(settings.MEDIA_ROOT, "output_csv", f"{filename}.csv")
-    columns_to_write = ['Organization Name', 'Domain', 'Employee Range', 'Department', 'Industry', 'Solution Offered', 'Primary Address', 'City/Town', 'State/Province', 'Country/Region', 'Postal Code', 'Seniority Level', 'Job Function', 'Full Name', 'Designation', 'LinkedIn Profile', 'Public Profile', 'Email Address', 'Boardline Number', 'Personal Number']
-    df2['Full Name'] = df2['First Name'] + ' ' + df2['Last Name']
-    df2.loc[df2['Category Type'] == 'Person'][columns_to_write].to_csv(output_file, index=False)
+    # output_file = os.path.join(settings.MEDIA_ROOT, "output_csv", f"{filename}.csv")
+    # columns_to_write = ['Organization Name', 'Domain', 'Employee Range', 'Department', 'Industry', 'Solution Offered', 'Primary Address', 'City/Town', 'State/Province', 'Country/Region', 'Postal Code', 'Seniority Level', 'Job Function', 'Full Name', 'Designation', 'LinkedIn Profile', 'Public Profile', 'Email Address', 'Boardline Number', 'Personal Number']
+    # df2['Full Name'] = df2['First Name'] + ' ' + df2['Last Name']
+    # df2.loc[df2['Category Type'] == 'Person'][columns_to_write].to_csv(output_file, index=False)
 
 
 
@@ -247,7 +247,6 @@ def generate_org(input_file, input_org, filename, selected_user):
             node_type = array_columns['Node_Type'][i]
             if node_type == 'Department':
                 if company_logo:
-              
                     temp_urls.append(company_logo)
                 else:
                     for j in range(len(array_columns['Img_url'])):
@@ -292,17 +291,17 @@ def generate_org(input_file, input_org, filename, selected_user):
                     else:
                         temp_urls.append(company_logo)
             elif node_type == 'Person':
-                svg_first_name = array_columns['First_Name'][i]
-                svg_last_name = array_columns['Last_Name'][i]
-                first_name_initial = svg_first_name.split()[0][0].upper() if svg_first_name else ''
-                last_name_initial = svg_last_name.split()[-1][0].upper() if svg_last_name else ''
-                initials = f"{first_name_initial}{last_name_initial}" if first_name_initial and last_name_initial else ''
-                svg_filename = f"{initials}.svg"
-                filepath = os.path.join(settings.MEDIA_ROOT, "img","placeholders", svg_filename)
-                if not os.path.exists(filepath):
-                    svg_filename = generate_svg_file(initials, settings.MEDIA_ROOT)
-                fileURI = settings.BASE_URL + settings.STATIC_URL + "placeholders/" +  svg_filename
-                temp_urls.append(fileURI)
+                # svg_first_name = array_columns['First_Name'][i]
+                # svg_last_name = array_columns['Last_Name'][i]
+                # first_name_initial = svg_first_name.split()[0][0].upper() if svg_first_name else ''
+                # last_name_initial = svg_last_name.split()[-1][0].upper() if svg_last_name else ''
+                # initials = f"{first_name_initial}{last_name_initial}" if first_name_initial and last_name_initial else ''
+                # svg_filename = f"{initials}.svg"
+                # filepath = os.path.join(settings.MEDIA_ROOT, "img","placeholders", svg_filename)
+                # if not os.path.exists(filepath):
+                #     svg_filename = generate_svg_file(initials, settings.MEDIA_ROOT)
+                # fileURI = settings.BASE_URL + settings.STATIC_URL + "placeholders/" +  svg_filename
+                temp_urls.append('')
         else:
             # If 'Img_url' already has a value, keep it unchanged
             temp_urls.append(array_columns['Img_url'][i])
@@ -619,42 +618,42 @@ def generate_org(input_file, input_org, filename, selected_user):
         "node_type": "Organization",
         "img": company_logo,
         "org_name": array_columns['Reporting_To'][0],
-        "website": org_website,
+        "domain": org_website,
         "employee_range": org_employee_range,
         "industry": org_industry,
-        "business_solution": org_business_solution,
-        "address_1": org_address_1,
-        "zip_code": org_zip_code,
+        "solution_offered": org_business_solution,
+        "primary_address": org_address_1,
+        "postal_code": org_zip_code,
         "city": org_city,
         "state": org_state,
         "country": org_country,
         "email_id": org_email_id,
-        "linkedin_url": org_linkedin_url,
+        "linkedin": org_linkedin_url,
         "facebook": org_facebook,
         "x": org_x,
         "other": org_other,
         "public_profile": org_public_profile,
-        "contact_number1": org_contact_number1,
+        "boardline_number": org_contact_number1,
         "notes" : org_notes,
-        "insight_heading1" : org_insight_heading1,
-        "insight_content1" : org_insight_content1,
-        "insight_link1" : org_insight_link1,
-        "insight_date1" : org_insight_date1,
+        "custom_heading1" : org_insight_heading1,
+        "custom_content1" : org_insight_content1,
+        "custom_link1" : org_insight_link1,
+        "custom_date1" : org_insight_date1,
 
-        "insight_heading2" : org_insight_heading2,
-        "insight_content2" : org_insight_content2,
-        "insight_link2" : org_insight_link2,
-        "insight_date2" : org_insight_date2,
+        "custom_heading2" : org_insight_heading2,
+        "custom_content2" : org_insight_content2,
+        "custom_link2" : org_insight_link2,
+        "custom_date2" : org_insight_date2,
 
-        "insight_heading3" : org_insight_heading3,
-        "insight_content3" : org_insight_content3,
-        "insight_link3" : org_insight_link3,
-        "insight_date3" : org_insight_date3,
+        "custom_heading3" : org_insight_heading3,
+        "custom_content3" : org_insight_content3,
+        "custom_link3" : org_insight_link3,
+        "custom_date3" : org_insight_date3,
 
-        "insight_heading4" : org_insight_heading4,
-        "insight_content4" : org_insight_content4,
-        "insight_link4" : org_insight_link4,
-        "insight_date4" : org_insight_date4,
+        "custom_heading4" : org_insight_heading4,
+        "custom_content4" : org_insight_content4,
+        "custom_link4" : org_insight_link4,
+        "custom_date4" : org_insight_date4,
 
     }
 
@@ -744,54 +743,54 @@ def generate_org(input_file, input_org, filename, selected_user):
             "pid": pid,
             "img": img_url,
             "name": person_name,
-            "title": title,
+            "designation": title,
             "department": department_name,
             "node_type": node_type,
-            "company_name": company_name,
-            "website": website,
+            "organization_name": company_name,  
+            "domain": website,
             "employee_range": employee_range,
             "industry": industry,
-            "business_solution": business_solution,
-            "address_1": address_1,
-            "zip_code": zip_code,
+            "solution_offered": business_solution,
+            "primary_address": address_1,
+            "postal_code": zip_code,
             "city": city,
             "state": state,
             "country": country,
             "email_id": email_id,
             "seniority_level": seniority_level,
             "job_function": job_function,
-            "linkedin_url": linkedin_url,
+            "linkedin": linkedin_url,
             "facebook": facebook,
             "x": x,
             "other": other,
             "public_profile": public_profile,
-            "contact_number1": contact_number1,
-            "contact_number2": contact_number2,
+            "boardline_number": contact_number1,
+            "personal_number": contact_number2,
             "notes": notes,
-            "educational_institute1": edu1,
-            "educational_institute2": edu2,
-            "educational_institute3": edu3,
-            "past_company1": past_company1,
-            "past_company2": past_company2,
-            "past_company3": past_company3,
-            "past_company4": past_company4,
-            "past_company5": past_company5,
-            "insight_heading1": insight_heading1,
-            "insight_content1": insight_content1,
-            "insight_link1": insight_link1,
-            "insight_date1": insight_date1,
-            "insight_heading2": insight_heading2,
-            "insight_content2": insight_content2,
-            "insight_link2": insight_link2,
-            "insight_date2": insight_date2,
-             "insight_heading3": insight_heading3,
-            "insight_content3": insight_content3,
-            "insight_link3": insight_link3,
-            "insight_date3": insight_date3,
-             "insight_heading4": insight_heading4,
-            "insight_content4": insight_content4,
-            "insight_link4": insight_link4,
-            "insight_date4": insight_date4,
+            "education1": edu1,
+            "education2": edu2,
+            "education3": edu3,
+            "previous_company1": past_company1,
+            "previous_company2": past_company2,
+            "previous_company3": past_company3,
+            "previous_company4": past_company4,
+            "previous_company5": past_company5,
+            "custom_heading1": insight_heading1,
+            "custom_content1": insight_content1,
+            "custom_link1": insight_link1,
+            "custom_date1": insight_date1,
+            "custom_heading2": insight_heading2,
+            "custom_content2": insight_content2,
+            "custom_link2": insight_link2,
+            "custom_date2": insight_date2,
+             "custom_heading3": insight_heading3,
+            "custom_content3": insight_content3,
+            "custom_link3": insight_link3,
+            "custom_date3": insight_date3,
+             "custom_heading4": insight_heading4,
+            "custom_content4": insight_content4,
+            "custom_link4": insight_link4,
+            "custom_date4": insight_date4,
             "matchpoint" : matchpoint
 
             

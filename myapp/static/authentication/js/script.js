@@ -21,10 +21,10 @@ setTimeout(function() {
     })(i);
 }
 
-document.addEventListener('contextmenu', function(e) {
-    alert("Sorry, you can't view or copy source codes this way!");
-    e.preventDefault();
-});  
+// document.addEventListener('contextmenu', function(e) {
+//     alert("Sorry, you can't view or copy source codes this way!");
+//     e.preventDefault();
+// });  
 
 function togglePassword() {
     var passwordInput = document.getElementById("pass1");

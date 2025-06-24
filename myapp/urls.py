@@ -1,12 +1,11 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.conf.urls.static import static
-
-
+from django.views.static import serve as static_serve
+import os
 
 
 urlpatterns = [
@@ -48,13 +47,58 @@ urlpatterns = [
     path('update-chart-details/<int:chart_id>/', views.update_chart, name='update-chart'),
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancel, name='payment_cancel'),
+    path('cart/checkout/', views.cart_checkout, name='cart_checkout'),
+    path('cart/payment/execute/', views.execute_cart_payment, name='execute_cart_payment'),
     path('payment/success/', views.payment_success, name='payment_success'),
+    
+    path('org/view/<uuid:chart_uuid>/', views.view_orgchart_temp, name='view_orgchart_temp'),
+    # Cart URLs
+    path('cart/', views.view_cart, name='view_cart'),
+    path('cart/mini/', views.mini_cart, name='mini_cart'),
+    path('cart/add/<int:chart_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/remove/<int:chart_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/clear/', views.clear_cart, name='clear_cart'),
+    path('cart/checkout/', views.cart_checkout, name='cart_checkout'),
+    path('cart/execute-payment/', views.execute_cart_payment, name='execute_cart_payment'),
+    path('cart/success/', views.cart_success, name='cart_success'),
+    
+    # Debug URLs
+    path('test-razorpay/', views.test_razorpay_connection, name='test_razorpay_connection'),
+    
+    # Order Management URLs
+    path('orders/', views.admin_orders, name='admin_orders'),
+    path('orders/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    # path('orders/<int:order_id>/edit/', views.edit_order, name='edit_order'),
+    # path('orders/<int:order_id>/resend-payment/', views.resend_payment_instructions, name='resend_payment_instructions'),
+    path('orders/<int:order_id>/pdf/', views.generate_order_pdf, name='generate_order_pdf'),
+    path('orders/<int:order_id>/email-invoice/', views.email_order_invoice, name='email_order_invoice'),
+    path('orders/<int:order_id>/update-payment/', views.manual_payment_update, name='manual_payment_update'),
+    path('orders/create-manual/', views.create_manual_order_dashboard, name='create_manual_order_dashboard'),
+    path('payment-dashboard/', views.admin_payment_dashboard, name='admin_payment_dashboard'),
+    
+    # Webhook URLs
+    path('webhook/razorpay/', views.razorpay_webhook, name='razorpay_webhook'),
     
     # path('manage', views.manage_orgcharts, name='manage_orgcharts'),
 
+    # path('webhook/razorpay/', views.razorpay_webhook, name='razorpay_webhook'),
+    path('user/profile/', views.profile, name='profile'),
+    
+    # Coupon Management URLs
+    path('coupons/', views.admin_coupons, name='admin_coupons'),
+    path('coupons/create/', views.create_coupon, name='create_coupon'),
+    path('coupons/<int:coupon_id>/', views.coupon_detail, name='coupon_detail'),
+    path('coupons/<int:coupon_id>/edit/', views.edit_coupon, name='edit_coupon'),
+    path('coupons/<int:coupon_id>/toggle/', views.toggle_coupon_status, name='toggle_coupon_status'),
+    path('coupons/validate/', views.validate_coupon_ajax, name='validate_coupon_ajax'),
+    path('coupons/apply/', views.apply_coupon_ajax, name='apply_coupon_ajax'),
+    path('coupons/remove/', views.remove_coupon_ajax, name='remove_coupon_ajax'),
+    path('coupons/validate-manual-order/', views.validate_manual_order_coupon_ajax, name='validate_manual_order_coupon_ajax'),
+    path('api/test/request/chart/', views.serve_file_testing, name='serve_file_testing'), #for access management
+    re_path(r'^media/img/(?P<path>.*)$', static_serve, {
+        'document_root': settings.MEDIA_ROOT / 'img',
+    }),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-     
 

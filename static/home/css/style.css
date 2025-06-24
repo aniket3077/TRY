@@ -87,6 +87,7 @@ body {
   color: #19d4ca;
 }
 
+
 .navigation .menunavigation li a .icon {
   position: relative;
   display: block;
@@ -312,10 +313,16 @@ body {
 .cardHeader .btn {
   position: relative;
   padding: 5px 10px;
+  border: none;
   background: var(--blue);
   text-decoration: none;
   color: var(--white);
   border-radius: 6px;
+}
+
+.cardHeader .btn:hover {
+  transform: scale(1.1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .table-container .visitbtn {
@@ -390,8 +397,8 @@ th {
   border-bottom: none;
 }
 .details .recentOrders table tbody tr:hover {
-  background: var(--blue);
-  color: var(--white);
+  background: #e3f2fd !important;
+  color: var(--blue) !important;
 }
 .details .recentOrders table tr td {
   padding: 10px;
@@ -489,19 +496,23 @@ padding: 20px;
 background-color: #ff9d94;
 color: red;
 opacity: 1;
+z-index: 9999 !important;
 transition: opacity 0.6s;
 margin-bottom: 15px;
 }
 .alert.success {
   border: 1px solid #c2fccf;
   background-color: #e4fcea;
+  z-index: 9999 !important;
   color: #00cc18;
 
 }
 .alert.info {background-color: #2196F3;
+  z-index: 9999 !important;
 color: white;
 }
 .alert.warning {background-color: #ff9800;
+  z-index: 9999 !important;
 color: white;
 }
 .closebtn {

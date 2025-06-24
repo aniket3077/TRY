@@ -1,7 +1,7 @@
-document.addEventListener('contextmenu', function(e) {
-    alert("Sorry, you can't view or copy source codes this way!");
-    e.preventDefault();
-});  
+// document.addEventListener('contextmenu', function(e) {
+//     alert("Sorry, you can't view or copy source codes this way!");
+//     e.preventDefault();
+// });  
 
 
 let list = document.querySelectorAll(".navigation li");
@@ -272,6 +272,21 @@ function selectCheckboxes() {
     }
 }
 
+function selectCheckboxes() {
+    const checkboxes = document.querySelectorAll('.select-checkbox');
+    const selectCountInput = document.getElementById('selectCountInput');
+    const selectCount = parseInt(selectCountInput.value) || 1;
+    
+    // First uncheck all
+    for (let i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+    }
+    
+    // Then check the specified number
+    for (let i = 0; i < checkboxes.length && i < selectCount; i++) {
+        checkboxes[i].checked = true;
+    }
+}
 
 function toggleSelectAllCheckboxes() {
     const checkboxes = document.querySelectorAll('.select-checkbox');
@@ -377,6 +392,51 @@ function exportSelected() {
 
 
  $(document).ready(function() {
-  
+  showMobileOverlayIfNeeded();
+
   $('.dropdown-toggle').dropdown(); 
 });
+
+
+// Mobile device detection and overlay message
+function showMobileOverlayIfNeeded() {
+    var isMobile = window.innerWidth < 900 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        if (!document.getElementById('mobileOverlay')) {
+            var overlay = document.createElement('div');
+            overlay.id = 'mobileOverlay';
+            overlay.style = `
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                width: 100vw; height: 100vh;
+                background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+                backdrop-filter: blur(12px);
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            `;
+            overlay.innerHTML = `
+                <div style="background: rgba(255,255,255,0.85); border-radius: 24px; box-shadow: 0 8px 32px rgba(59,130,246,0.12); padding: 2.5rem 1.5rem; max-width: 90vw;">
+                    <svg width="64" height="64" fill="none" viewBox="0 0 24 24" style="margin-bottom: 1rem;"><rect width="24" height="24" rx="12" fill="#38bdf8"/><path d="M7 17h10M9 21h6M12 3v12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                    <h2 style="color: #0ea5e9; font-family: 'Poppins',sans-serif; font-weight: 700; margin-bottom: 0.5rem;">Desktop Only</h2>
+                    <p style="color: #334155; font-size: 1.1rem; margin-bottom: 1.5rem;">Please open this page on a desktop or laptop to view the organization chart.</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        }
+    } else {
+        var overlay = document.getElementById('mobileOverlay');
+        if (overlay) {
+            overlay.remove();
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// // Run on load and on resize/orientation change
+window.addEventListener('resize', showMobileOverlayIfNeeded);
+window.addEventListener('orientationchange', showMobileOverlayIfNeeded);

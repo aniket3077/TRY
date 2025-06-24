@@ -3,14 +3,16 @@
 *.pot
 *.pyc
 __pycache__/
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
+PAYMENT_SETUP.md
+README.md
 
 # Media files (user uploads and generated content)
-media/user_uploaded/
+media/img/user/
 media/chart_data/
-media/output_csv/
+media/csv_files/
+
 
 # Environment variables
 .env
@@ -45,7 +47,6 @@ htmlcov/
 
 # Static files (if collected)
 /static/
-/staticfiles/
 
 # Sensitive files
 orgchart/info.py

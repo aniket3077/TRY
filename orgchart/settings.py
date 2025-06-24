@@ -11,29 +11,37 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from . info import *
+from . import info
 import os
+import socket
+import pymysql
+pymysql.install_as_MySQLdb()
 
-EMAIL_USE_TLS = EMAIL_USE_TLS
-EMAIL_HOST = EMAIL_HOST
-EMAIL_HOST_USER = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
-EMAIL_PORT = EMAIL_PORT
-EMAIL_SENDER_ID = EMAIL_SENDER_ID
-DEFAULT_FROM_EMAIL = 'InsideOrgs <chinmaychopade23@gmail.com>'
+EMAIL_USE_TLS = info.EMAIL_USE_TLS
+EMAIL_HOST = info.EMAIL_HOST
+EMAIL_HOST_USER = info.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = info.EMAIL_HOST_PASSWORD
+EMAIL_PORT = info.EMAIL_PORT
+EMAIL_SENDER_ID = info.EMAIL_SENDER_ID
+DEFAULT_FROM_EMAIL = 'InsideOrgs <info@sphurti.net>'
 
 
 # PAYPAL_CLIENT_ID = 'AfPn1HGapTXGdyoT6gFEzP8x5dJeYpn1X5iVO6LdS3zNqAx--XyeHBzEBrC4-tW5303OTijUB8866IFX'
 # PAYPAL_CLIENT_SECRET = 'EIQabPRF--flbMz7LZEI-vliwAXrwbCrqkF_tWWEzm30tSr5PzcoYLjnsEfOa9-tta6P1vrt3LC1Gv6V'
 # PAYPAL_ENVIRONMENT = 'live'  
 
-PAYPAL_CLIENT_ID = 'AXPAdmn5mZBUj4ispU4njr1ekRMhmZ767KN4PsPSHonfY12lCm-UTMuhPdo_yzQr4G-GLrwptU47rqqw'
-PAYPAL_CLIENT_SECRET = 'EHrJ0yBE86m0rmdfPRFKzJ2VBuDVWp9p1jskM8j3MJRWBODWY-I5rNgLoXo3mRst8gdXci-YqqOgUl7c'
-PAYPAL_ENVIRONMENT = 'sandbox'
+# PAYPAL_CLIENT_ID = 'AXPAdmn5mZBUj4ispU4njr1ekRMhmZ767KN4PsPSHonfY12lCm-UTMuhPdo_yzQr4G-GLrwptU47rqqw'
+# PAYPAL_CLIENT_SECRET = 'EHrJ0yBE86m0rmdfPRFKzJ2VBuDVWp9p1jskM8j3MJRWBODWY-I5rNgLoXo3mRst8gdXci-YqqOgUl7c'
+# PAYPAL_ENVIRONMENT = 'sandbox'
 
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Razorpay Settings
+RAZORPAY_KEY_ID = info.RAZORPAY_KEY_ID  # Replace with your actual test key
+RAZORPAY_KEY_SECRET = info.RAZORPAY_KEY_SECRET  # Replace with your actual test secret
+RAZORPAY_WEBHOOK_SECRET = info.RAZORPAY_WEBHOOK_SECRET  # Add your webhook secret for production
+SITE_URL = info.SITE_URL  # Update with your actual site URL
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
-SECURE_PROXY_SSL_HEADER = None
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 
@@ -48,14 +56,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-t=t6_r!s!x#d0)x5!6216v5)2@&wymv!w)@x&qw8u2m#ctm$*('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = info.DEBUG # Set to True for development to serve static/media files
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['insideorgs.sphurti.net','127.0.0.1','localhost']
 
-CSRF_TRUSTED_ORIGINS = ['https://0280-103-162-159-178.ngrok-free.app', ' https://0f3d-103-162-159-178.ngrok-free.app',
+CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     'http://127.0.0.1',
-    'http://34.44.73.187/'
 ]
 
 # Application definition
@@ -69,10 +76,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',  # Add CORS headers support
     'myapp',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,13 +98,13 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': ["templates"],
-        'APP_DIRS': True,
-        'OPTIONS': {
+        'APP_DIRS': True,        'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'myapp.context_processors.cart_context',
             ],
         },
     },
@@ -107,33 +116,27 @@ WSGI_APPLICATION = 'orgchart.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.sqlite3',
-         'NAME': BASE_DIR / 'db.sqlite3',
-     }
- }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'myapp',
-#         'USER': 'root',
-#         'PASSWORD': '',
-#         'HOST': 'localhost',
-#         'PORT': '3306'
-#     }
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'myapp',
-#         'USER': 'root',
-#         'PASSWORD': 'myapp_root',
-#         'HOST': '34.123.35.179',
-#         'PORT': '3306'
-#     }
-# }
+
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'myapp',
+            'USER': 'root',
+            'PASSWORD': '%^vced76#*$',
+            'HOST': '127.0.0.1',
+            'PORT': '3306'
+        }
+    }
+
 
 
 
@@ -172,15 +175,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-BASE_URL = 'http://34.44.73.187:8000'
+BASE_URL = info.BASE_URL  # Update with your actual site URL
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static_dir",
-                    BASE_DIR / "media" / "img",
-                    BASE_DIR / "media" / "user_uploaded"
-                    ]
-STATIC_ROOT = BASE_DIR / "static"
-MEDIA_ROOT =BASE_DIR / "media"
+
+STATIC_ROOT = BASE_DIR / "static"  # Where collectstatic puts files for production
+MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = '/media/'
 
 # Default primary key field type
@@ -190,4 +190,80 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'signin'
 LOGIN_REDIRECT_URL = '/'  # Redirect to the homepage after login
+
+# ===================================
+# CORS Configuration
+# ===================================
+
+# Allow CORS for all origins (Development only - be more restrictive in production)
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True  # Set to False in production
+
+# Alternatively, specify allowed origins for production:
+# CORS_ALLOWED_ORIGINS = [
+#     "https://yourfrontenddomain.com",
+#     "https://www.yourfrontenddomain.com",
+#     "http://localhost:3000",  # React dev server
+#     "http://127.0.0.1:3000",
+#     "http://localhost:8080",  # Vue.js dev server
+#     "http://127.0.0.1:8080",
+# ]
+
+# Allow specific headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-api-key',
+    'x-auth-token',
+    'cache-control',
+]
+
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Allow credentials (cookies, authorization headers, etc.)
+CORS_ALLOW_CREDENTIALS = True
+
+# Cache preflight requests for 1 hour (3600 seconds)
+CORS_PREFLIGHT_MAX_AGE = 3600
+
+# Allow specific headers to be exposed to the browser
+CORS_EXPOSE_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+    'authorization',
+]
+
+# Additional CORS settings for API endpoints
+CORS_ALLOW_PRIVATE_NETWORK = True  # For local network requests
+
+# CSRF Configuration for CORS
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+]
+
+# Additional security headers for API responses
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+# X-Frame-Options for embedding (adjust as needed)
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # or 'DENY' for more security
 
