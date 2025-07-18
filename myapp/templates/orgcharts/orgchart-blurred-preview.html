@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <title>{{ chart_title }}</title> 
+    {% load static %}   
+    <link rel="stylesheet" href="{% static 'orgchart/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'orgchart/css/lazy-loading-styles.css' %}">
+    <link rel="stylesheet" href="{% static 'orgchart/css/error-screens.css' %}">
+    <link rel="stylesheet" href="{% static 'orgchart/css/export-loading.css' %}">
+    <link rel="stylesheet" href="{% static 'orgchart/css/profile-details.css' %}">
+    <link rel="stylesheet" href="{% static 'orgchart/css/blurred-preview.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Chart type indicator */
+    .chart-type-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #3b82f6;
+        margin-right: 1rem;
+    }
+
+    .chart-type-indicator i {
+        font-size: 1rem;
+    }
+
+    /* Employee details blur for privacy - ONLY NAMES */
+    .person-card .person-name {
+        filter: blur(2px);
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Keep job titles visible */
+    .person-card .person-title {
+        filter: none;
+        -webkit-user-select: auto;
+        user-select: auto;
+    }
+
+    /* Blurred text in employee details - ONLY NAMES */
+    .blurred-text {
+        filter: blur(3px);
+        -webkit-filter: blur(3px);
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        font-family: monospace;
+        color: #666;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        padding: 2px 6px;
+        display: inline-block;
+    }
+
+    /* Keep profile information visible except names */
+    .profile-section,
+    .profile-details {
+        filter: none;
+    }
+
+    /* Override blur for the details panel when opened */
+    #rightPanel .profile-details {
+        filter: none !important;
+    }
+
+    /* Enhanced detail item styling */
+    .detail-item {
+        margin-bottom: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .detail-item span {
+        display: block;
+        font-size: 14px;
+        color: #333;
+        font-weight: 400;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    /* Profile header styling */
+    .profile-header {
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+    }
+
+    .profile-title h3 {
+        font-size: 20px;
+        margin: 0 0 4px 0;
+        font-weight: 600;
+    }
+
+    .profile-title p {
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    /* Contact icons styling */
+    .contact-icons {
+        display: flex;
+        gap: 12px;
+        margin: 20px 0;
+        padding: 0 20px;
+    }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .contact-icon:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .contact-icon svg {
+        width: 18px;
+        height: 18px;
+        color: #495057;
+    }
+
+    /* Profile details container */
+    .profile-details {
+        padding: 20px;
+        background: white;
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+    }
+
+    /* Close button styling */
+    .close-panel {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: white;
+    }
+
+    .close-panel:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    /* Style for the right panel */
+    #rightPanel {
+        position: fixed;
+        right: -400px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 20px rgba(0,0,0,0.15);
+        transition: right 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+        border-left: 1px solid #e9ecef;
+    }
+
+    #rightPanel.active {
+        right: 0;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        #rightPanel {
+            width: 100%;
+            right: -100%;
+        }
+        
+        .detail-item {
+            padding: 10px 0;
+        }
+        
+        .profile-header {
+            padding: 15px;
+        }
+        
+        .contact-icons {
+            padding: 0 15px;
+        }
+        
+        .profile-details {
+            padding: 15px;
+        }
+    }
+
+    /* Scrollbar styling */
+    #rightPanel::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #rightPanel::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    #rightPanel::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    #rightPanel::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    /* Loading animation for blurred text */
+    .blurred-text {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { opacity: 0.8; }
+    }
+
+    /* Improved typography */
+    .right-panel-content {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    /* Status indicators */
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #28a745;
+        margin-right: 8px;
+        position: relative;
+        top: -1px;
+    }
+
+    /* Email and phone formatting */
+    .contact-info {
+        font-family: 'Courier New', monospace;
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 13px;
+    }
+
+    .right-panel-content {
+        padding: 20px;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .profile-photo {
+        margin-right: 15px;
+    }
+
+    .profile-initials {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 24px;
+    }
+
+    .profile-title h3 {
+        margin: 0;
+        font-size: 20px;
+        color: #333;
+    }
+
+    .profile-title p {
+        margin: 5px 0 0 0;
+        color: #666;
+    }
+
+    .close-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close-panel:hover {
+        color: #333;
+    }
+
+    .contact-icons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #4A90E2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+    }
+
+    .contact-icon:hover {
+        background: #357ABD;
+    }
+
+    .detail-item {
+        margin-bottom: 15px;
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .detail-item span {
+        display: block;
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* Fix floating action buttons positioning */
+    .floating-actions {
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1002;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        background: #4A90E2;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn:hover {
+        background: #357ABD;
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn i {
+        font-size: 16px;
+    }
+
+    /* Ensure expand/collapse buttons are functional in preview mode */
+    #expandAll, #collapseAll {
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        background: #28a745 !important;
+    }
+
+    #expandAll:hover, #collapseAll:hover {
+        background: #218838 !important;
+    }
+
+    /* Distinguish expand/collapse from other disabled buttons */
+    .action-btn.preview-disabled {
+        opacity: 0.6;
+        pointer-events: none;
+        background: #cccccc !important;
+    }
+
+    .action-btn.preview-disabled::after {
+        content: "🔒 Purchase Required";
+        position: absolute;
+        top: -35px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        z-index: 1001;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .action-btn.preview-disabled:hover::after {
+        opacity: 1;
+    }
+
+    /* Animation for active expand/collapse buttons */
+    @keyframes pulse-green {
+        0% { 
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        50% { 
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+        }
+        100% { 
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+    }
+
+    /* Purchase Section Styles */
+    .purchase-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .purchase-message h4 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .purchase-message p {
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        text-align: center;
+        opacity: 0.9;
+        line-height: 1.4;
+    }
+
+    .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .benefits-list li {
+        padding: 4px 0;
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    .purchase-buttons {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+    }
+
+    .btn-purchase-now, .btn-add-to-cart {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-purchase-now {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-purchase-now:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-add-to-cart {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-add-to-cart:hover {
+        background: #138496;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+    }
+
+    .btn-purchase-now i, .btn-add-to-cart i {
+        font-size: 14px;
+    }
+
+    /* Responsive design for purchase section */
+    @media (min-width: 600px) {
+        .purchase-buttons {
+            flex-direction: row;
+        }
+        
+        .btn-purchase-now, .btn-add-to-cart {
+            flex: 1;
+        }
+    }
+</style>
+
+</head>
+
+<body data-chartid="{{ chart_uuid }}">
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="export-loading-overlay" style="display: none;">
+        <div class="export-loading-container">
+            <div class="org-chart-loader">
+                <!-- CEO Node -->
+                <div class="org-node ceo-node"></div>
+                
+                <!-- Connecting Lines -->
+                <div class="org-line vertical-line"></div>
+                <div class="org-line horizontal-line"></div>
+                <div class="org-line branch-line-1"></div>
+                <div class="org-line branch-line-2"></div>
+                <div class="org-line branch-line-3"></div>
+
+                <!-- Manager Nodes -->
+                <div class="org-node manager-node-1">HR</div>
+                <div class="org-node manager-node-2">IT</div>
+                <div class="org-node manager-node-3">FIN</div>
+
+                <!-- Employee Nodes -->
+                <div class="org-node employee-node-1">👤</div>
+                <div class="org-node employee-node-2">👤</div>
+                <div class="org-node employee-node-3">👤</div>
+                <div class="org-node employee-node-4">👤</div>
+
+                <!-- Data Flow Animation -->
+                <div class="data-flow flow-1"></div>
+                <div class="data-flow flow-2"></div>
+                <div class="data-flow flow-3"></div>
+
+                <!-- Ambient Geometric Shapes -->
+                <div class="geometric-ambient ambient-triangle"></div>
+                <div class="geometric-ambient ambient-circle"></div>
+                <div class="geometric-ambient ambient-square"></div>
+            </div>
+
+            <h3>Loading Organization Chart</h3>
+            <p>Connecting to server and retrieving organizational data...</p>
+
+            <div class="export-status" id="loadingStatus">Establishing connection...</div>
+
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="file-icon" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="container"  id="main" style="display: none;">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="nav-left">
+                <div class="logo-section">
+                    <i class="fas fa-sitemap"></i>
+                    <span class="app-title">{{ chart_title }}</span>
+                </div>
+            </div>
+            
+            <div class="nav-center">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search employees, departments...">
+                    <button class="search-clear" id="clearSearch" title="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="chart-type-indicator">
+                    <i class="fas fa-sitemap"></i>
+                    <span>Org Chart</span>
+                </div>
+                <div class="total-count">
+                    <i class="fas fa-users"></i>
+                    <span>Total: {{ total_employees|default:"52" }} People</span>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="export-controls">
+                    <button class="btn btn-export" id="exportDropdown" title="Export options">
+                        <i class="fas fa-download"></i>
+                        Export
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </button>                    
+                    <div class="export-dropdown" id="exportMenu">
+                        <div class="export-option" data-format="png">
+                            <i class="fas fa-file-image"></i>
+                            Export as PNG
+                        </div>
+                        <div class="export-option" data-format="pdf">
+                            <i class="fas fa-file-pdf"></i>
+                            Export as PDF
+                        </div>
+                        <div class="export-option" data-format="csv">
+                            <i class="fas fa-file-csv"></i>
+                            Export as CSV
+                        </div>
+                        <div class="export-option" data-format="excel">
+                            <i class="fas fa-file-excel"></i>
+                            Export as Excel
+                        </div>
+                    </div>
+                    <div class="non-functional-overlay"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            
+            <!-- Floating action buttons (Expand/Collapse enabled in preview) -->
+            <div class="floating-actions">
+                <button class="action-btn" id="expandAll" title="Expand all sections">
+                    <i class="fas fa-expand-alt"></i>
+                </button>
+                <button class="action-btn" id="collapseAll" title="Collapse all sections">
+                    <i class="fas fa-compress-alt"></i>
+                </button>
+                <button class="action-btn sidebar-toggle preview-disabled" id="sidebarToggle" title="Toggle filters" disabled>
+                    <i class="bi bi-funnel"></i>
+                </button>
+            </div>
+            
+            <!-- Left Sidebar (Non-functional in preview) -->
+            <div class="sidebar preview-disabled" id="sidebar">
+                <div class="sidebar-header">
+                    <i class="bi bi-funnel"></i>
+                    <h3>Filters (Preview)</h3>
+                </div>
+                <div class="filter-groups-container" id="filterGroupsContainer">
+                    <!-- Static filter groups for preview -->
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <span class="filter-group-title">Department</span>
+                            <span class="filter-count">5</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" disabled>
+                                <span>Engineering</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" disabled>
+                                <span>Marketing</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" disabled>
+                                <span>Sales</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <span class="filter-group-title">Location</span>
+                            <span class="filter-count">3</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" disabled>
+                                <span>New York</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" disabled>
+                                <span>San Francisco</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-footer">
+                    <button class="remove-filters" id="clearAllFilters" disabled>
+                        <i class="fas fa-times"></i>
+                        <span>Clear All</span>
+                    </button>
+                </div>
+                <div class="non-functional-overlay"></div>
+            </div>
+            
+            <!-- Organization Chart -->
+            <div class="chart-container">
+                <div class="org-chart">
+                    <!-- Chart will be generated dynamically with limited data -->
+                </div>
+            </div>
+            
+            <!-- Right Panel (Limited functionality in preview) -->
+            <div class="right-panel preview-disabled" id="rightPanel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Employee Details</h2>
+                    <span class="panel-back-arrow"><i class="bi bi-arrow-right"></i></span>
+                </div>
+                <div class="panel-content">
+                    <div class="profile-section">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar-text">?</span>
+                        </div>
+                        <p class="preview-hidden-text">
+                            Employee details are hidden in preview mode
+                        </p>
+                    </div> 
+                    <div class="profile-details">
+                        <div class="contact-icons">
+                            <div class="contact-icon web" title="Website">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                </svg>
+                            </div>
+                            <div class="contact-icon email" title="Email">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </div>
+                            <div class="contact-icon location" title="Location">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="non-functional-overlay"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel for Employee Details -->
+    <div id="rightPanel" class="right-panel">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+
+    <script src="{% static 'orgchart/js/script.js' %}"></script>
+    <script>
+        // Flag to identify preview mode
+        window.isPreviewMode = true;
+        
+        // Function to show original employee data in preview mode
+        function showOriginalEmployeeData(personId) {
+            // In preview mode, we'll show the original data from the chart
+            const originalData = orgData.nodes.find(node => 
+                node.node_type === 'Person' && (node.id == personId || node.personId === personId)
+            );
+            
+            if (originalData) {
+                const rightPanel = document.getElementById('rightPanel');
+                if (rightPanel) {
+                    rightPanel.classList.add('active');
+                    rightPanel.innerHTML = `
+                        <div class="right-panel-content">
+                            <div class="profile-header">
+                                <div class="profile-photo">
+                                    <div class="profile-initials" style="background: #4A90E2;">
+                                        ${originalData.name ? originalData.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'UN'}
+                                    </div>
+                                </div>
+                                <div class="profile-title">
+                                    <h3>${originalData.name || 'N/A'}</h3>
+                                    <p>${originalData.designation || 'N/A'}</p>
+                                </div>
+                                <button class="close-panel" onclick="document.getElementById('rightPanel').classList.remove('active')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="contact-icons">
+                                ${originalData.domain ? `<div class="contact-icon web" title="Website">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                    </svg>
+                                </div>` : ''}
+                                ${originalData.email_id ? `<div class="contact-icon email" title="Email">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                    </svg>
+                                </div>` : ''}
+                                ${originalData.boardline_number ? `<div class="contact-icon phone" title="Phone">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                                    </svg>
+                                </div>` : ''}
+                                ${originalData.primary_address ? `<div class="contact-icon location" title="Location">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                    </svg>
+                                </div>` : ''}
+                            </div>
+                            <div class="profile-details">
+                                <div class="detail-item">
+                                    <label>FULL NAME</label>
+                                    <span>${originalData.name || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>DESIGNATION</label>
+                                    <span><span class="status-indicator"></span>${originalData.designation || 'N/A'}</span>
+                                </div>
+                                ${originalData.email_id ? `<div class="detail-item">
+                                    <label>EMAIL ADDRESS</label>
+                                    <span class="contact-info">${originalData.email_id}</span>
+                                </div>` : ''}
+                                ${originalData.boardline_number ? `<div class="detail-item">
+                                    <label>BOARDLINE NUMBER</label>
+                                    <span class="contact-info">${originalData.boardline_number}</span>
+                                </div>` : ''}
+                                ${originalData.department ? `<div class="detail-item">
+                                    <label>DEPARTMENT NAME</label>
+                                    <span>${originalData.department}</span>
+                                </div>` : ''}
+                                ${originalData.organization_name ? `<div class="detail-item">
+                                    <label>ORGANIZATION NAME</label>
+                                    <span>${originalData.organization_name}</span>
+                                </div>` : ''}
+                                ${originalData.seniority_level ? `<div class="detail-item">
+                                    <label>SENIORITY LEVEL</label>
+                                    <span>${originalData.seniority_level}</span>
+                                </div>` : ''}
+                                ${originalData.job_function ? `<div class="detail-item">
+                                    <label>JOB FUNCTION</label>
+                                    <span>${originalData.job_function}</span>
+                                </div>` : ''}
+                                ${originalData.city ? `<div class="detail-item">
+                                    <label>CITY/TOWN</label>
+                                    <span>${originalData.city}</span>
+                                </div>` : ''}
+                                ${originalData.state ? `<div class="detail-item">
+                                    <label>STATE/PROVINCE</label>
+                                    <span>${originalData.state}</span>
+                                </div>` : ''}
+                                ${originalData.country ? `<div class="detail-item">
+                                    <label>COUNTRY/REGION</label>
+                                    <span>${originalData.country}</span>
+                                </div>` : ''}
+                                ${originalData.postal_code ? `<div class="detail-item">
+                                    <label>POSTAL CODE</label>
+                                    <span>${originalData.postal_code}</span>
+                                </div>` : ''}
+                                ${originalData.primary_address ? `<div class="detail-item">
+                                    <label>PRIMARY ADDRESS</label>
+                                    <span>${originalData.primary_address}</span>
+                                </div>` : ''}
+                                
+                                <!-- Purchase Now Section -->
+                                <div class="purchase-section">
+                                    <div class="purchase-message">
+                                        <h4>💼 Unlock Full Access</h4>
+                                        <p>Get complete access to all employee data, contact information, and organizational insights.</p>
+                                        <ul class="benefits-list">
+                                            <li>✅ Full employee directory access</li>
+                                            <li>✅ Direct contact information</li>
+                                            <li>✅ Downloadable formats (PDF, Excel, CSV)</li>
+                                            <li>✅ Advanced filtering and search</li>
+                                            <li>✅ No usage limitations</li>
+                                        </ul>
+                                    </div>
+                                    <div class="purchase-buttons">
+                                        <button class="btn-purchase-now" onclick="redirectToPurchase()">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            Purchase Now
+                                        </button>
+                                        <button class="btn-add-to-cart" onclick="addToCart()">
+                                            <i class="fas fa-plus"></i>
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Override for blurred preview mode
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set preview mode flag for API requests
+            window.isPreviewMode = true;
+            
+            // Override the chart data fetching to include preview mode flag
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                if (url.includes('/api/request/chart/')) {
+                    // Parse the existing body and add preview_mode flag
+                    if (options && options.body) {
+                        try {
+                            const body = JSON.parse(options.body);
+                            body.preview_mode = true;
+                            options.body = JSON.stringify(body);
+                            console.log('Modified request body for preview mode:', options.body);
+                        } catch (e) {
+                            console.error('Error modifying request body:', e);
+                        }
+                    }
+                }
+                return originalFetch.call(this, url, options);
+            };
+            
+            // Apply blurring effects after the original chart loads
+            setTimeout(function() {
+                applyBlurringEffects();
+                enablePreviewModeFeatures();
+            }, 1000);
+        });
+
+        // Enable preview mode specific features
+        function enablePreviewModeFeatures() {
+            // Enable expand all button in preview mode
+            const expandAllBtn = document.getElementById('expandAll');
+            const collapseAllBtn = document.getElementById('collapseAll');
+            
+            if (expandAllBtn) {
+                expandAllBtn.disabled = false;
+                expandAllBtn.style.opacity = '1';
+                expandAllBtn.style.cursor = 'pointer';
+                expandAllBtn.title = 'Expand All - Available in Preview';
+                
+                // Add visual indicator that this button is functional
+                expandAllBtn.style.background = '#28a745';
+                expandAllBtn.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+                
+                // Add click handler for expand all
+                expandAllBtn.addEventListener('click', function() {
+                    console.log('Expand all button clicked');
+                    expandAllNodes();
+                });
+            }
+            
+            if (collapseAllBtn) {
+                collapseAllBtn.disabled = false;
+                collapseAllBtn.style.opacity = '1';
+                collapseAllBtn.style.cursor = 'pointer';
+                collapseAllBtn.title = 'Collapse All - Available in Preview';
+                
+                // Add visual indicator that this button is functional
+                collapseAllBtn.style.background = '#28a745';
+                collapseAllBtn.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+                
+                // Add click handler for collapse all
+                collapseAllBtn.addEventListener('click', function() {
+                    console.log('Collapse all button clicked');
+                    collapseAllNodes();
+                });
+            }
+            
+            // Add a subtle animation to indicate these buttons are active
+            [expandAllBtn, collapseAllBtn].forEach(btn => {
+                if (btn) {
+                    btn.style.animation = 'pulse-green 3s ease-in-out';
+                }
+            });
+        }
+
+        // Function to expand all nodes in the chart
+        function expandAllNodes() {
+            console.log('Expanding all nodes in preview mode...');
+            
+            // Check if original chart's expand functionality is available
+            if (typeof expandAll === 'function') {
+                expandAll();
+                return;
+            }
+            
+            // Alternative: Use the original chart's global expand function
+            if (typeof window.expandAll === 'function') {
+                window.expandAll();
+                return;
+            }
+            
+            // Fallback implementation for manual expansion
+            try {
+                // Find all expand/collapse toggle buttons
+                const expandButtons = document.querySelectorAll('.expand-btn, .collapse-btn, .toggle-btn, [data-toggle="collapse"]');
+                
+                expandButtons.forEach(btn => {
+                    if (btn.classList.contains('collapsed') || btn.getAttribute('aria-expanded') === 'false') {
+                        btn.click();
+                    }
+                });
+                
+                // Find all collapsed nodes and expand them
+                const collapsedNodes = document.querySelectorAll('.person-card.collapsed, .department-card.collapsed, .organization-card.collapsed, .node.collapsed');
+                
+                collapsedNodes.forEach(node => {
+                    node.classList.remove('collapsed');
+                    node.classList.add('expanded');
+                });
+                
+                // Show all hidden child nodes
+                const hiddenNodes = document.querySelectorAll('.person-card.hidden, .department-card.hidden, .organization-card.hidden, .node.hidden');
+                hiddenNodes.forEach(node => {
+                    node.classList.remove('hidden');
+                    node.style.display = 'block';
+                });
+                
+                // Try to trigger any existing expand event handlers
+                const expandEvent = new CustomEvent('expandAll', { bubbles: true });
+                document.dispatchEvent(expandEvent);
+                
+                console.log('Manual expansion completed');
+            } catch (error) {
+                console.error('Error expanding nodes:', error);
+            }
+        }
+
+        // Function to collapse all nodes in the chart
+        function collapseAllNodes() {
+            console.log('Collapsing all nodes in preview mode...');
+            
+            // Check if original chart's collapse functionality is available
+            if (typeof collapseAll === 'function') {
+                collapseAll();
+                return;
+            }
+            
+            // Alternative: Use the original chart's global collapse function
+            if (typeof window.collapseAll === 'function') {
+                window.collapseAll();
+                return;
+            }
+            
+            // Fallback implementation for manual collapse
+            try {
+                // Find all expand/collapse toggle buttons
+                const expandButtons = document.querySelectorAll('.expand-btn, .collapse-btn, .toggle-btn, [data-toggle="collapse"]');
+                
+                expandButtons.forEach(btn => {
+                    if (btn.classList.contains('expanded') || btn.getAttribute('aria-expanded') === 'true') {
+                        btn.click();
+                    }
+                });
+                
+                // Find all expanded nodes and collapse them
+                const expandedNodes = document.querySelectorAll('.person-card.expanded, .department-card.expanded, .organization-card.expanded, .node.expanded');
+                
+                expandedNodes.forEach(node => {
+                    node.classList.remove('expanded');
+                    node.classList.add('collapsed');
+                });
+                
+                // Try to trigger any existing collapse event handlers
+                const collapseEvent = new CustomEvent('collapseAll', { bubbles: true });
+                document.dispatchEvent(collapseEvent);
+                
+                console.log('Manual collapse completed');
+            } catch (error) {
+                console.error('Error collapsing nodes:', error);
+            }
+        }
+
+        function applyBlurringEffects() {
+            // Add blurred class to person cards
+            document.querySelectorAll('.person-card').forEach(card => {
+                card.classList.add('blurred-preview');
+                
+                // Override click handlers to show blurred details
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showBlurredPersonDetails(this);
+                });
+            });
+        }
+
+        // Function to show blurred person details
+        function showBlurredPersonDetails(card) {
+            const personId = card.dataset.personId;
+            
+            // In preview mode, show original employee data
+            if (window.isPreviewMode) {
+                showOriginalEmployeeData(personId);
+                return;
+            }
+            
+            // Generate blurred employee details (fallback for regular mode)
+            const blurredDetails = generateBlurredPersonDetails(personId);
+            
+            // Show the right panel with blurred details
+            const rightPanel = document.getElementById('rightPanel');
+            if (rightPanel) {
+                rightPanel.classList.add('active');
+                rightPanel.innerHTML = `
+                    <div class="right-panel-content">
+                        <div class="profile-header">
+                            <div class="profile-photo">
+                                <div class="profile-initials" style="background: #4A90E2;">
+                                    ${blurredDetails.initials}
+                                </div>
+                            </div>
+                            <div class="profile-title">
+                                <h3><span class="blurred-text">${blurredDetails.name}</span></h3>
+                                <p>${blurredDetails.title}</p>
+                            </div>
+                            <button class="close-panel" onclick="document.getElementById('rightPanel').classList.remove('active')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="profile-details">
+                            <div class="contact-icons">
+                                <div class="contact-icon web" title="Website">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                    </svg>
+                                </div>
+                                <div class="contact-icon email" title="Email">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                    </svg>
+                                </div>
+                                <div class="contact-icon phone" title="Phone">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                                    </svg>
+                                </div>
+                                <div class="contact-icon location" title="Location">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <label>FULL NAME</label>
+                                <span class="blurred-text">${blurredDetails.name}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>DESIGNATION</label>
+                                <span><span class="status-indicator"></span>${blurredDetails.title}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>EMAIL ADDRESS</label>
+                                <span class="contact-info">${blurredDetails.email}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>BOARDLINE NUMBER</label>
+                                <span class="contact-info">${blurredDetails.phone}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>DEPARTMENT NAME</label>
+                                <span>${blurredDetails.department}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>ORGANIZATION NAME</label>
+                                <span>${blurredDetails.organization}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>CITY/TOWN</label>
+                                <span>${blurredDetails.city}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>STATE/PROVINCE</label>
+                                <span>${blurredDetails.state}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>COUNTRY/REGION</label>
+                                <span>${blurredDetails.country}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>POSTAL CODE</label>
+                                <span>${blurredDetails.postal}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>PRIMARY ADDRESS</label>
+                                <span>${blurredDetails.address}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to generate blurred person details
+        function generateBlurredPersonDetails(personId) {
+            const blurredNames = ["J*** S****", "A*** P****", "R*** K****", "M*** T****", "S*** R****", "D*** M****", "K*** L****", "N*** W****"];
+            
+            // Keep all other information visible and realistic
+            const departments = ["Sales", "Marketing", "IT", "HR", "Finance", "Operations", "Customer Service", "Product Development"];
+            const organizations = ["TechCorp", "InnovateInc", "SolutionsCo", "GlobalTech", "ProServices", "DataSystems", "SmartSolutions"];
+            const cities = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Pune", "Hyderabad", "Kolkata", "Ahmedabad", "Jaipur"];
+            const states = ["Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Telangana", "West Bengal", "Gujarat", "Rajasthan"];
+            const countries = ["India", "USA", "UK", "Canada", "Australia", "Singapore", "UAE"];
+            const postalCodes = ["400001", "110001", "560001", "600001", "500001", "700001", "380001", "302001"];
+            const jobTitles = [
+                "Sales Executive", "Marketing Manager", "Software Engineer", "HR Specialist", "Finance Analyst", 
+                "Operations Manager", "Customer Success Manager", "Product Manager", "Data Scientist", 
+                "Business Analyst", "Team Lead", "Senior Developer", "Project Manager"
+            ];
+            
+            const randomIndex = Math.floor(Math.random() * blurredNames.length);
+            const name = blurredNames[randomIndex];
+            const orgIndex = Math.floor(Math.random() * organizations.length);
+            const cityIndex = Math.floor(Math.random() * cities.length);
+            
+            // Generate consistent email based on organization
+            const emailDomain = organizations[orgIndex].toLowerCase() + ".com";
+            const emailPrefix = name.toLowerCase().replace(/\*/g, '').replace(/\s+/g, '.');
+            
+            return {
+                initials: name.charAt(0) + name.split(' ')[1].charAt(0),
+                name: name, // Only names are blurred
+                title: jobTitles[Math.floor(Math.random() * jobTitles.length)], // Keep titles visible
+                email: `${emailPrefix}@${emailDomain}`,
+                phone: `+91 ${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+                department: departments[Math.floor(Math.random() * departments.length)],
+                organization: organizations[orgIndex],
+                city: cities[cityIndex],
+                state: states[Math.min(cityIndex, states.length - 1)],
+                country: countries[Math.floor(Math.random() * countries.length)],
+                postal: postalCodes[Math.min(cityIndex, postalCodes.length - 1)],
+                address: `${Math.floor(Math.random() * 999) + 1}, ${Math.floor(Math.random() * 50) + 1}th Street, ${cities[cityIndex]}`
+            };
+        }
+
+        // Purchase functions for preview mode
+        function redirectToPurchase() {
+            console.log('Redirecting to purchase page...');
+            
+            // Show loading message
+            const purchaseBtn = document.querySelector('.btn-purchase-now');
+            if (purchaseBtn) {
+                purchaseBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
+                purchaseBtn.disabled = true;
+            }
+            
+            // Get chart ID from current URL
+            const currentUrl = window.location.href;
+            const chartId = currentUrl.match(/preview-chart\/(\d+)/);
+            
+            if (chartId) {
+                // For simplicity, always redirect to marketplace with login check
+                // The marketplace will handle authentication
+                setTimeout(() => {
+                    window.location.href = `/marketplace/?direct_purchase=${chartId[1]}`;
+                }, 1000);
+            } else {
+                // Fallback to general marketplace
+                setTimeout(() => {
+                    window.location.href = '/marketplace/';
+                }, 1000);
+            }
+        }
+
+        function addToCart() {
+            console.log('Adding to cart...');
+            
+            // Show loading message
+            const cartBtn = document.querySelector('.btn-add-to-cart');
+            if (cartBtn) {
+                cartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                cartBtn.disabled = true;
+            }
+            
+            // Get chart ID from current URL
+            const currentUrl = window.location.href;
+            const chartId = currentUrl.match(/preview-chart\/(\d+)/);
+            
+            if (chartId) {
+                // Make AJAX request to add to cart
+                fetch(`/cart/add/${chartId[1]}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        'chart_id': chartId[1]
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        if (cartBtn) {
+                            cartBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
+                            cartBtn.style.background = '#28a745';
+                        }
+                        
+                        // Show notification
+                        showNotification('Chart added to cart successfully!', 'success');
+                        
+                        // Reset button after 3 seconds
+                        setTimeout(() => {
+                            if (cartBtn) {
+                                cartBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> View Cart';
+                                cartBtn.onclick = () => window.location.href = '/cart/';
+                            }
+                        }, 3000);
+                    } else {
+                        // Show error message
+                        showNotification(data.message || 'Failed to add to cart', 'error');
+                        
+                        // Reset button
+                        if (cartBtn) {
+                            cartBtn.innerHTML = '<i class="fas fa-plus"></i> Add to Cart';
+                            cartBtn.disabled = false;
+                            cartBtn.style.background = '#17a2b8';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding to cart:', error);
+                    
+                    // Reset button first
+                    if (cartBtn) {
+                        cartBtn.innerHTML = '<i class="fas fa-plus"></i> Add to Cart';
+                        cartBtn.disabled = false;
+                        cartBtn.style.background = '#17a2b8';
+                    }
+                    
+                    // Check if the response indicates authentication is required
+                    if (error.message.includes('401') || error.message.includes('403')) {
+                        showNotification('Please login to add items to your cart', 'info');
+                        
+                        // Add login button to the purchase section
+                        setTimeout(() => {
+                            if (cartBtn) {
+                                cartBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login to Add';
+                                cartBtn.onclick = () => {
+                                    window.location.href = `/signin/?next=${encodeURIComponent(window.location.href)}`;
+                                };
+                            }
+                        }, 1000);
+                    } else {
+                        showNotification('Please login to add items to your cart', 'info');
+                        
+                        // Show login option
+                        setTimeout(() => {
+                            if (cartBtn) {
+                                cartBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login to Add';
+                                cartBtn.onclick = () => {
+                                    window.location.href = `/signin/?next=${encodeURIComponent(window.location.href)}`;
+                                };
+                            }
+                        }, 2000);
+                    }
+                });
+            } else {
+                showNotification('Chart not found. Please try again.', 'error');
+            }
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Helper function to show notifications
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.preview-notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `preview-notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="notification-icon">
+                        ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+                    </span>
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            // Add styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                animation: slideInRight 0.3s ease-out;
+                max-width: 350px;
+                word-wrap: break-word;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            `;
+            
+            // Add to document
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        // Add animation styles for notifications
+        const notificationStyles = document.createElement('style');
+        notificationStyles.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .notification-close {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0;
+                margin-left: auto;
+            }
+            
+            .notification-close:hover {
+                opacity: 0.7;
+            }
+        `;
+        document.head.appendChild(notificationStyles);
+    </script>
+</body>
+</html>

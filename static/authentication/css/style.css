@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-image: url('/media/img/background.webp'); 
+    background-image: url('/static/background.webp'); 
     background-size: cover; 
     background-position: center; 
     color: #fff;
@@ -66,7 +66,7 @@ body {
   }
   
   input:focus {
-    box-shadow: 0 0 10px #2bb1e0;
+    box-shadow: 0 0 10px rgb(1, 1, 1);
     outline: none;
   }
   
@@ -101,7 +101,7 @@ body {
   }
   
   .login-button:active {
-    box-shadow: 0 0 10px #2bb1e0;
+    box-shadow: 0 0 10px rgb(0, 0, 0);
   }
   
   .register-link {
@@ -114,7 +114,7 @@ body {
   }
   
   .register-link:active {
-    box-shadow: 0 0 10px #2bb1e0;
+    box-shadow: 0 0 10px #080808;
   }
   
   @media (max-width: 480px) {
@@ -180,4 +180,95 @@ body {
     color: #999;
     margin-top: -28px;
     margin-bottom: -28px;
+}
+
+/* Admin Panel Customizations */
+.admin-login-form {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.admin-title {
+    color: #2bb1e0;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.admin-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: #313131;
+    transition: all 0.3s ease;
+}
+
+.admin-input:focus {
+    border-color: #2bb1e0;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 15px rgba(43, 177, 224, 0.3);
+}
+
+.admin-button {
+    background: linear-gradient(45deg, #2bb1e0, #1e90ff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(43, 177, 224, 0.4);
+}
+
+/* Admin Dashboard Cards */
+.admin-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-left: 4px solid #2bb1e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px 0;
+    transition: transform 0.3s ease;
+}
+
+.admin-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(60, 224, 242, 0.1);
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-top: 3px solid #2bb1e0;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2bb1e0;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }

@@ -9,7 +9,8 @@ import os
 
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.landing, name='landing'),  # Public landing page
+    path('dashboard/', views.home, name='home'),  # Authenticated dashboard
     path('signup', views.signup, name='signup'),
     path('activate/<uidb64>/<token>', views.activate, name='activate'),
     path('signin', views.signin, name='signin'),
@@ -21,6 +22,7 @@ urlpatterns = [
     path('myaccount', views.myaccount, name='myaccount'),
     path("upload_csv/", views.upload_csv, name="upload_csv"),
     # path('charts/<str:file_name>', views.serve_file, name='serve_file'),
+    path('charts/<str:file_name>', views.view_chart_by_filename, name='view_chart_by_filename'),
     path('api/request/chart/', views.serve_file, name='serve_file'), #for access managmeent
     path('delete/<int:pk>/', views.delete_file, name='delete_file'),
     path('org/manage', views.manage_access, name='manage_access'),
@@ -43,6 +45,13 @@ urlpatterns = [
     path('marketplace', views.marketplace_dash, name='marketplace_dash'),
     path('marketplace/config', views.admin_marketplace, name='admin_marketplace'),
     path('marketplace/settings/update/', views.update_marketplace_settings, name='update_marketplace_settings'),
+    
+    # Marketplace Action URLs
+    path('view-chart/<int:chart_id>/', views.view_chart_preview, name='view_chart_preview'),
+    path('preview-chart/<int:chart_id>/', views.view_chart_blurred_preview, name='view_chart_blurred_preview'),
+    path('chart/<int:chart_id>/preview/', views.view_chart_blurred_preview, name='chart_preview_public'),  # Alternative public URL
+    path('download-sample/<int:chart_id>/', views.download_chart_sample, name='download_chart_sample'),
+    path('request-sample/', views.request_sample_ajax, name='request_sample_ajax'),
     path('check-login/', views.check_login, name='check_login'),
     path('payment/create/<int:chart_id>/', views.create_payment, name='create_payment'),
     path('update-chart-details/<int:chart_id>/', views.update_chart, name='update-chart'),

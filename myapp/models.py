@@ -7,6 +7,7 @@ import os
 from django.core.exceptions import ValidationError
 import uuid
 from decimal import Decimal
+from django.conf import settings
 
 
 class MarketplaceSettings(models.Model):
@@ -150,6 +151,63 @@ class chart(models.Model):
     min_employees = models.IntegerField(null=True, blank=True)
     max_employees = models.IntegerField(null=True, blank=True)
     mp_status = models.CharField(max_length=100, default='Draft', blank=True, null=True)
+    
+    # New fields for dual chart system
+    has_preview_version = models.BooleanField(
+        default=False, 
+        help_text="Check if this chart has a separate preview version for marketplace"
+    )
+    preview_chart_title = models.CharField(
+        max_length=250, 
+        blank=True, 
+        null=True,
+        help_text="Title for the preview version (will be used for preview file name)"
+    )
+    preview_notes = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Internal notes about the preview version"
+    )
+
+    @property
+    def original_json_file_path(self):
+        """Path to the original/full chart JSON file"""
+        if self.title:
+            return os.path.join(settings.MEDIA_ROOT, "chart_data", f"{self.title}.json")
+        return None
+    
+    @property
+    def preview_json_file_path(self):
+        """Path to the preview/blurred chart JSON file"""
+        if self.has_preview_version and self.preview_chart_title:
+            return os.path.join(settings.MEDIA_ROOT, "chart_data", f"{self.preview_chart_title}.json")
+        return None
+    
+    @property
+    def original_csv_file_path(self):
+        """Path to the original/full chart CSV file"""
+        if self.title:
+            return os.path.join(settings.MEDIA_ROOT, "csv_files", f"{self.title}.csv")
+        return None
+    
+    @property
+    def preview_csv_file_path(self):
+        """Path to the preview/blurred chart CSV file"""
+        if self.has_preview_version and self.preview_chart_title:
+            return os.path.join(settings.MEDIA_ROOT, "csv_files", f"{self.preview_chart_title}.csv")
+        return None
+    
+    def get_marketplace_chart_data(self):
+        """Get the appropriate chart data for marketplace display"""
+        if self.has_preview_version and self.preview_json_file_path:
+            if os.path.exists(self.preview_json_file_path):
+                return self.preview_json_file_path
+        # Fallback to original if no preview exists
+        return self.original_json_file_path
+    
+    def get_full_chart_data(self):
+        """Get the full chart data for purchased users"""
+        return self.original_json_file_path
 
     def save(self, *args, **kwargs):
         if self.employee_range:
@@ -534,3 +592,59 @@ class RefundLog(models.Model):
     reason = models.CharField(max_length=500, blank=True, null=True)
     refund_status = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class SampleRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
+    
+    email = models.EmailField(max_length=255)
+    requirements = models.TextField(help_text="User's requirements for the sample")
+    chart = models.ForeignKey(chart, on_delete=models.CASCADE, related_name='sample_requests')
+    chart_title = models.CharField(max_length=500, help_text="Chart title at time of request")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text="User who made the request (if authenticated)")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True, null=True, help_text="Internal notes for admin use")
+    processed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='processed_sample_requests', help_text="Admin who processed this request")
+    processed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Sample Request"
+        verbose_name_plural = "Sample Requests"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Sample Request - {self.chart_title} by {self.email}"
+    
+    def approve(self, admin_user, admin_notes=None):
+        """Approve the sample request"""
+        self.status = 'approved'
+        self.processed_by = admin_user
+        self.processed_at = timezone.now()
+        if admin_notes:
+            self.admin_notes = admin_notes
+        self.save()
+    
+    def reject(self, admin_user, admin_notes=None):
+        """Reject the sample request"""
+        self.status = 'rejected'
+        self.processed_by = admin_user
+        self.processed_at = timezone.now()
+        if admin_notes:
+            self.admin_notes = admin_notes
+        self.save()
+    
+    def complete(self, admin_user, admin_notes=None):
+        """Mark the sample request as completed"""
+        self.status = 'completed'
+        self.processed_by = admin_user
+        self.processed_at = timezone.now()
+        if admin_notes:
+            self.admin_notes = admin_notes
+        self.save()

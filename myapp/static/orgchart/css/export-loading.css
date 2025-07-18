@@ -10,6 +10,7 @@
         rgba(240, 249, 255, 0.95) 30%, 
         rgba(232, 245, 255, 0.95) 70%, 
         rgba(225, 245, 254, 0.95) 100%);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     z-index: 10000;
     display: flex;
@@ -33,6 +34,7 @@
     max-width: 520px;
     width: 90%;
     animation: slideIn 1s cubic-bezier(0.23, 1, 0.320, 1);
+    -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 2px solid rgba(79, 195, 247, 0.1);
     position: relative;
@@ -97,6 +99,7 @@
         inset 0 1px 0 rgba(255, 255, 255, 1);
     animation: pulseNodeLight 2.5s infinite ease-in-out;
     border: 1px solid rgba(79, 195, 247, 0.2);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
 }

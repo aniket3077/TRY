@@ -419,7 +419,7 @@ function showMobileOverlayIfNeeded() {
                 text-align: center;
             `;
             overlay.innerHTML = `
-                <div style="background: rgba(255,255,255,0.85); border-radius: 24px; box-shadow: 0 8px 32px rgba(59,130,246,0.12); padding: 2.5rem 1.5rem; max-width: 90vw;">
+                <div style="background: rgba(255,255,255,0.85); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 1); padding: 2.5rem 1.5rem; max-width: 90vw;">
                     <svg width="64" height="64" fill="none" viewBox="0 0 24 24" style="margin-bottom: 1rem;"><rect width="24" height="24" rx="12" fill="#38bdf8"/><path d="M7 17h10M9 21h6M12 3v12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
                     <h2 style="color: #0ea5e9; font-family: 'Poppins',sans-serif; font-weight: 700; margin-bottom: 0.5rem;">Desktop Only</h2>
                     <p style="color: #334155; font-size: 1.1rem; margin-bottom: 1.5rem;">Please open this page on a desktop or laptop to view the organization chart.</p>

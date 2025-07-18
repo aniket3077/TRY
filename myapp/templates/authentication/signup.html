@@ -1,30 +1,191 @@
-{% extends 'password_reset/base_password_reset.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - InsideOrgs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/media/img/favicon.svg">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'authentication/css/auth-landing-style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Alert Messages -->
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {% if message.tags == 'error' %}<strong>Error:</strong>{% elif message.tags == 'success' %}<strong>Success!</strong>{% elif message.tags == 'warning' %}<strong>Warning!</strong>{% elif message.tags == 'info' %}<strong>Info!</strong>{% endif %}
+            {{ message|safe }}
+        </div>
+        {% endfor %}
 
-{% block title %}Sign Up{% endblock %}
+        <div class="auth-card">
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-circle">
+                        <span class="logo-text-inside">IO</span>
+                    </div>
+                    <span class="logo-text-outside">InsideOrgs</span>
+                </div>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join us to create amazing organization charts</p>
+            </div>
 
-{% block content %}
-    
-    <h1 class="title">Sign up</h1>
-    <div class="card" style="width: 400px; padding: 40px;">
-        
-    <h3>Create your account!</h3>
-    <form method="post" action="/signup">
-        {% csrf_token %}
-        
-            <input type="text" class="form-control" id="username" name="username" placeholder="Create A Username (use only letters and numbers)" Required>
-            <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter Your First Name" Required>
-            <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter Your Last Name" Required>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Enter Your Email Address" Required>
-            <input type="password" class="form-control" id="pass1" name="pass1" placeholder="Create Your Password" Required>
-            <span class="toggle-password" onclick="togglePassword()"><i class="fas fa-eye-slash"></i></span>
-            <input type="password" class="form-control" id="pass2" name="pass2" placeholder="Confirm Your Password" Required>
-            <div class="buttons">
-                <a href="/signin" class="register-link">Already have an account? Log in</a>
-                  <button type="submit" class="login-button">Sign Up</button>
-              </div>
-        
-    </form>
+            <form class="auth-form" method="post" action="/signup">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <input type="text" 
+                           class="form-control" 
+                           id="username" 
+                           name="username" 
+                           placeholder="Choose a username (letters and numbers only)" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" 
+                           class="form-control" 
+                           id="fname" 
+                           name="fname" 
+                           placeholder="Enter your first name" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" 
+                           class="form-control" 
+                           id="lname" 
+                           name="lname" 
+                           placeholder="Enter your last name" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <input type="email" 
+                           class="form-control" 
+                           id="email" 
+                           name="email" 
+                           placeholder="Enter your email address" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" 
+                           class="form-control" 
+                           id="pass1" 
+                           name="pass1" 
+                           placeholder="Create a strong password" 
+                           required>
+                    <span class="password-toggle" onclick="togglePassword('pass1')">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" 
+                           class="form-control" 
+                           id="pass2" 
+                           name="pass2" 
+                           placeholder="Confirm your password" 
+                           required>
+                    <span class="password-toggle" onclick="togglePassword('pass2')">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="auth-links">
+                <p>Already have an account? <a href="/signin" class="auth-link">Sign in here</a></p>
+            </div>
+        </div>
     </div>
-    </div>
-   
-{% endblock %}
+
+    {% load static %}
+    <script src="{% static 'authentication/js/script.js' %}"></script>
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const toggle = field.nextElementSibling.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                toggle.classList.remove('fa-eye-slash');
+                toggle.classList.add('fa-eye');
+            } else {
+                field.type = 'password';
+                toggle.classList.remove('fa-eye');
+                toggle.classList.add('fa-eye-slash');
+            }
+        }
+
+        // Password strength indicator
+        document.getElementById('pass1').addEventListener('input', function() {
+            const password = this.value;
+            const confirmPassword = document.getElementById('pass2');
+            
+            // Basic password validation
+            if (password.length >= 8) {
+                this.classList.remove('error');
+                this.classList.add('success');
+            } else {
+                this.classList.remove('success');
+                if (password.length > 0) {
+                    this.classList.add('error');
+                }
+            }
+            
+            // Check password match
+            if (confirmPassword.value && password !== confirmPassword.value) {
+                confirmPassword.classList.add('error');
+                confirmPassword.classList.remove('success');
+            } else if (confirmPassword.value && password === confirmPassword.value) {
+                confirmPassword.classList.remove('error');
+                confirmPassword.classList.add('success');
+            }
+        });
+
+        // Confirm password validation
+        document.getElementById('pass2').addEventListener('input', function() {
+            const password = document.getElementById('pass1').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword && password === confirmPassword) {
+                this.classList.remove('error');
+                this.classList.add('success');
+            } else if (confirmPassword) {
+                this.classList.remove('success');
+                this.classList.add('error');
+            }
+        });
+
+        // Close alert messages automatically after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        });
+
+        // Form submission with loading state
+        document.querySelector('.auth-form').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('.btn-primary');
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Creating Account...';
+        });
+    </script>
+</body>
+</html>

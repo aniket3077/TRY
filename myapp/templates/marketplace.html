@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,6 +44,7 @@
         /* Modern Header */
         .modern-header {
             background: rgba(255, 255, 255, 0.7);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border: none;
             border-bottom: 1px solid rgba(59, 130, 246, 0.1);
@@ -75,6 +76,7 @@
         /* Material Design Cards */
         .material-card {
             background: rgba(255, 255, 255, 0.75);
+            -webkit-backdrop-filter: blur(25px);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(59, 130, 246, 0.12);
             border-radius: 24px;
@@ -97,10 +99,11 @@
 
         .card-header.material-header {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(29, 78, 216, 0.9) 100%);
+            -webkit-backdrop-filter: blur(15px);
             backdrop-filter: blur(15px);
             color: white;
             border: none;
-            padding: 1.5rem;
+            padding: 1rem;
             border-radius: 24px 24px 0 0;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
@@ -108,15 +111,16 @@
         .filter-title {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        /* Filter Sections */
+        /* Compact Filter Sections */
         .filter-section {
-            padding: 1.5rem;
+            padding: 0.75rem 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
@@ -124,32 +128,81 @@
             border-bottom: none;
         }
 
+        /* Compact Filter Toggle */
+        .filter-toggle-btn {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .filter-content.hidden {
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .filter-content.visible {
+            max-height: 1200px;
+            opacity: 1;
+            pointer-events: all;
+            padding: 0.75rem;
+        }
+
+        /* Compact Filter Toggle Container */
+        .filter-toggle-container {
+            padding: 1rem 1rem 0 1rem;
+        }
+
         .filter-section-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .filter-section-title {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             color: #4a5568;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .clear-all {
             background: none;
             border: none;
             color: #e53e3e;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 500;
             cursor: pointer;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
             transition: all 0.2s;
         }
 
@@ -158,37 +211,37 @@
             color: #c53030;
         }
 
-        /* Modern Form Controls */
+        /* Compact Form Controls */
         .modern-input {
             background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(59, 130, 246, 0.12);
-            border-radius: 16px;
-            padding: 0.875rem 1rem;
-            font-size: 0.9rem;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
             width: 100%;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .modern-input:focus {
             outline: none;
             border-color: #3b82f6;
             background: rgba(255, 255, 255, 1);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-            transform: translateY(-1px);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
         }
 
         .modern-input::placeholder {
             color: #a0aec0;
             font-weight: 400;
+            font-size: 0.8rem;
         }
 
-        /* Material Design Checkboxes */
+        /* Compact Checkboxes */
         .checkbox-container {
             background: rgba(255, 255, 255, 0.7);
-            border-radius: 16px;
-            padding: 1rem;
-            max-height: 200px;
+            border-radius: 8px;
+            padding: 0.75rem;
+            max-height: 120px;
             overflow-y: auto;
             border: 1px solid rgba(59, 130, 246, 0.12);
         }
@@ -210,9 +263,9 @@
         .material-checkbox {
             display: flex;
             align-items: center;
-            margin-bottom: 0.75rem;
-            padding: 0.5rem;
-            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 6px;
             transition: all 0.2s;
             cursor: pointer;
         }
@@ -222,15 +275,15 @@
         }
 
         .material-checkbox input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 0.75rem;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
             accent-color: #3b82f6;
             cursor: pointer;
         }
 
         .material-checkbox label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 400;
             color: #4a5568;
             cursor: pointer;
@@ -238,18 +291,18 @@
             flex: 1;
         }
 
-        /* Active Filters in Sidebar */
+        /* Compact Active Filters in Sidebar */
         .active-filters-sidebar {
-            margin-top: 1rem;
-            padding-top: 1rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
             border-top: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .active-filters-title {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: #3b82f6;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -259,31 +312,31 @@
             align-items: center;
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.95) 100%);
             color: white;
-            padding: 0.375rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
             font-weight: 500;
-            margin: 0.25rem 0.25rem 0.25rem 0;
+            margin: 0.2rem 0.2rem 0.2rem 0;
             transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+            box-shadow: 0 1px 4px rgba(59, 130, 246, 0.25);
         }
 
         .filter-chip:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
         }
 
         .chip-remove {
-            margin-left: 0.5rem;
+            margin-left: 0.4rem;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
+            width: 14px;
+            height: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 10px;
             transition: all 0.2s;
         }
 
@@ -291,33 +344,33 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Employee Range Inputs */
+        /* Compact Employee Range Inputs */
         .range-inputs {
-            
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .range-input {
-            width: 200px !important;
+            width: 100% !important;
             background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(59, 130, 246, 0.12);
-            border-radius: 12px;
-            padding: 0.75rem;
-            font-size: 0.9rem;
-            transition: all 0.3s;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            transition: all 0.2s;
         }
 
         .range-input:focus {
             outline: none;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
         }
 
         /* Company List Card */
         .company-list-card {
             background: rgba(255, 255, 255, 0.75);
+            -webkit-backdrop-filter: blur(25px);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(59, 130, 246, 0.12);
             border-radius: 24px;
@@ -354,6 +407,12 @@
             background: transparent;
             width: 100%;
             table-layout: fixed;
+        }
+
+        /* Fixed table layout for marketplace to prevent horizontal scroll */
+        .marketplace-table {
+            table-layout: fixed !important;
+            width: 100% !important;
         }
 
         .table-modern thead th {
@@ -396,6 +455,7 @@
         /* Modern Buttons */
         .btn-modern {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.95) 100%);
+            -webkit-backdrop-filter: blur(15px);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(59, 130, 246, 0.2);
             color: white;
@@ -432,6 +492,7 @@
 
         .btn-modern-outline {
             background: rgba(255, 255, 255, 0.85);
+            -webkit-backdrop-filter: blur(15px);
             backdrop-filter: blur(15px);
             border: 2px solid rgba(59, 130, 246, 0.25);
             color: #3b82f6;
@@ -465,6 +526,7 @@
 
         .btn-modern-info {
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.8) 0%, rgba(8, 145, 178, 0.9) 100%);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(6, 182, 212, 0.2);
             color: white;
@@ -498,6 +560,7 @@
         /* Crystal Free Sample Card */
         .free-sample-card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 249, 255, 0.9) 100%);
+            -webkit-backdrop-filter: blur(25px);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(59, 130, 246, 0.15);
             border-radius: 20px;
@@ -593,6 +656,7 @@
             text-align: center;
             padding: 4rem 2rem;
             background: rgba(255, 255, 255, 0.9);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border-radius: 24px;
             margin: 2rem;
@@ -618,14 +682,21 @@
             font-size: 1rem;
         }
 
-        /* Container */
+        /* Container - Prevent horizontal scroll */
         .container {
             max-width: 1600px;
             margin: 0 auto;
             padding: 0 1rem;
+            overflow-x: hidden;
         }
 
-        /* Mini Cart Hover */
+        /* Table responsive wrapper - Better scroll control */
+        .table-responsive {
+            border: none;
+            overflow-x: auto;
+            margin: 0;
+            max-width: 100%;
+        }
         .cart-container {
             position: relative;
             display: inline-block;
@@ -636,6 +707,7 @@
             top: 100%;
             right: 0;
             background: rgba(255, 255, 255, 0.98);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(59, 130, 246, 0.1);
             border-radius: 16px;
@@ -775,6 +847,7 @@
         /* Modern Toast Notifications */
         .toast {
             background: rgba(255, 255, 255, 0.95) !important;
+            -webkit-backdrop-filter: blur(25px) !important;
             backdrop-filter: blur(25px) !important;
             border: 1px solid rgba(59, 130, 246, 0.15) !important;
             border-radius: 16px !important;
@@ -857,6 +930,154 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        /* Sidebar Toggle Styles */
+        #filterSidebar {
+            transition: all 0.3s ease;
+        }
+
+        #filterSidebar.hidden {
+            display: none !important;
+        }
+
+        #mainContent {
+            transition: all 0.3s ease;
+        }
+
+        #mainContent.full-width {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        /* Header Filter Button */
+        #headerFilterToggle {
+            transition: all 0.3s ease;
+        }
+
+        #headerFilterToggle.active {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+
+        /* Table column widths - Optimized to prevent horizontal scroll */
+        .marketplace-table th:nth-child(1) { width: 30%; }
+        .marketplace-table th:nth-child(2) { width: 12%; }
+        .marketplace-table th:nth-child(3) { width: 10%; }
+        .marketplace-table th:nth-child(4) { width: 15%; }
+        .marketplace-table th:nth-child(5) { width: 33%; min-width: 280px; }
+
+        /* Compact Action Buttons - Smaller and more efficient */
+        .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.7rem !important;
+            min-width: auto !important;
+            white-space: nowrap;
+            border-radius: 5px !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: none !important;
+        }
+
+        .view-chart-btn {
+            background: transparent !important;
+            color: #3b82f6 !important;
+            border: 1.5px solid #3b82f6 !important;
+        }
+
+        .view-chart-btn:hover {
+            background: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+        }
+
+        .get-sample-btn {
+            background: #10b981 !important;
+            color: white !important;
+            border: 1.5px solid #10b981 !important;
+        }
+
+        .get-sample-btn:hover {
+            background: #059669 !important;
+            border-color: #059669 !important;
+        }
+
+        .add-to-cart-btn {
+            background: #f59e0b !important;
+            color: white !important;
+            border: 1.5px solid #f59e0b !important;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #d97706 !important;
+            border-color: #d97706 !important;
+        }
+
+        /* Button Icons - Smaller */
+        .action-buttons .material-icons {
+            font-size: 0.8rem !important;
+            margin-right: 0.3rem !important;
+        }
+
+        /* Responsive action buttons - Improved breakpoints */
+        @media (max-width: 1400px) {
+            .marketplace-table th:nth-child(5) { min-width: 250px; }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                padding: 0.35rem 0.7rem !important;
+                font-size: 0.65rem !important;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .marketplace-table th:nth-child(5) { min-width: 220px; }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+                align-items: stretch;
+            }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.6rem !important;
+                padding: 0.3rem 0.5rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .marketplace-table th:nth-child(5) { min-width: 180px; }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.55rem !important;
+                padding: 0.25rem 0.4rem !important;
+            }
+            
+            .action-buttons .material-icons {
+                font-size: 0.7rem !important;
+                margin-right: 0.2rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -868,6 +1089,12 @@
                     OrgMarketPlace
                 </h1>
                 <div class="d-flex align-items-center" style="gap: 1rem;">
+                    <!-- Filter Toggle Button -->
+                    <button class="btn-modern-outline" id="headerFilterToggle">
+                        <i class="material-icons" style="font-size: 1.2rem; margin-right: 0.5rem;">tune</i>
+                        <span id="headerFilterText">Show Filters</span>
+                    </button>
+                    
                     {% if user.is_authenticated %}
                     <div class="cart-container">
                         <a href="{% url 'view_cart' %}" class="btn-modern-outline position-relative">
@@ -923,7 +1150,7 @@
 
     <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
         <div class="row">
-            <aside class="col-lg-4 mb-4">
+            <aside class="col-lg-4 mb-4" id="filterSidebar">
                 <div class="material-card">
                     <div class="card-header material-header">
                         <h2 class="filter-title mb-0">
@@ -932,72 +1159,102 @@
                         </h2>
                     </div>
                     
-                    <!-- Company Filter -->
-                    <div class="filter-section">
-                        <div class="filter-section-header">
-                            <h3 class="filter-section-title">
-                                <i class="material-icons" style="font-size: 1.2rem;">business</i>
-                                Company
-                            </h3>
-                        </div>
-                        <input type="text" class="modern-input" id="companySearch" placeholder="Search companies...">
+                    <!-- Filter Toggle Button (Keep for internal use) -->
+                    <div class="filter-toggle-container">
+                        <button class="filter-toggle-btn" id="filterToggleBtn">
+                            <i class="material-icons" id="filterToggleIcon">expand_more</i>
+                            <span id="filterToggleText">Show Filters</span>
+                        </button>
                     </div>
+                    
+                    <!-- Filter Content (Initially Hidden) -->
+                    <div class="filter-content hidden" id="filterContent">
+                        <!-- Company Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">business</i>
+                                    Company
+                                </h3>
+                            </div>
+                            <input type="text" class="modern-input" id="companySearch" placeholder="Search companies...">
+                        </div>
 
-                    <!-- Country Filter -->
-                    <div class="filter-section">
-                        <div class="filter-section-header d-flex justify-content-between align-items-center">
-                            <h3 class="filter-section-title">
-                                <i class="material-icons" style="font-size: 1.2rem;">public</i>
-                                Country
-                            </h3>
-                            <button class="clear-all" data-filter="country">Clear All</button>
+                        <!-- Country Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">public</i>
+                                    Country
+                                </h3>
+                                <button class="clear-all" data-filter="country">Clear All</button>
+                            </div>
+                            <input type="text" class="modern-input" id="countrySearch" placeholder="Search countries...">
+                            <div class="checkbox-container" id="countryFilters"></div>
+                            <div id="selectedCountries" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Active Countries</div>
+                            </div>
                         </div>
-                        <input type="text" class="modern-input" id="countrySearch" placeholder="Search countries...">
-                        <div class="checkbox-container" id="countryFilters"></div>
-                        <div id="selectedCountries" class="active-filters-sidebar" style="display: none;">
-                            <div class="active-filters-title">Active Countries</div>
+                        
+                        <!-- Industry Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">category</i>
+                                    Industry
+                                </h3>
+                                <button class="clear-all" data-filter="industry">Clear All</button>
+                            </div>
+                            <input type="text" class="modern-input" id="industrySearch" placeholder="Search industries...">
+                            <div class="checkbox-container" id="industryFilters"></div>
+                            <div id="selectedIndustries" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Active Industries</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Industry Filter -->
-                    <div class="filter-section">
-                        <div class="filter-section-header d-flex justify-content-between align-items-center">
-                            <h3 class="filter-section-title">
-                                <i class="material-icons" style="font-size: 1.2rem;">category</i>
-                                Industry
-                            </h3>
-                            <button class="clear-all" data-filter="industry">Clear All</button>
-                        </div>
-                        <input type="text" class="modern-input" id="industrySearch" placeholder="Search industries...">
-                        <div class="checkbox-container" id="industryFilters"></div>
-                        <div id="selectedIndustries" class="active-filters-sidebar" style="display: none;">
-                            <div class="active-filters-title">Active Industries</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Employee Range Filter -->
-                    <div class="filter-section">
-                        <div class="filter-section-header d-flex justify-content-between align-items-center">
-                            <h3 class="filter-section-title">
-                                <i class="material-icons" style="font-size: 1.2rem;">groups</i>
-                                Employee Range
-                            </h3>
-                            <button class="clear-all" data-filter="employee-range">Clear All</button>
-                        </div>
-                        <div class="range-inputs">
-                            <input type="number" id="minEmployeeRange" class="range-input" placeholder="Min">
-                            <input type="number" id="maxEmployeeRange" class="range-input" placeholder="Max">
-                        </div>
-                        <div id="selectedEmployeeRanges" class="active-filters-sidebar" style="display: none;">
-                            <div class="active-filters-title">Employee Range</div>
+                        
+                        <!-- Employee Range Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">groups</i>
+                                    Employee Range
+                                </h3>
+                                <button class="clear-all" data-filter="employee-range">Clear All</button>
+                            </div>
+                            <div class="range-inputs">
+                                <input type="number" id="minEmployeeRange" class="range-input" placeholder="Min">
+                                <input type="number" id="maxEmployeeRange" class="range-input" placeholder="Max">
+                            </div>
+                            <div id="selectedEmployeeRanges" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Employee Range</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            <section class="col-lg-8">
+            <section class="col-lg-8" id="mainContent">
                 <div class="company-list-card">
                     <div class="card-header material-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="filter-title mb-0">
+                                <i class="material-icons">store</i>
+                                Organization Charts
+                            </h2>
+                            <div class="d-flex align-items-center" style="gap: 0.75rem;">
+                                <span class="badge" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem;" id="resultsCount">
+                                    Loading...
+                                </span>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm" id="gridViewBtn" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; border-radius: 8px 0 0 8px;">
+                                        <i class="material-icons" style="font-size: 1rem;">grid_view</i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm" id="listViewBtn" style="background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.3); color: #3b82f6; border-radius: 0 8px 8px 0;">
+                                        <i class="material-icons" style="font-size: 1rem;">view_list</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <h2 class="filter-title mb-0">
                             <i class="material-icons">list_alt</i>
                             Available Organizations
@@ -1018,7 +1275,7 @@
                     </div>
                     
                     <div class="table-responsive" id="chartTableContainer">
-                        <table class="table table-modern" id="companyTable">
+                        <table class="table table-modern marketplace-table" id="companyTable">
                             <thead>
                                 <tr>
                                     <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">business</i>Company Name</th>
@@ -1053,19 +1310,38 @@
                                     </td>
                                     <td style="color: #3b82f6;">{{ chart.last_updated }}</td>
                                     <td>
-                                        {% if user.is_authenticated %}
-                                        <button class="btn-modern add-to-cart-btn" 
-                                                data-chart-id="{{ chart.id }}" 
-                                                data-chart-title="{{ chart.title }}">
-                                            <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">add_shopping_cart</i>
-                                            Add to Cart
-                                        </button>
-                                        {% else %}
-                                        <button class="btn-modern" onclick="showLoginModal()">
-                                            <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">login</i>
-                                            Login to Purchase
-                                        </button>
-                                        {% endif %}
+                                        <div class="action-buttons">
+                                            <!-- ORG CHART Button -->
+                                            <button class="view-chart-btn" 
+                                                    data-chart-id="{{ chart.id }}" 
+                                                    data-chart-title="{{ chart.title }}">
+                                                <i class="material-icons">visibility</i>
+                                                ORG CHART
+                                            </button>
+                                            
+                                            <!-- GET SAMPLE Button -->
+                                            <button class="get-sample-btn" 
+                                                    data-chart-id="{{ chart.id }}" 
+                                                    data-chart-title="{{ chart.title }}">
+                                                <i class="material-icons">download</i>
+                                                GET SAMPLE
+                                            </button>
+                                            
+                                            {% if user.is_authenticated %}
+                                            <!-- Add to Cart Button -->
+                                            <button class="add-to-cart-btn" 
+                                                    data-chart-id="{{ chart.id }}" 
+                                                    data-chart-title="{{ chart.title }}">
+                                                <i class="material-icons">add_shopping_cart</i>
+                                                Add to Cart
+                                            </button>
+                                            {% else %}
+                                            <button class="add-to-cart-btn" onclick="showLoginModal()">
+                                                <i class="material-icons">login</i>
+                                                Login
+                                            </button>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endif %}
@@ -1184,6 +1460,48 @@
     </div>
 </div>
 
+<!-- Request Free Sample Modal -->
+<div class="modal fade" id="requestSampleModal" tabindex="-1" role="dialog" aria-labelledby="requestSampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                <h5 class="modal-title" id="requestSampleModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="material-icons" style="margin-right: 0.5rem;">download</i>
+                    Request Free Sample
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true"><i class="material-icons">close</i></span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <form id="sampleRequestForm">
+                    <div class="form-group mb-4">
+                        <label for="sampleEmail" style="color: #3b82f6; font-weight: 600; margin-bottom: 0.5rem; display: block;">Email Address</label>
+                        <input type="email" class="modern-input" id="sampleEmail" name="email" placeholder="Enter your email*" required style="width: 100%; margin-bottom: 0;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sampleRequirements" style="color: #4a5568; font-weight: 500; margin-bottom: 0.5rem; display: block;">Sample Requirements</label>
+                        <textarea class="modern-input" id="sampleRequirements" name="requirements" rows="8" 
+                                placeholder="Please mention details of your Account Map for the free sample.&#10;e.g. Account Name - Apple, Microsoft or any large financial services company etc. Geography - US, UK , India etc. or All.&#10;Business Units of your interest - Storage BU, Enterprise Services etc. or All Functions - Finance, Sales, Marketing etc or All Titles of your interest - CXOs, Director IT and above etc. Whose connections you want to map - Your management, Sales persons , Advisors etc. Insights - What insights like news about product release, expansion, speaker in an event needs to be mapped" 
+                                style="width: 100%; margin-bottom: 0; resize: vertical; min-height: 200px;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <button type="button" id="submitSampleRequest" class="btn-modern" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 1rem;">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">send</i>
+                    SUBMIT
+                </button>
+                <button type="button" class="btn-modern-outline" data-dismiss="modal">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">close</i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
     </main>
 
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -1195,6 +1513,51 @@
             // All countries and industries from backend
             const allCountries = {{ all_countries|safe }};
             const allIndustries = {{ all_industries|safe }};
+            
+            // Header Filter Toggle Functionality (Main Toggle)
+            $('#headerFilterToggle').on('click', function() {
+                const filterSidebar = $('#filterSidebar');
+                const mainContent = $('#mainContent');
+                const headerFilterText = $('#headerFilterText');
+                const headerFilterToggle = $('#headerFilterToggle');
+                
+                if (filterSidebar.hasClass('hidden')) {
+                    // Show filters
+                    filterSidebar.removeClass('hidden');
+                    mainContent.removeClass('full-width').addClass('col-lg-8');
+                    headerFilterText.text('Hide Filters');
+                    headerFilterToggle.addClass('active');
+                } else {
+                    // Hide filters
+                    filterSidebar.addClass('hidden');
+                    mainContent.addClass('full-width').removeClass('col-lg-8');
+                    headerFilterText.text('Show Filters');
+                    headerFilterToggle.removeClass('active');
+                }
+            });
+            
+            // Initialize with filters hidden
+            $('#filterSidebar').addClass('hidden');
+            $('#mainContent').addClass('full-width').removeClass('col-lg-8');
+            
+            // Internal Filter Toggle Functionality (Inside Sidebar)
+            $('#filterToggleBtn').on('click', function() {
+                const filterContent = $('#filterContent');
+                const filterIcon = $('#filterToggleIcon');
+                const filterText = $('#filterToggleText');
+                
+                if (filterContent.hasClass('hidden')) {
+                    // Show filters
+                    filterContent.removeClass('hidden').addClass('visible');
+                    filterIcon.text('expand_less');
+                    filterText.text('Hide Filters');
+                } else {
+                    // Hide filters
+                    filterContent.removeClass('visible').addClass('hidden');
+                    filterIcon.text('expand_more');
+                    filterText.text('Show Filters');
+                }
+            });
             
             // Initialize filters
             function initFilters() {
@@ -1243,6 +1606,9 @@
         
         // Show/hide no charts message and table
         updateNoChartsMessage(visibleRowsCount);
+        
+        // Update results count
+        updateResultsCount(visibleRowsCount);
     }
 
     function updateNoChartsMessage(visibleRowsCount) {
@@ -1253,6 +1619,11 @@
             $('#noChartsMessage').hide();
             $('#chartTableContainer').show();
         }
+    }
+    
+    function updateResultsCount(count) {
+        const total = $('#companyTable tbody tr').length;
+        $('#resultsCount').text(`${count} of ${total} charts`);
     }
 
     function getSelectedFilters(filterType) {
@@ -1698,6 +2069,100 @@
     updateSelectedBadges("selectedCountries", "country");
     updateSelectedBadges("selectedIndustries", "industry");
     updateEmployeeRangeDisplay();
+    
+    // ORG CHART button functionality
+    $(document).on('click', '.view-chart-btn', function() {
+        var chartId = $(this).data('chart-id');
+        var chartTitle = $(this).data('chart-title');
+        
+        // Redirect to blurred preview instead of full chart
+        showToast('info', 'Opening preview for: ' + chartTitle);
+        
+        // Redirect to blurred preview (new functionality)
+        window.location.href = '/preview-chart/' + chartId + '/';
+    });
+    
+    // GET SAMPLE button functionality - Show modal instead of direct download
+    $(document).on('click', '.get-sample-btn', function() {
+        var chartId = $(this).data('chart-id');
+        var chartTitle = $(this).data('chart-title');
+        
+        // Store chart info for form submission
+        $('#requestSampleModal').data('chart-id', chartId);
+        $('#requestSampleModal').data('chart-title', chartTitle);
+        
+        // Show the sample request modal
+        $('#requestSampleModal').modal('show');
+    });
+    
+    // Handle sample request form submission
+    $('#submitSampleRequest').on('click', function() {
+        var email = $('#sampleEmail').val().trim();
+        var requirements = $('#sampleRequirements').val().trim();
+        var chartId = $('#requestSampleModal').data('chart-id');
+        var chartTitle = $('#requestSampleModal').data('chart-title');
+        
+        // Basic validation
+        if (!email) {
+            showToast('error', 'Please enter your email address');
+            return;
+        }
+        
+        if (!requirements) {
+            showToast('error', 'Please provide sample requirements');
+            return;
+        }
+        
+        // Show loading state
+        var $submitBtn = $('#submitSampleRequest');
+        var originalText = $submitBtn.html();
+        $submitBtn.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">hourglass_empty</i>Submitting...').prop('disabled', true);
+        
+        // Submit the form via AJAX
+        $.ajax({
+            url: '/request-sample/',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() || 'dummy-csrf'
+            },
+            data: JSON.stringify({
+                email: email,
+                requirements: requirements,
+                chart_id: chartId,
+                chart_title: chartTitle
+            }),
+            success: function(response) {
+                // Hide modal
+                $('#requestSampleModal').modal('hide');
+                
+                // Reset form
+                $('#sampleRequestForm')[0].reset();
+                
+                if (response.success) {
+                    // Show success message
+                    showToast('success', response.message);
+                    
+                    // Optional: Trigger download if URL provided
+                    if (response.download_url) {
+                        setTimeout(function() {
+                            window.location.href = response.download_url;
+                        }, 1000);
+                    }
+                } else {
+                    showToast('error', response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#requestSampleModal').modal('hide');
+                showToast('error', 'Failed to submit request. Please try again.');
+            },
+            complete: function() {
+                // Reset button
+                $submitBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
 });
 
         </script>

@@ -2,8 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.db import migrations
 from django.utils.timezone import now
+from django.utils.html import format_html
+import os
 
 # def create_default_groups(apps, schema_editor):
 #     Group = apps.get_model('auth', 'Group')
@@ -33,16 +36,21 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from django.http import HttpResponseRedirect
 from django.db import models
-from .models import UserProfile, ChartAccess, Cart, CartItem, Cart, CartItem, CompanyInfo, Order, OrderItem, CustomerInfo, chart, Coupon, RefundLog, CouponUsage, MarketplaceSettings
+from django.utils import timezone
+from .models import UserProfile, ChartAccess, Cart, CartItem, Cart, CartItem, CompanyInfo, Order, OrderItem, CustomerInfo, chart, Coupon, RefundLog, CouponUsage, MarketplaceSettings, SampleRequest
 
-class UserProfileAdmin(admin.ModelAdmin):
+# UserProfile Inline Admin for User model
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    fk_name = 'user'  # Specify which ForeignKey to use
+    can_delete = False
+    verbose_name_plural = 'User Profile'
+    extra = 0
     readonly_fields = ('access_uuid',)
-    list_display = ('user', 'client_of', 'is_superadmin', 'city', 'state', 'country')
-    search_fields = ('user__username', 'client_of__username', 'city', 'state', 'country')
-    list_filter = ('is_superadmin', 'city', 'state', 'country')
+    
     fieldsets = (
-        ('User Information', {
-            'fields': ('access_uuid' , 'user', 'client_of', 'is_superadmin')
+        ('Profile Information', {
+            'fields': ('access_uuid', 'client_of', 'is_superadmin')
         }),
         ('Work Experience', {
             'fields': ('past_company1', 'past_company2', 'past_company3', 'past_company4', 'past_company5'),
@@ -57,13 +65,83 @@ class UserProfileAdmin(admin.ModelAdmin):
         }),
     )
 
+# Extended User Admin
+class CustomUserAdmin(BaseUserAdmin):
+    inlines = (UserProfileInline,)
+    list_display = BaseUserAdmin.list_display + ('get_is_superadmin', 'get_client_of')
+    
+    def get_is_superadmin(self, obj):
+        try:
+            return obj.userprofile.is_superadmin
+        except UserProfile.DoesNotExist:
+            return False
+    get_is_superadmin.boolean = True
+    get_is_superadmin.short_description = 'Is Super Admin'
+    
+    def get_client_of(self, obj):
+        try:
+            return obj.userprofile.client_of
+        except UserProfile.DoesNotExist:
+            return None
+    get_client_of.short_description = 'Client Of'
+
+# Unregister the default User admin and register our custom one
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    readonly_fields = ('access_uuid',)
+    list_display = ('user', 'user_email', 'client_of', 'is_superadmin', 'city', 'state', 'country', 'user_active_status')
+    search_fields = ('user__username', 'user__email', 'client_of__username', 'city', 'state', 'country')
+    list_filter = ('is_superadmin', 'city', 'state', 'country', 'user__is_active', 'user__is_superuser')
+    list_per_page = 25
+    ordering = ('user__username',)
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('access_uuid', 'user', 'client_of', 'is_superadmin')
+        }),
+        ('Work Experience', {
+            'fields': ('past_company1', 'past_company2', 'past_company3', 'past_company4', 'past_company5'),
+            'classes': ('collapse',)
+        }),
+        ('Education', {
+            'fields': ('educational_institute1', 'educational_institute2', 'educational_institute3'),
+            'classes': ('collapse',)
+        }),
+        ('Location', {
+            'fields': ('city', 'state', 'country'),
+        }),
+    )
+
+    def user_email(self, obj):
+        """Display user email in admin list"""
+        return obj.user.email
+    user_email.short_description = 'Email'
+    user_email.admin_order_field = 'user__email'
+
+    def user_active_status(self, obj):
+        """Display user active status"""
+        return obj.user.is_active
+    user_active_status.boolean = True
+    user_active_status.short_description = 'Active'
+    user_active_status.admin_order_field = 'user__is_active'
+
     def save_model(self, request, obj, form, change):
         # Ensure that a user cannot be their own client in the admin panel
         if obj.client_of == obj.user:
             raise ValidationError(_("A user cannot be their own client."))
         super().save_model(request, obj, form, change)
 
-admin.site.register(UserProfile, UserProfileAdmin)
+    def get_queryset(self, request):
+        """Optimize queryset with select_related to reduce database queries"""
+        return super().get_queryset(request).select_related('user', 'client_of')
+
+# Customize admin site headers
+admin.site.site_header = "OrgChart Administration"
+admin.site.site_title = "OrgChart Admin Portal"
+admin.site.index_title = "Welcome to OrgChart Administration"
 
 
 
@@ -417,6 +495,7 @@ class ChartAdmin(admin.ModelAdmin):
         'industry', 
         'employee_range', 
         'mp_status', 
+        'has_preview_version',
         'creation_date',
         'get_allowed_users_count'
     )
@@ -425,6 +504,7 @@ class ChartAdmin(admin.ModelAdmin):
         'mp_status', 
         'country', 
         'industry', 
+        'has_preview_version',
         'creation_date', 
         'last_updated',
         'price'
@@ -432,13 +512,14 @@ class ChartAdmin(admin.ModelAdmin):
     
     search_fields = (
         'title', 
+        'preview_chart_title',
         'country', 
         'industry', 
         'allowed_users__username',
         'allowed_users__email'
     )
     
-    readonly_fields = ('id', 'uuid', 'creation_date', 'min_employees', 'max_employees')
+    readonly_fields = ('id', 'uuid', 'creation_date', 'min_employees', 'max_employees', 'get_file_status')
     
     filter_horizontal = ('allowed_users',)
     
@@ -457,6 +538,11 @@ class ChartAdmin(admin.ModelAdmin):
             'fields': ('country', 'industry', 'employee_range', 'min_employees', 'max_employees'),
             'description': 'Min/Max employees are automatically calculated from employee_range'
         }),
+        ('Preview Version Settings', {
+            'fields': ('has_preview_version', 'preview_chart_title', 'preview_notes', 'get_file_status'),
+            'classes': ('collapse',),
+            'description': 'Configure separate preview version for marketplace display. When enabled, upload both original and preview files with the specified titles.'
+        }),
         ('Marketplace', {
             'fields': ('mp_status', 'price')
         }),
@@ -467,7 +553,37 @@ class ChartAdmin(admin.ModelAdmin):
         })
     )
     
-    actions = ['make_published', 'make_draft', 'duplicate_chart']
+    actions = ['make_published', 'make_draft', 'duplicate_chart', 'create_preview_version', 'remove_preview_version']
+    
+    def get_file_status(self, obj):
+        """Display the status of original and preview files"""
+        status_parts = []
+        
+        # Check original files
+        if obj.original_json_file_path and os.path.exists(obj.original_json_file_path):
+            status_parts.append("✅ Original JSON exists")
+        else:
+            status_parts.append("❌ Original JSON missing")
+            
+        if obj.original_csv_file_path and os.path.exists(obj.original_csv_file_path):
+            status_parts.append("✅ Original CSV exists")
+        else:
+            status_parts.append("❌ Original CSV missing")
+        
+        # Check preview files if enabled
+        if obj.has_preview_version:
+            if obj.preview_json_file_path and os.path.exists(obj.preview_json_file_path):
+                status_parts.append("✅ Preview JSON exists")
+            else:
+                status_parts.append("❌ Preview JSON missing")
+                
+            if obj.preview_csv_file_path and os.path.exists(obj.preview_csv_file_path):
+                status_parts.append("✅ Preview CSV exists")
+            else:
+                status_parts.append("❌ Preview CSV missing")
+        
+        return format_html('<br/>'.join(status_parts))
+    get_file_status.short_description = 'File Status'
     
     def get_allowed_users_count(self, obj):
         """Display the number of users who have access to this chart"""
@@ -487,6 +603,38 @@ class ChartAdmin(admin.ModelAdmin):
         self.message_user(request, f'{updated} charts were marked as Draft.')
     make_draft.short_description = "Mark selected charts as Draft"
     
+    def create_preview_version(self, request, queryset):
+        """Action to enable preview version for selected charts"""
+        updated_count = 0
+        for chart_obj in queryset:
+            if not chart_obj.has_preview_version:
+                chart_obj.has_preview_version = True
+                if not chart_obj.preview_chart_title:
+                    chart_obj.preview_chart_title = f"{chart_obj.title}_Preview"
+                chart_obj.save()
+                updated_count += 1
+        
+        self.message_user(
+            request, 
+            f'{updated_count} charts were configured for preview version. Upload preview files with the specified titles.',
+            level='success'
+        )
+    create_preview_version.short_description = "Enable preview version for selected charts"
+    
+    def remove_preview_version(self, request, queryset):
+        """Action to disable preview version for selected charts"""
+        updated_count = 0
+        for chart_obj in queryset:
+            if chart_obj.has_preview_version:
+                chart_obj.has_preview_version = False
+                chart_obj.preview_chart_title = None
+                chart_obj.preview_notes = None
+                chart_obj.save()
+                updated_count += 1
+        
+        self.message_user(request, f'{updated_count} charts had their preview version disabled.')
+    remove_preview_version.short_description = "Disable preview version for selected charts"
+    
     def duplicate_chart(self, request, queryset):
         """Action to duplicate selected charts"""
         duplicated_count = 0
@@ -496,6 +644,9 @@ class ChartAdmin(admin.ModelAdmin):
             chart_obj.id = None  # Reset UUID
             chart_obj.title = f"{chart_obj.title} (Copy)"
             chart_obj.mp_status = 'Draft'
+            chart_obj.has_preview_version = False  # Don't copy preview settings
+            chart_obj.preview_chart_title = None
+            chart_obj.preview_notes = None
             chart_obj.save()
             duplicated_count += 1
         
@@ -552,3 +703,171 @@ class MarketplaceSettingsAdmin(admin.ModelAdmin):
         if obj and obj.is_active:
             return MarketplaceSettings.objects.filter(is_active=True).count() > 1
         return True
+
+
+@admin.register(SampleRequest)
+class SampleRequestAdmin(admin.ModelAdmin):
+    list_display = ('email', 'chart_title', 'status', 'created_at', 'processed_by', 'processed_at', 'action_buttons')
+    list_filter = ('status', 'created_at', 'processed_at', 'chart__country', 'chart__industry')
+    search_fields = ('email', 'chart_title', 'requirements', 'admin_notes')
+    readonly_fields = ('created_at', 'updated_at', 'processed_at')
+    ordering = ('-created_at',)
+    list_per_page = 25
+    
+    fieldsets = (
+        ('Request Information', {
+            'fields': ('email', 'chart', 'chart_title', 'requirements')
+        }),
+        ('User Information', {
+            'fields': ('user',),
+            'classes': ('collapse',)
+        }),
+        ('Status & Processing', {
+            'fields': ('status', 'admin_notes', 'processed_by', 'processed_at')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def action_buttons(self, obj):
+        """Display action buttons for pending requests"""
+        if obj.status == 'pending':
+            approve_url = reverse('admin:approve_sample_request', args=[obj.id])
+            reject_url = reverse('admin:reject_sample_request', args=[obj.id])
+            complete_url = reverse('admin:complete_sample_request', args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" style="background: #28a745; color: white; margin-right: 5px;">Approve</a>'
+                '<a class="button" href="{}" style="background: #dc3545; color: white; margin-right: 5px;">Reject</a>'
+                '<a class="button" href="{}" style="background: #007bff; color: white;">Complete</a>',
+                approve_url, reject_url, complete_url
+            )
+        elif obj.status == 'approved':
+            complete_url = reverse('admin:complete_sample_request', args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" style="background: #007bff; color: white;">Mark Complete</a>',
+                complete_url
+            )
+        else:
+            return format_html('<span style="color: #6c757d;">No actions available</span>')
+    
+    action_buttons.short_description = 'Actions'
+    action_buttons.allow_tags = True
+    
+    actions = ['approve_selected', 'reject_selected', 'mark_completed']
+    
+    def approve_selected(self, request, queryset):
+        """Bulk approve selected sample requests"""
+        count = 0
+        for sample_request in queryset.filter(status='pending'):
+            sample_request.approve(request.user, "Bulk approved by admin")
+            count += 1
+        
+        self.message_user(request, f'{count} sample request(s) were successfully approved.')
+    approve_selected.short_description = "Approve selected sample requests"
+    
+    def reject_selected(self, request, queryset):
+        """Bulk reject selected sample requests"""
+        count = 0
+        for sample_request in queryset.filter(status='pending'):
+            sample_request.reject(request.user, "Bulk rejected by admin")
+            count += 1
+        
+        self.message_user(request, f'{count} sample request(s) were successfully rejected.')
+    reject_selected.short_description = "Reject selected sample requests"
+    
+    def mark_completed(self, request, queryset):
+        """Bulk mark selected sample requests as completed"""
+        count = 0
+        for sample_request in queryset.filter(status__in=['pending', 'approved']):
+            sample_request.complete(request.user, "Bulk completed by admin")
+            count += 1
+        
+        self.message_user(request, f'{count} sample request(s) were successfully marked as completed.')
+    mark_completed.short_description = "Mark selected requests as completed"
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'approve/<int:request_id>/',
+                self.admin_site.admin_view(self.approve_request_view),
+                name='approve_sample_request',
+            ),
+            path(
+                'reject/<int:request_id>/',
+                self.admin_site.admin_view(self.reject_request_view),
+                name='reject_sample_request',
+            ),
+            path(
+                'complete/<int:request_id>/',
+                self.admin_site.admin_view(self.complete_request_view),
+                name='complete_sample_request',
+            ),
+        ]
+        return custom_urls + urls
+    
+    def approve_request_view(self, request, request_id):
+        """Approve a specific sample request"""
+        try:
+            sample_request = SampleRequest.objects.get(id=request_id)
+            if sample_request.status == 'pending':
+                sample_request.approve(request.user, f"Approved by {request.user.username}")
+                messages.success(request, f'Sample request from {sample_request.email} has been approved.')
+            else:
+                messages.warning(request, 'This request has already been processed.')
+        except SampleRequest.DoesNotExist:
+            messages.error(request, 'Sample request not found.')
+        except Exception as e:
+            messages.error(request, f'Error approving request: {str(e)}')
+        
+        return HttpResponseRedirect(reverse('admin:myapp_samplerequest_changelist'))
+    
+    def reject_request_view(self, request, request_id):
+        """Reject a specific sample request"""
+        try:
+            sample_request = SampleRequest.objects.get(id=request_id)
+            if sample_request.status == 'pending':
+                sample_request.reject(request.user, f"Rejected by {request.user.username}")
+                messages.success(request, f'Sample request from {sample_request.email} has been rejected.')
+            else:
+                messages.warning(request, 'This request has already been processed.')
+        except SampleRequest.DoesNotExist:
+            messages.error(request, 'Sample request not found.')
+        except Exception as e:
+            messages.error(request, f'Error rejecting request: {str(e)}')
+        
+        return HttpResponseRedirect(reverse('admin:myapp_samplerequest_changelist'))
+    
+    def complete_request_view(self, request, request_id):
+        """Mark a specific sample request as completed"""
+        try:
+            sample_request = SampleRequest.objects.get(id=request_id)
+            if sample_request.status in ['pending', 'approved']:
+                sample_request.complete(request.user, f"Completed by {request.user.username}")
+                messages.success(request, f'Sample request from {sample_request.email} has been marked as completed.')
+            else:
+                messages.warning(request, 'This request cannot be marked as completed.')
+        except SampleRequest.DoesNotExist:
+            messages.error(request, 'Sample request not found.')
+        except Exception as e:
+            messages.error(request, f'Error completing request: {str(e)}')
+        
+        return HttpResponseRedirect(reverse('admin:myapp_samplerequest_changelist'))
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related"""
+        return super().get_queryset(request).select_related('chart', 'user', 'processed_by')
+    
+    def save_model(self, request, obj, form, change):
+        """Automatically set processed_by and processed_at when status changes"""
+        if change:  # If editing existing record
+            original_obj = SampleRequest.objects.get(pk=obj.pk)
+            if original_obj.status != obj.status and obj.status != 'pending':
+                if not obj.processed_by:
+                    obj.processed_by = request.user
+                if not obj.processed_at:
+                    obj.processed_at = timezone.now()
+        
+        super().save_model(request, obj, form, change)

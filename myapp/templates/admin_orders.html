@@ -292,11 +292,16 @@
         
         .table-container table {
             min-width: 800px;
-        }    }
+        }
+    }
     
     /* Hide elements when filtering */
     .hidden {
         display: none !important;
+    }
+    
+    .btn-spacing {
+        margin-right: 10px;
     }
 </style>
 
@@ -304,7 +309,7 @@
     <div class="recentOrders">        <div class="cardHeader">
             <h2>Order Management</h2>
             <div>
-                <a href="{% url 'create_manual_order_dashboard' %}" class="btn" style="margin-right: 10px;">
+                <a href="{% url 'create_manual_order_dashboard' %}" class="btn btn-spacing">
                     <i class="bi bi-plus-circle"></i> Create Manual Order
                 </a>
                 <a href="/payment-dashboard/" class="btn">

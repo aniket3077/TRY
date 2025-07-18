@@ -59,7 +59,7 @@ SECRET_KEY = 'django-insecure-t=t6_r!s!x#d0)x5!6216v5)2@&wymv!w)@x&qw8u2m#ctm$*(
 DEBUG = info.DEBUG # Set to True for development to serve static/media files
 
 # Test comment for Jenkins CI/CD pipeline verification
-ALLOWED_HOSTS = ['insideorgs.sphurti.net','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['insideorgs.sphurti.net','127.0.0.1','localhost','testserver']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
@@ -119,24 +119,29 @@ WSGI_APPLICATION = 'orgchart.wsgi.application'
 
 
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# Database Configuration - Using MySQL with insideorgs_db
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': info.DB_NAME,  # insideorgs_db
+        'USER': info.DB_USER,  # root
+        'PASSWORD': info.DB_PASSWORD,  # empty for XAMPP
+        'HOST': info.DB_HOST,  # localhost
+        'PORT': info.DB_PORT,  # 3306
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'myapp',
-            'USER': 'django',
-            'PASSWORD': '%^vced76#*$',
-            'HOST': 'localhost',
-            'PORT': '3306'
-        }
-    }
+}
+
+# SQLite configuration (backup - commented out)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 
@@ -181,6 +186,12 @@ BASE_URL = info.BASE_URL  # Update with your actual site URL
 STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / "static"  # Where collectstatic puts files for production
+
+# Additional directories to search for static files during development
+STATICFILES_DIRS = [
+    BASE_DIR / "myapp" / "static",
+]
+
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = '/media/'
 

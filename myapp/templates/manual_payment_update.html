@@ -231,6 +231,38 @@
     .required {
         color: #dc3545;
     }
+    
+    .hidden {
+        display: none !important;
+    }
+    
+    .form-group:not(.hidden) {
+        display: flex;
+    }
+    
+    .submit-note {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .warning-section {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    
+    .warning-section h4 {
+        color: #856404;
+        margin-bottom: 10px;
+    }
+    
+    .warning-section ul {
+        color: #856404;
+        margin: 0;
+        padding-left: 20px;
+    }
 </style>
 
 <div class="details">
@@ -339,12 +371,12 @@
                     </div>
                     {% endif %}
                      {% if order.status != 'refunded' %}
-                     <div class="form-group" id="refund-transaction-group" style="display: none;">
+                     <div class="form-group hidden" id="refund-transaction-group">
                         <label for="id_refund_transaction_id">Refund Transaction ID</label>
                         <input type="text" name="refund_transaction_id" id="id_refund_transaction_id" 
                           value="{{ refund_log.refund_id|default:'' }}"  placeholder="Enter refund transaction ID">
                     </div>
-                    <div class="form-group" id="refund-reason-group" style="display: none;">
+                    <div class="form-group hidden" id="refund-reason-group">
                         <label for="id_refund_reason">Refund Reason</label>
                         <textarea name="refund_reason" id="id_refund_reason" rows="3"
                             placeholder="Enter reason for refund" class="form-control">{{ refund_log.reason|default:'' }}</textarea>
@@ -363,9 +395,9 @@
                     </div>
                 </div>
                 
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <h4 style="color: #856404; margin-bottom: 10px;"><i class="bi bi-exclamation-triangle"></i> Important Notes</h4>
-                    <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                <div class="warning-section">
+                    <h4><i class="bi bi-exclamation-triangle"></i> Important Notes</h4>
+                    <ul>
                         <li>Changing status to "Completed" will automatically grant chart access to the customer</li>
                         <li>Customer will receive a confirmation email if status is changed to "Completed"</li>
                         <li>Make sure to enter the correct transaction ID for record keeping</li>
@@ -377,7 +409,7 @@
                 <button type="submit" class="btn-update">
                     <i class="bi bi-check-circle"></i> Update Payment Status
                 </button>
-                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                <div class="submit-note">
                     This action will update the order and may trigger automated processes
                 </div>
             </div>
@@ -415,11 +447,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Show/hide refund input
             if (selected === 'refunded') {
-                refundGroup.style.display = 'flex';
-                refundReasonGroup.style.display = 'flex';
+                refundGroup.classList.remove('hidden');
+                refundReasonGroup.classList.remove('hidden');
             } else {
-                refundGroup.style.display = 'none';
-                refundReasonGroup.style.display = 'none';
+                refundGroup.classList.add('hidden');
+                refundReasonGroup.classList.add('hidden');
             }
 
             // Handle input disabling

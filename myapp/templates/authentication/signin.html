@@ -1,22 +1,109 @@
-{% extends 'password_reset/base_password_reset.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - InsideOrgs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/media/img/favicon.svg">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'authentication/css/auth-landing-style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Alert Messages -->
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {% if message.tags == 'error' %}<strong>Error:</strong>{% elif message.tags == 'success' %}<strong>Success!</strong>{% elif message.tags == 'warning' %}<strong>Warning!</strong>{% elif message.tags == 'info' %}<strong>Info!</strong>{% endif %}
+            {{ message|safe }}
+        </div>
+        {% endfor %}
 
-{% block title %}Log in{% endblock %}
+        <div class="auth-card">
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-circle">
+                        <span class="logo-text-inside">IO</span>
+                    </div>
+                    <span class="logo-text-outside">InsideOrgs</span>
+                </div>
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Sign in to access your organization charts</p>
+            </div>
 
-{% block content %}
-        <h1 class="title">Log in</h1>
-        <div class="card">
-            <form method="post" action="/signin">
+            <form class="auth-form" method="post" action="/signin">
                 {% csrf_token %}
-                <input type="text" placeholder="Username" class="form-control" id="username" name="username" Required>
-                <input type="password" placeholder="Password" class="form-control" id="pass1" name="pass1" Required>
-                <span class="toggle-password" onclick="togglePassword()"><i class="fas fa-eye-slash"></i></span>
-                <a href="/reset-password/" class="register-link" style="font-size: 12px; padding: 5px; padding-bottom: 15px; text-align: right;"><i>Forgot your password?</i></a>
-                <div class="buttons">
-                  <a href="/signup" class="register-link">Not a member? Register</a>
-                    <button type="submit" class="login-button">Login</button>
+                
+                <div class="form-group">
+                    <input type="text" 
+                           class="form-control" 
+                           id="username" 
+                           name="username" 
+                           placeholder="Enter your username" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" 
+                           class="form-control" 
+                           id="pass1" 
+                           name="pass1" 
+                           placeholder="Enter your password" 
+                           required>
+                    <span class="password-toggle" onclick="togglePassword('pass1')">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="/reset-password/">Forgot your password?</a>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
                 </div>
             </form>
+
+            <div class="auth-links">
+                <p>Don't have an account? <a href="/signup" class="auth-link">Sign up here</a></p>
+            </div>
         </div>
     </div>
-    
-{% endblock %}
+
+    {% load static %}
+    <script src="{% static 'authentication/js/script.js' %}"></script>
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const toggle = field.nextElementSibling.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                toggle.classList.remove('fa-eye-slash');
+                toggle.classList.add('fa-eye');
+            } else {
+                field.type = 'password';
+                toggle.classList.remove('fa-eye');
+                toggle.classList.add('fa-eye-slash');
+            }
+        }
+
+        // Close alert messages automatically after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

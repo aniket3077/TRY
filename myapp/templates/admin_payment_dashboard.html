@@ -212,6 +212,15 @@
     background: #f8f9fa;
 }
 
+.chart-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
 .chart-info h6 {
     margin-bottom: 10px;
     color: var(--black1);
@@ -442,7 +451,7 @@
         <div class="cardHeader">
             <h2><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>            
             <div class="date-filter">
-                <select id="timeRange" onchange="updateTimeRange()">
+                <select id="timeRange" title="Select time range for analytics" onchange="updateTimeRange()">
                     <option value="7" {% if request.GET.time_range == '7' %}selected{% endif %}>Last 7 days</option>
                     <option value="30" {% if request.GET.time_range == '30' %}selected{% endif %}>Last 30 days</option>
                     <option value="90" {% if request.GET.time_range == '90' %}selected{% endif %}>Last 90 days</option>
@@ -559,7 +568,7 @@
             <div class="top-charts-grid">
                 {% for chart in top_charts %}
                 <div class="top-chart-card">
-                    <div class="chart-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                    <div class="chart-image chart-placeholder">
                         {{ chart.title|slice:":2"|upper }}
                     </div>
                     <div class="chart-info">
@@ -582,17 +591,30 @@
 
 <!-- Chart.js for charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart Data (Django Template Variables) -->
+{{ revenue_chart.labels|json_script:"revenue-labels" }}
+{{ revenue_chart.data|json_script:"revenue-data" }}
+{{ status_chart.labels|json_script:"status-labels" }}
+{{ status_chart.data|json_script:"status-data" }}
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Get chart data from JSON scripts
+        const revenueLabels = JSON.parse(document.getElementById('revenue-labels').textContent);
+        const revenueData = JSON.parse(document.getElementById('revenue-data').textContent);
+        const statusLabels = JSON.parse(document.getElementById('status-labels').textContent);
+        const statusData = JSON.parse(document.getElementById('status-data').textContent);
+
         // Revenue Chart
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
         const revenueChart = new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: {{ revenue_chart.labels|safe }},
+                labels: revenueLabels,
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: {{ revenue_chart.data|safe }},
+                    data: revenueData,
                     borderColor: '#0f0f1a',
                     backgroundColor: 'rgba(15, 15, 26, 0.1)',
                     borderWidth: 3,
@@ -640,9 +662,9 @@
         const statusChart = new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: {{ status_chart.labels|safe }},
+                labels: statusLabels,
                 datasets: [{
-                    data: {{ status_chart.data|safe }},
+                    data: statusData,
                     backgroundColor: [
                         '#28a745',  // Completed - Green
                         '#ffc107',  // Pending - Yellow

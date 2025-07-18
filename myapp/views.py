@@ -35,9 +35,34 @@ import requests
 import uuid
 from django.http import HttpResponse
 from django.template.loader import get_template
-from weasyprint import HTML, CSS
+# WeasyPrint import with graceful fallback handling
+# This library is optional and used for PDF generation
+try:
+    from weasyprint import HTML, CSS
+    WEASYPRINT_AVAILABLE = True
+except (ImportError, OSError) as e:
+    # WeasyPrint not available - define placeholder classes
+    # This allows the application to continue working without PDF generation
+    # OSError handles Windows GTK library issues
+    WEASYPRINT_AVAILABLE = False
+    class HTML:
+        def __init__(self, *args, **kwargs):
+            pass
+        def write_pdf(self):
+            return b"PDF generation not available"
+    class CSS:
+        def __init__(self, *args, **kwargs):
+            pass
 from django.core.mail import EmailMessage
 import io
+
+
+# Landing page view (public access)
+def landing(request):
+    """
+    Public landing page view that doesn't require authentication
+    """
+    return render(request, 'landing.html')
 
 
 # Create your views here.
@@ -576,6 +601,7 @@ def serve_file_testing(request):
 
 @require_POST
 def serve_file(request):
+    """Serve chart data with access control, supporting dual chart system"""
     access = False
     data = json.loads(request.body)
     # Get chart_id from POST data
@@ -588,39 +614,108 @@ def serve_file(request):
     except (ValueError, TypeError) as e:
         return JsonResponse({'message': 'Invalid ChartID'}, status=200)
     
-    file_name = chart.objects.filter(uuid=file_uuid).values_list('title', flat=True).first()
-    if not file_name:
+    # Get the chart instance
+    try:
+        chart_instance = chart.objects.get(uuid=file_uuid)
+    except chart.DoesNotExist:
         return JsonResponse({'message': 'Chart Not Found'}, status=200)
 
-    # Use request.user for validation
+    # Check if this is a preview request
+    is_preview_request = False
+    referer = request.META.get('HTTP_REFERER', '')
+    preview_mode = data.get('preview_mode', False)
+    
+    if ('preview-chart' in referer or 
+        ('chart/' in referer and '/preview/' in referer) or 
+        preview_mode):
+        is_preview_request = True
+    
+    print(f"Request for chart {chart_instance.title}")
+    print(f"Referer: {referer}")
+    print(f"Preview mode: {preview_mode}")
+    print(f"Is preview request: {is_preview_request}")
+    print(f"User authenticated: {request.user.is_authenticated}")
+    
+    # For preview requests, allow anonymous access
+    if is_preview_request:
+        print(f"Processing preview request for chart {chart_instance.title}")
+        # Serve marketplace/preview data for anonymous users
+        file_path = chart_instance.get_marketplace_chart_data()
+        if not file_path or not os.path.exists(file_path):
+            # Fallback to original data if marketplace doesn't exist
+            file_path = chart_instance.get_full_chart_data()
+        
+        if file_path and os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    chart_data = json.load(f)
+                
+                # Include chart metadata in response
+                response_data = {
+                    'access': True,
+                    'chart_title': chart_instance.title,
+                    'nodes_data': chart_data.get('nodes_json', []),
+                    'is_preview': True,
+                    'chart_uuid': str(chart_instance.uuid)
+                }
+                
+                return JsonResponse(response_data, status=200)
+            except json.JSONDecodeError:
+                return JsonResponse({'access': False, 'message': 'Failed to parse JSON.'}, status=500)
+            except Exception as e:
+                return JsonResponse({'access': False, 'message': f'Error loading chart: {str(e)}'}, status=500)
+        else:
+            return JsonResponse({'access': False, 'message': 'Chart data not found'}, status=200)
+
+    # Use request.user for validation (non-preview requests)
     if not request.user.is_authenticated:
         return JsonResponse({'access': False, 'message': 'Authentication required'}, status=200)
     userobj = request.user
 
-    if 'demo' in file_name.lower():
+    # Check access permissions
+    if 'demo' in chart_instance.title.lower():
         access = True
     elif userobj.is_staff and userobj.groups.filter(name='Admin').exists():
         access = True
+    elif hasattr(userobj, 'userprofile') and userobj.userprofile.is_superadmin:
+        access = True
     else:
-        chart_ids = chart.objects.filter(allowed_users=userobj)
-        for charts in chart_ids:
-            if charts.title == file_name:
-                access = True
-                break
-    if '/' in file_name or '..' in file_name:
-        return JsonResponse({'access': False, 'message': 'Invalid Company Name'}, status=200)
+        if chart_instance.allowed_users.filter(id=userobj.id).exists():
+            access = True
 
-    full_filename = f"{file_name}.json"
-    file_path = os.path.join(settings.MEDIA_ROOT, 'chart_data', full_filename)
+    # Determine which file to serve based on user access and chart configuration
+    if access:
+        # User has full access - serve original data
+        file_path = chart_instance.get_full_chart_data()
+        if not file_path or not os.path.exists(file_path):
+            # Fallback to marketplace data if original doesn't exist
+            file_path = chart_instance.get_marketplace_chart_data()
+    else:
+        # User doesn't have access - serve preview data for marketplace
+        file_path = chart_instance.get_marketplace_chart_data()
+    
+    if not file_path or not os.path.exists(file_path):
+        return JsonResponse({'access': False, 'message': 'Chart data not found.'}, status=200)
 
-    if not os.path.exists(file_path):
-        return JsonResponse({'access': False, 'message': 'Chart Not Found.'}, status=200)
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        return JsonResponse({'access': access, 'chart_title': file_name, 'nodes_data': data['nodes_json']}, status=200)
+        
+        # Include chart metadata in response
+        response_data = {
+            'access': access,
+            'chart_title': chart_instance.title,
+            'nodes_data': data.get('nodes_json', []),
+            'is_preview': not access or (chart_instance.has_preview_version and file_path == chart_instance.get_marketplace_chart_data()),
+            'chart_uuid': str(chart_instance.uuid)
+        }
+        
+        return JsonResponse(response_data, status=200)
+        
     except json.JSONDecodeError:
         return JsonResponse({'access': False, 'message': 'Failed to parse JSON.'}, status=500)
+    except Exception as e:
+        return JsonResponse({'access': False, 'message': f'Error loading chart: {str(e)}'}, status=500)
 
     
 
@@ -1473,8 +1568,8 @@ def marketplace_dash(request):
     return render(request, 'marketplace.html', {
         'charts_data': charts_data,
         'cart_item_count': cart_item_count,
-        'all_countries': list(all_countries),
-        'all_industries': list(all_industries),
+        'all_countries': json.dumps(list(all_countries)),
+        'all_industries': json.dumps(list(all_industries)),
         'marketplace_settings': marketplace_settings
     })
 
@@ -3799,6 +3894,255 @@ def view_orgchart_temp(request, chart_uuid):
     }
     return render(request, 'orgcharts/orgchart-temp.html', context)
 
+@require_GET
+def view_chart_by_filename(request, file_name):
+    """Handle old chart URL format /charts/<filename>"""
+    # Remove .html extension if present
+    if file_name.endswith('.html'):
+        file_name = file_name[:-5]
+    
+    # URL decode the filename
+    import urllib.parse
+    decoded_filename = urllib.parse.unquote(file_name)
+    
+    try:
+        # Try to find chart by title first
+        chart_obj = chart.objects.filter(title__iexact=decoded_filename).first()
+        if not chart_obj:
+            # Try partial match
+            chart_obj = chart.objects.filter(title__icontains=decoded_filename.split('-')[0]).first()
+        
+        if chart_obj:
+            # Redirect to new UUID-based URL
+            return redirect('view_orgchart_temp', chart_uuid=chart_obj.uuid)
+        else:
+            # If no chart found, render with empty context
+            context = {
+                'chart_title': decoded_filename,
+                'chart_uuid': '',
+                'error_message': f'Chart "{decoded_filename}" not found'
+            }
+            return render(request, 'orgcharts/orgchart-temp.html', context)
+            
+    except Exception as e:
+        # Fallback to error page
+        context = {
+            'chart_title': decoded_filename,
+            'chart_uuid': '',
+            'error_message': f'Error loading chart: {str(e)}'
+        }
+        return render(request, 'orgcharts/orgchart-temp.html', context)
 
 def is_superadmin(user):
         return hasattr(user, 'userprofile') and getattr(user.userprofile, 'is_superadmin', False)
+
+@login_required
+def view_chart_preview(request, chart_id):
+    """
+    View function for the 'ORG CHART' button in marketplace.
+    Shows a preview of the organizational chart.
+    """
+    try:
+        chart_instance = get_object_or_404(chart, pk=chart_id)
+        
+        # Check if user has access or chart is public in marketplace
+        user_has_access = False
+        if request.user.is_staff and request.user.groups.filter(name='Admin').exists():
+            user_has_access = True
+        elif hasattr(request.user, 'userprofile') and request.user.userprofile.is_superadmin:
+            user_has_access = True
+        elif chart_instance.allowed_users.filter(id=request.user.id).exists():
+            user_has_access = True
+        else:
+            # For marketplace preview, allow limited preview
+            user_has_access = True
+        
+        if user_has_access:
+            # Redirect to the chart viewing page
+            return redirect('view_orgchart_temp', chart_uuid=chart_instance.uuid)
+        else:
+            messages.error(request, "You don't have permission to view this chart.")
+            return redirect('marketplace_dash')
+            
+    except Exception as e:
+        messages.error(request, f"Error accessing chart: {str(e)}")
+        return redirect('marketplace_dash')
+
+def view_chart_blurred_preview(request, chart_id):
+    """
+    View function for the 'ORG CHART' button in marketplace.
+    Shows a blurred/limited preview of the organizational chart with restricted functionality.
+    
+    IMPORTANT: This view is PUBLIC and accessible without login.
+    Anyone can access preview org charts regardless of authentication status.
+    """
+    try:
+        chart_instance = get_object_or_404(chart, pk=chart_id)
+        
+        # Log access for debugging (can be removed in production)
+        user_status = "authenticated" if request.user.is_authenticated else "anonymous"
+        print(f"Preview access by {user_status} user for chart ID: {chart_id}")
+        
+        # For preview mode, we don't need the actual data file
+        # The template will use the original chart data but apply blurring
+        context = {
+            'chart_title': chart_instance.title,
+            'chart_uuid': chart_instance.uuid,
+            'chart_data': None,  # Let the template handle data loading
+            'chart': chart_instance,
+            'total_employees': chart_instance.personCount,
+            'is_preview_mode': True,
+            'has_preview_version': chart_instance.has_preview_version,
+            'user_can_purchase': True,  # Always allow purchase redirect
+            'is_authenticated': request.user.is_authenticated,  # Pass auth status for UI
+            'user': request.user if request.user.is_authenticated else None,
+            'access_type': 'Public Preview - No Login Required',
+        }
+        
+        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
+        
+    except Exception as e:
+        # If there's any error, provide a minimal context
+        # Still accessible to anonymous users
+        print(f"Error in preview for chart {chart_id}: {str(e)}")
+        context = {
+            'chart_title': 'Organization Chart Preview',
+            'chart_uuid': 'preview-demo',
+            'chart_data': None,
+            'chart': None,
+            'total_employees': 52,
+            'is_preview_mode': True,
+            'has_preview_version': False,
+            'user_can_purchase': True,
+            'is_authenticated': request.user.is_authenticated,
+            'user': request.user if request.user.is_authenticated else None,
+            'access_type': 'Public Preview - No Login Required',
+        }
+        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
+
+@login_required  
+def download_chart_sample(request, chart_id):
+    """
+    View function for the 'GET SAMPLE' button in marketplace.
+    Downloads a sample/preview version of the chart data.
+    """
+    try:
+        chart_instance = get_object_or_404(chart, pk=chart_id)
+        
+        # Create sample CSV with limited data (first 10 rows)
+        file_path = os.path.join(settings.MEDIA_ROOT, "csv_files", f"{chart_instance.title}.csv")
+        
+        if os.path.exists(file_path):
+            import csv
+            import io
+            
+            # Read original CSV and create sample
+            sample_data = []
+            with open(file_path, 'r', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                headers = next(reader, None)  # Get headers
+                if headers:
+                    sample_data.append(headers)
+                    
+                    # Add first 10 data rows
+                    for i, row in enumerate(reader):
+                        if i < 10:  # Limit to first 10 rows for sample
+                            sample_data.append(row)
+                        else:
+                            break
+            
+            # Create CSV response
+            output = io.StringIO()
+            writer = csv.writer(output)
+            for row in sample_data:
+                writer.writerow(row)
+            
+            response = HttpResponse(
+                output.getvalue().encode('utf-8'),
+                content_type='text/csv'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{chart_instance.title}_sample.csv"'
+            
+            # Add success message
+            messages.success(request, f"Sample data for '{chart_instance.title}' downloaded successfully!")
+            
+            return response
+        else:
+            messages.error(request, "Sample data not available for this chart.")
+            return redirect('marketplace_dash')
+            
+    except Exception as e:
+        messages.error(request, f"Error downloading sample: {str(e)}")
+        return redirect('marketplace_dash')
+
+@csrf_exempt
+def request_sample_ajax(request):
+    """
+    Handle AJAX request for sample request form submission.
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            from .models import SampleRequest
+            
+            data = json.loads(request.body)
+            
+            email = data.get('email', '').strip()
+            requirements = data.get('requirements', '').strip()
+            chart_id = data.get('chart_id')
+            chart_title = data.get('chart_title', '')
+            
+            # Basic validation
+            if not email or not requirements:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Email and requirements are required.'
+                })
+            
+            # Get chart instance
+            try:
+                chart_instance = chart.objects.get(pk=chart_id)
+            except chart.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Chart not found.'
+                })
+            
+            # Get user if authenticated
+            current_user = request.user if request.user.is_authenticated else None
+            
+            # Save the sample request to database
+            sample_request = SampleRequest.objects.create(
+                email=email,
+                requirements=requirements,
+                chart=chart_instance,
+                chart_title=chart_title,
+                user=current_user,
+                status='pending'
+            )
+            
+            # Log the request for debugging
+            print(f"Sample request created with ID: {sample_request.id}")
+            print(f"Chart: {chart_title} (ID: {chart_id})")
+            print(f"Email: {email}")
+            print(f"Requirements: {requirements}")
+            
+            # Optional: Send email notification to admin here
+            # You can implement email notification logic if needed
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Sample request submitted successfully! We will review your request and contact you shortly.',
+                'request_id': sample_request.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error processing request: {str(e)}'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method.'
+    })

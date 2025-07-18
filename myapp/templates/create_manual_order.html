@@ -168,6 +168,28 @@
     .required {
         color: #dc3545;
     }
+    
+    .hidden {
+        display: none !important;
+    }
+    
+    .coupon-info {
+        padding: 15px;
+        background: #d4edda;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .payment-method-info {
+        padding: 15px;
+        background: #e7f3ff;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    
+    .submit-note {
+        margin-top: 10px;
+    }
 </style>
 
 <div class="details">
@@ -268,7 +290,7 @@
                         <div class="help-text">Select a coupon to apply discount to this order</div>
                     </div>
                     <div class="form-group">
-                        <div id="coupon-info" style="display: none; padding: 15px; background: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;">
+                        <div id="coupon-info" class="coupon-info hidden">
                             <h5><i class="bi bi-tag-fill text-success"></i> Coupon Details</h5>
                             <div id="coupon-description"></div>
                             <div id="coupon-discount" class="text-success font-weight-bold"></div>
@@ -298,16 +320,16 @@
                     </div>
                 </div>
                 
-                <div id="payment-method-info" style="display: none; padding: 15px; background: #e7f3ff; border-radius: 8px; margin-top: 15px;">
-                    <div id="razorpay-info" style="display: none;">
+                <div id="payment-method-info" class="payment-method-info hidden">
+                    <div id="razorpay-info" class="hidden">
                         <h4><i class="bi bi-info-circle"></i> Razorpay Payment Link</h4>
                         <p>A secure payment link will be generated and sent to the customer's email. Customer can pay using cards, UPI, netbanking, or wallets.</p>
                     </div>
-                    <div id="bank-transfer-info" style="display: none;">
+                    <div id="bank-transfer-info" class="hidden">
                         <h4><i class="bi bi-bank"></i> Bank Transfer</h4>
                         <p>Customer will receive bank details for manual transfer. Order will remain pending until payment confirmation.</p>
                     </div>
-                    <div id="completed-info" style="display: none;">
+                    <div id="completed-info" class="hidden">
                         <h4><i class="bi bi-check-circle"></i> Mark as Paid</h4>
                         <p>Use this if payment has already been received through other means. Order will be marked as completed immediately.</p>
                     </div>
@@ -337,7 +359,7 @@
                 <button type="submit" class="btn-create">
                     <i class="bi bi-check-circle"></i> Create Order & Send Invoice
                 </button>
-                <div class="help-text" style="margin-top: 10px;">
+                <div class="help-text submit-note">
                     This will create the order, grant access to selected charts, and optionally send an invoice email
                 </div>
             </div>
