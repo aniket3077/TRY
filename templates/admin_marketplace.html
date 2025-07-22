@@ -1,0 +1,293 @@
+{% extends 'base_index.html' %}
+
+{% block title %}My Marketplace{% endblock %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+
+{% block content %}
+
+<style>
+    .marketplace-settings-btn {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .marketplace-settings-btn:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+    
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    }
+    
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
+    
+    .alert-info {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.2);
+        color: #1e40af;
+    }
+    
+    .text-primary {
+        color: #3b82f6 !important;
+    }
+</style>
+
+
+
+<div class="details">
+    <div class="listorg">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>My Marketplace</h2>
+            
+            <div class="search-container" style="margin-top: -15px;">
+                
+                <i class="fa fa-sort" style="font-size:36px"></i>
+                <label for="sort-options">Sort by </label>
+                <select id="sort-options" onchange="handleSortChange(this.value)">
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+                <option value="latest">Latest</option>
+            </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="grey" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                <input type="text" class="search-input" id="myInput" onkeyup="filterTable()" placeholder="Search for table entries...">
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn marketplace-settings-btn mr-3" data-toggle="modal" data-target="#marketplaceSettingsModal">
+                    <i class="fa fa-cog"></i>Settings
+                </button>
+                <a target="_blank" class="btn btn-info" href="/marketplace">Visit Store</a>
+            </div>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td onclick="sortTable(1,'asc')">Title</td>
+                    <td onclick="sortTable(2,'asc')">Last Updated</td>
+                    <td onclick="sortTable(3,'asc')">Price</td>
+                    <td>Status</td>
+                    <td>Industry</td>
+                    <td>Country</td>
+                    <td>Employee Range</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chart in charts_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ chart.title }}</td>
+                    <td>{{chart.last_updated}}</td>
+                    <td>${{ chart.price }}</td>
+                    <td>
+                        {% if chart.mp_status == 'Published' %}
+                        <span class="p-2 rounded bg-success text-white">Published</span>
+                        {% else %}
+                        <span class="p-2 rounded bg-secondary text-white">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ chart.industry }}</td>
+                    <td>{{ chart.country }}</td>
+                    <td>{{ chart.employee_range }}</td>
+                    <td>
+                        <a href="#" class="btn btn-info" 
+                                   data-toggle="modal" 
+                                   data-target="#user-details-modal_{{ forloop.counter }}">
+                                   View Details
+                        </a>
+                        
+                    </td>
+                </tr>
+            
+             <!-- User Details Modal for Current Row -->
+<div class="modal fade" id="user-details-modal_{{ forloop.counter }}" tabindex="-1" role="dialog" aria-labelledby="user-details-modal-title_{{ forloop.counter }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="user-details-modal-title_{{ forloop.counter }}">Chart Details For: {{ chart.title }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/update-chart-details/{{ chart.id }}/" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="price_{{ forloop.counter }}">Price</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="price_{{ forloop.counter }}" name="price" value="{{ chart.price }}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_updated_{{ forloop.counter }}">Last Updated</label>
+                                <input type="date" class="form-control" id="last_updated_{{ forloop.counter }}" name="last_updated" value="{{ chart.last_updated|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="country_{{ forloop.counter }}">Country</label>
+                                <select class="form-control  " id="country_{{ forloop.counter }}" name="country" required>
+                                    <option value="" disabled selected>Select Country</option>
+                                    {% for country in countries %}
+                                    <option value="{{ country }}" {% if country == chart.country %}selected{% endif %}>{{ country }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee_range_{{ forloop.counter }}">Employee Range</label>
+                                <select class="form-control  " id="employee_range_{{ forloop.counter }}" name="employee_range" required>
+                                    <option value="" disabled selected>Select Employee Range</option>
+                                    {% for range in employee_ranges %}
+                                    <option value="{{ range }}" {% if range == chart.employee_range %}selected{% endif %}>{{ range }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="industry_{{ forloop.counter }}">Industry</label>
+                                <select class="form-control  " id="industry_{{ forloop.counter }}" name="industry" required>
+                                    <option value="" disabled selected>Select Industry</option>
+                                    {% for industry in industries %}
+                                    <option value="{{ industry }}" {% if industry == chart.industry %}selected{% endif %}>{{ industry }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="status_{{ forloop.counter }}">Status</label>
+                                <select class="form-control  " id="status_{{ forloop.counter }}" name="status" required>
+                                    <option value="" disabled>Select Status</option>
+                                    <option value="Published" {% if chart.mp_status == 'Published' %}selected{% endif %}>Published</option>
+                                    <option value="Draft" {% if chart.mp_status == 'Draft' %}selected{% endif %}>Draft</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+     
+
+                
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- Marketplace Settings Modal -->
+<div class="modal fade" id="marketplaceSettingsModal" tabindex="-1" role="dialog" aria-labelledby="marketplaceSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="marketplaceSettingsModalLabel">
+                    <i class="fa fa-cog mr-2"></i>Marketplace Settings
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'update_marketplace_settings' %}" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fa fa-external-link-alt mr-2"></i>Free Sample Link Configuration
+                            </h6>
+                            
+                            <div class="form-group">
+                                <label for="sample_link" class="font-weight-bold">
+                                    <i class="fa fa-link mr-1"></i>Sample Link URL
+                                </label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="sample_link" 
+                                       name="sample_link" 
+                                       value="{{ marketplace_settings.sample_link }}" 
+                                       placeholder="https://example.com/sample-chart" 
+                                       required>
+                                <small class="text-muted">The URL that users will be redirected to when they click "Free Sample"</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="sample_title" class="font-weight-bold">
+                                    <i class="fa fa-heading mr-1"></i>Sample Title
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="sample_title" 
+                                       name="sample_title" 
+                                       value="{{ marketplace_settings.sample_title }}" 
+                                       placeholder="Free Sample" 
+                                       maxlength="100"
+                                       required>
+                                <small class="text-muted">The title displayed on the sample card</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="sample_description" class="font-weight-bold">
+                                    <i class="fa fa-align-left mr-1"></i>Sample Description
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="sample_description" 
+                                       name="sample_description" 
+                                       value="{{ marketplace_settings.sample_description }}" 
+                                       placeholder="Preview our demo chart" 
+                                       maxlength="200"
+                                       required>
+                                <small class="text-muted">The description displayed on the sample card</small>
+                            </div>
+                            
+                            <div class="info-box">
+                               
+                                <strong>Current Settings:</strong><br>
+                                <strong>Title:</strong> {{ marketplace_settings.sample_title }}<br>
+                                <strong>Description:</strong> {{ marketplace_settings.sample_description }}<br>
+                                <strong>Last Updated:</strong> {{ marketplace_settings.updated_at|date:"F d, Y g:i A" }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save mr-1"></i>Update Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+

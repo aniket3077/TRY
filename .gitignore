@@ -32,3 +32,4 @@ staticfiles/
 
 # Allow README.md
 !README.md
+.vercel

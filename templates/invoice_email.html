@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Confirmation - {{ company.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #37474f;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .email-header {
+            background: #1976d2;
+            color: white;
+            padding: 30px 24px;
+            text-align: center;
+        }
+        
+        .email-header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        
+        .email-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .email-content {
+            padding: 32px 24px;
+        }
+        
+        .greeting {
+            font-size: 16px;
+            color: #263238;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .message-text {
+            font-size: 14px;
+            color: #546e7a;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        
+        .order-summary {
+            background: #f8f9fa;
+            border-left: 4px solid #1976d2;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 24px 0;
+        }
+        
+        .order-summary h3 {
+            color: #1976d2;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        
+        .order-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        
+        .order-detail .label {
+            color: #546e7a;
+            font-weight: 500;
+        }
+        
+        .order-detail .value {
+            color: #37474f;
+            font-weight: 400;
+        }
+        
+        .total-amount {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 12px;
+            font-weight: 600;
+            color: #1976d2;
+            font-size: 14px;
+        }
+          .processing-fee {
+            color: #f57c00;
+            font-weight: 500;
+        }
+        
+        .coupon-discount {
+            color: #4caf50;
+            font-weight: 500;
+        }
+        
+        .coupon-discount .value.discount {
+            color: #4caf50;
+        }
+        
+        .access-info {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 24px 0;
+        }
+        
+        .access-info h4 {
+            color: #2e7d32;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .access-info p {
+            color: #388e3c;
+            font-size: 13px;
+            margin: 0;
+        }
+        
+        .footer {
+            background: #f5f5f5;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .footer p {
+            color: #616161;
+            font-size: 12px;
+            margin: 4px 0;
+        }
+        
+        .footer strong {
+            color: #37474f;
+            font-weight: 500;
+        }
+        
+        .company-info {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 16px;
+            text-align: left;
+        }
+        
+        .company-info h4 {
+            color: #1976d2;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .company-info p {
+            color: #546e7a;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .email-content {
+                padding: 24px 16px;
+            }
+            
+            .email-header {
+                padding: 24px 16px;
+            }
+            
+            .order-summary,
+            .access-info {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Invoice Confirmation</h1>
+            <p>Thank you for your purchase from {{ company.name }}</p>
+        </div>
+        
+        <div class="email-content">
+            <p class="greeting">Dear {{ order.customer_name }},</p>
+            
+            <p class="message-text">
+                Thank you for your purchase! Your order has been successfully processed and you now have access to your selected organization charts.
+            </p>
+            
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <div class="order-detail">
+                    <span class="label">Order ID:</span>
+                    <span class="value">{{ order.order_id }}</span>
+                </div>
+                <div class="order-detail">
+                    <span class="label">Invoice Number:</span>
+                    <span class="value">{{ invoice_number }}</span>
+                </div>
+                <div class="order-detail">
+                    <span class="label">Order Date:</span>
+                    <span class="value">{{ order.created_at|date:"F d, Y" }}</span>
+                </div>
+                <div class="order-detail">
+                    <span class="label">Payment Method:</span>
+                    <span class="value">
+                        {% if order.payment_method == 'razorpay' %}
+                            Online Payment
+                        {% elif order.payment_method == 'bank_transfer' %}
+                            Bank Transfer
+                        {% elif order.payment_method == 'marked_paid' %}
+                            Manual Payment
+                        {% else %}
+                            {{ order.payment_method|default:"Not specified" }}
+                        {% endif %}
+                    </span>
+                </div>
+                {% if order.razorpay_payment_id %}
+                <div class="order-detail">
+                    <span class="label">Payment ID:</span>
+                    <span class="value">{{ order.razorpay_payment_id }}</span>
+                </div>
+                {% endif %}
+                <div class="order-detail">
+                    <span class="label">Items Purchased:</span>
+                    <span class="value">{{ order.order_items.count }} organization chart{{ order.order_items.count|pluralize }}</span>
+                </div>
+                <div class="order-detail total-amount">
+                    <span class="label">Total Amount:</span>
+                    <span class="value">${{ order.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+            
+            <div class="access-info">
+                <h4>✓ Access Granted</h4>
+                <p>You now have full access to your purchased organization charts for 30 days from the purchase date.</p>
+            </div>
+            
+            <p class="message-text">
+                Your detailed invoice is attached as a PDF document. If you have any questions or need support, please don't hesitate to contact us.
+            </p>
+            
+            <div class="company-info">
+                <h4>Contact Information</h4>
+                <p><strong>{{ company.name }}</strong></p>
+                <p>Email: {{ company.email }}</p>
+                {% if company.phone %}
+                <p>Phone: {{ company.phone }}</p>
+                {% endif %}
+                {% if company.website %}
+                <p>Website: {{ company.website }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Thank you for choosing {{ company.name }}!</strong></p>
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>Generated on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"H:i" }} UTC</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends 'base_index.html' %}
+
+{% block title %}My Account{% endblock %}
+{% block content %}
+<div class="details">
+
+           
+<h2>Your Account Details</h2>
+<label> <ion-icon name="caret-forward"></ion-icon>&nbsp; <b>UserID:</b> &nbsp; {{ user.id }}</label>
+<label style="margin-top: -18px"> <ion-icon name="caret-forward"></ion-icon>&nbsp; <b>Username:</b> &nbsp; {{ user.username }}</label>
+
+<label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>Email:</b> &nbsp; {{ user.email }}</label>
+<label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>User Role:</b> &nbsp;  {% if user.groups.all %}{% for group in user.groups.all %}
+        {{ group.name }}
+      {% endfor %}
+  {% else %}
+    You are not a member of any groups.
+  {% endif %}</label>
+  <label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>First Name:</b> &nbsp; {{ user.first_name }}</label>
+  <label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>Last Name:</b> &nbsp; {{ user.last_name }}</label>
+  <label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>Date Joined:</b> &nbsp; {{ user.date_joined }}</label>
+  <label style="margin-top: -18px"><ion-icon name="caret-forward"></ion-icon>&nbsp; <b>Last Login:</b>&nbsp;  {{ user.last_login }}</label>
+<div class="button-container">
+    <a href="/reset-password/" class="password-reset-btn" target="_blank">Change Password</a>
+</div>
+</div>
+{% endblock %}

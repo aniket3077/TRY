@@ -1,0 +1,2045 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrgMarketPlace</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="{% static 'home/css/style.css' %}"> -->
+
+    <style>
+       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+       @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(147, 197, 253, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(219, 234, 254, 0.08) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        /* Modern Header */
+        .modern-header {
+            background: rgba(255, 255, 255, 0.7);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: none;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 
+                0 8px 32px rgba(59, 130, 246, 0.08),
+                0 4px 16px rgba(147, 197, 253, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            padding: 1rem 0;
+        }
+
+        .brand-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 12px rgba(59, 130, 246, 0.15);
+            letter-spacing: -0.02em;
+        }
+
+        /* Material Design Cards */
+        .material-card {
+            background: rgba(255, 255, 255, 0.75);
+            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(59, 130, 246, 0.12);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 32px rgba(59, 130, 246, 0.06),
+                0 4px 16px rgba(147, 197, 253, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        .material-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 16px 48px rgba(59, 130, 246, 0.1),
+                0 8px 24px rgba(147, 197, 253, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            border-color: rgba(59, 130, 246, 0.18);
+        }
+
+        .card-header.material-header {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(29, 78, 216, 0.9) 100%);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 24px 24px 0 0;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .filter-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Compact Filter Sections */
+        .filter-section {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-section:last-child {
+            border-bottom: none;
+        }
+
+        /* Compact Filter Toggle */
+        .filter-toggle-btn {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .filter-content.hidden {
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .filter-content.visible {
+            max-height: 1200px;
+            opacity: 1;
+            pointer-events: all;
+            padding: 0.75rem;
+        }
+
+        /* Compact Filter Toggle Container */
+        .filter-toggle-container {
+            padding: 1rem 1rem 0 1rem;
+        }
+
+        .filter-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-section-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-all {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-all:hover {
+            background: rgba(229, 62, 62, 0.1);
+            color: #c53030;
+        }
+
+        /* Compact Form Controls */
+        .modern-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+        }
+
+        .modern-input::placeholder {
+            color: #a0aec0;
+            font-weight: 400;
+            font-size: 0.8rem;
+        }
+
+        /* Compact Checkboxes */
+        .checkbox-container {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            padding: 0.75rem;
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid rgba(59, 130, 246, 0.12);
+        }
+
+        .checkbox-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .checkbox-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+
+        .checkbox-container::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .material-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .material-checkbox:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .material-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .material-checkbox label {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #4a5568;
+            cursor: pointer;
+            margin: 0;
+            flex: 1;
+        }
+
+        /* Compact Active Filters in Sidebar */
+        .active-filters-sidebar {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .active-filters-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.95) 100%);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin: 0.2rem 0.2rem 0.2rem 0;
+            transition: all 0.2s;
+            box-shadow: 0 1px 4px rgba(59, 130, 246, 0.25);
+        }
+
+        .filter-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+        }
+
+        .chip-remove {
+            margin-left: 0.4rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+
+        .chip-remove:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Compact Employee Range Inputs */
+        .range-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .range-input {
+            width: 100% !important;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .range-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+        }
+
+        /* Company List Card */
+        .company-list-card {
+            background: rgba(255, 255, 255, 0.75);
+            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(59, 130, 246, 0.12);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 32px rgba(59, 130, 246, 0.06),
+                0 4px 16px rgba(147, 197, 253, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+        }
+
+        /* Table Responsive Wrapper */
+        .table-responsive {
+            border: none;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .table-modern {
+            margin: 0;
+            background: transparent;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        /* Fixed table layout for marketplace to prevent horizontal scroll */
+        .marketplace-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        .table-modern thead th {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.15) 100%);
+            border: none;
+            padding: 1.25rem 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .table-modern thead th:nth-child(1) { width: 35%; }
+        .table-modern thead th:nth-child(2) { width: 15%; }
+        .table-modern thead th:nth-child(3) { width: 12%; }
+        .table-modern thead th:nth-child(4) { width: 18%; }
+        .table-modern thead th:nth-child(5) { width: 20%; }
+
+        .table-modern tbody tr {
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .table-modern tbody tr:hover {
+            background: rgba(59, 130, 246, 0.06);
+            transform: scale(1.002);
+        }
+
+        .table-modern tbody td {
+            padding: 1.25rem 1.5rem;
+            border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        /* Modern Buttons */
+        .btn-modern {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.95) 100%);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 
+                0 4px 16px rgba(59, 130, 246, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 24px rgba(59, 130, 246, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            color: white;
+            text-decoration: none;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-modern:active {
+            transform: translateY(0);
+        }
+
+        .btn-modern-outline {
+            background: rgba(255, 255, 255, 0.85);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(59, 130, 246, 0.25);
+            color: #3b82f6;
+            padding: 0.875rem 1.75rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            box-shadow: 
+                0 4px 16px rgba(59, 130, 246, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .btn-modern-outline:hover {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 24px rgba(59, 130, 246, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-modern-info {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.8) 0%, rgba(8, 145, 178, 0.9) 100%);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 
+                0 4px 16px rgba(6, 182, 212, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-modern-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 24px rgba(6, 182, 212, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        /* Crystal Free Sample Card */
+        .free-sample-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 249, 255, 0.9) 100%);
+            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 
+                0 4px 20px rgba(59, 130, 246, 0.08),
+                0 2px 10px rgba(147, 197, 253, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+
+        .free-sample-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .free-sample-card:hover::before {
+            left: 100%;
+        }
+
+        .free-sample-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 
+                0 12px 40px rgba(59, 130, 246, 0.18),
+                0 6px 20px rgba(147, 197, 253, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            border-color: rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+        }
+
+        .free-sample-card:hover .free-sample-arrow {
+            transform: translateX(5px);
+            color: #3b82f6;
+        }
+
+        .free-sample-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 197, 253, 0.25) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 1.3rem;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+
+        .free-sample-content {
+            flex: 1;
+        }
+
+        .free-sample-content h4 {
+            color: #1e40af;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0 0 0.3rem 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .free-sample-content p {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .free-sample-arrow {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        /* No Charts Message */
+        .no-charts-modern {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            margin: 2rem;
+        }
+
+        .no-charts-icon {
+            font-size: 4rem;
+            color: #a0aec0;
+            margin-bottom: 1.5rem;
+        }
+
+        .no-charts-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+        }
+
+        .no-charts-subtitle {
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        /* Container - Prevent horizontal scroll */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Table responsive wrapper - Better scroll control */
+        .table-responsive {
+            border: none;
+            overflow-x: auto;
+            margin: 0;
+            max-width: 100%;
+        }
+        .cart-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .mini-cart {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .cart-container:hover .mini-cart {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .mini-cart-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1rem 1.25rem;
+            border-radius: 16px 16px 0 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mini-cart-items {
+            padding: 1rem 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .mini-cart-item {
+            padding: 0.875rem 1.25rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .mini-cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .mini-cart-item-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-cart-item-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2d3748;
+            flex: 1;
+            margin-right: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .mini-cart-item-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #3b82f6;
+            white-space: nowrap;
+        }
+
+        .mini-cart-item-details {
+            font-size: 0.75rem;
+            color: #718096;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .mini-cart-item-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .mini-cart-item-delete {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-cart-item-delete:hover {
+            background: rgba(229, 62, 62, 0.1);
+            color: #c53030;
+        }
+
+        .mini-cart-item-delete:active {
+            transform: scale(0.95);
+        }
+
+        .mini-cart-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 0 0 16px 16px;
+        }
+
+        .mini-cart-total {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .mini-cart-empty {
+            padding: 2rem 1.25rem;
+            text-align: center;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .mini-cart-empty-icon {
+            font-size: 2rem;
+            color: #a0aec0;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modern Toast Notifications */
+        .toast {
+            background: rgba(255, 255, 255, 0.95) !important;
+            -webkit-backdrop-filter: blur(25px) !important;
+            backdrop-filter: blur(25px) !important;
+            border: 1px solid rgba(59, 130, 246, 0.15) !important;
+            border-radius: 16px !important;
+            box-shadow: 
+                0 8px 32px rgba(59, 130, 246, 0.12),
+                0 4px 16px rgba(147, 197, 253, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+            overflow: hidden !important;
+            min-width: 320px !important;
+            animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+
+        .toast-header {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1) !important;
+            padding: 1rem 1.25rem !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+        }
+
+        .toast-header.bg-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.95) 100%) !important;
+            color: white !important;
+            border-bottom: none !important;
+        }
+
+        .toast-header.bg-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.95) 100%) !important;
+            color: white !important;
+            border-bottom: none !important;
+        }
+
+        .toast-body {
+            padding: 1rem 1.25rem !important;
+            font-size: 0.9rem !important;
+            color: #1e40af !important;
+            line-height: 1.5 !important;
+        }
+
+        .toast .close {
+            font-size: 1.1rem !important;
+            opacity: 0.8 !important;
+            transition: all 0.2s !important;
+        }
+
+        .toast .close:hover {
+            opacity: 1 !important;
+            transform: scale(1.1) !important;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast.hiding {
+            animation: slideOutRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sidebar Toggle Styles */
+        #filterSidebar {
+            transition: all 0.3s ease;
+        }
+
+        #filterSidebar.hidden {
+            display: none !important;
+        }
+
+        #mainContent {
+            transition: all 0.3s ease;
+        }
+
+        #mainContent.full-width {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        /* Header Filter Button */
+        #headerFilterToggle {
+            transition: all 0.3s ease;
+        }
+
+        #headerFilterToggle.active {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+
+        /* Table column widths - Optimized to prevent horizontal scroll */
+        .marketplace-table th:nth-child(1) { width: 30%; }
+        .marketplace-table th:nth-child(2) { width: 12%; }
+        .marketplace-table th:nth-child(3) { width: 10%; }
+        .marketplace-table th:nth-child(4) { width: 15%; }
+        .marketplace-table th:nth-child(5) { width: 33%; min-width: 280px; }
+
+        /* Compact Action Buttons - Smaller and more efficient */
+        .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.7rem !important;
+            min-width: auto !important;
+            white-space: nowrap;
+            border-radius: 5px !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: none !important;
+        }
+
+        .view-chart-btn {
+            background: transparent !important;
+            color: #3b82f6 !important;
+            border: 1.5px solid #3b82f6 !important;
+        }
+
+        .view-chart-btn:hover {
+            background: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+        }
+
+        .get-sample-btn {
+            background: #10b981 !important;
+            color: white !important;
+            border: 1.5px solid #10b981 !important;
+        }
+
+        .get-sample-btn:hover {
+            background: #059669 !important;
+            border-color: #059669 !important;
+        }
+
+        .add-to-cart-btn {
+            background: #f59e0b !important;
+            color: white !important;
+            border: 1.5px solid #f59e0b !important;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #d97706 !important;
+            border-color: #d97706 !important;
+        }
+
+        /* Button Icons - Smaller */
+        .action-buttons .material-icons {
+            font-size: 0.8rem !important;
+            margin-right: 0.3rem !important;
+        }
+
+        /* Responsive action buttons - Improved breakpoints */
+        @media (max-width: 1400px) {
+            .marketplace-table th:nth-child(5) { min-width: 250px; }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                padding: 0.35rem 0.7rem !important;
+                font-size: 0.65rem !important;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .marketplace-table th:nth-child(5) { min-width: 220px; }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+                align-items: stretch;
+            }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.6rem !important;
+                padding: 0.3rem 0.5rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .marketplace-table th:nth-child(5) { min-width: 180px; }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            
+            .view-chart-btn, .get-sample-btn, .add-to-cart-btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.55rem !important;
+                padding: 0.25rem 0.4rem !important;
+            }
+            
+            .action-buttons .material-icons {
+                font-size: 0.7rem !important;
+                margin-right: 0.2rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content d-flex justify-content-between align-items-center">
+                <h1 class="brand-title mb-0">
+                    <i class="material-icons" style="font-size: 2rem; margin-right: 0.5rem;">store</i>
+                    OrgMarketPlace
+                </h1>
+                <div class="d-flex align-items-center" style="gap: 1rem;">
+                    <!-- Filter Toggle Button -->
+                    <button class="btn-modern-outline" id="headerFilterToggle">
+                        <i class="material-icons" style="font-size: 1.2rem; margin-right: 0.5rem;">tune</i>
+                        <span id="headerFilterText">Show Filters</span>
+                    </button>
+                    
+                    {% if user.is_authenticated %}
+                    <div class="cart-container">
+                        <a href="{% url 'view_cart' %}" class="btn-modern-outline position-relative">
+                            <i class="material-icons" style="font-size: 1.2rem; margin-right: 0.5rem;">shopping_cart</i>
+                            Cart
+                            <span id="cart-badge" class="badge badge-danger position-absolute" style="top: -8px; right: -8px; font-size: 0.7em; background: #e53e3e; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                                {{ cart_item_count|default:0 }}
+                            </span>
+                        </a>
+                        <!-- Mini Cart -->
+                        <div class="mini-cart" id="miniCart">
+                            <div class="mini-cart-header">
+                                <i class="material-icons" style="font-size: 1.1rem;">shopping_cart</i>
+                                Shopping Cart
+                            </div>
+                            <div class="mini-cart-items" id="miniCartItems">
+                                <div class="mini-cart-empty">
+                                    <div class="mini-cart-empty-icon">
+                                        <i class="material-icons" style="font-size: 2rem;">shopping_cart</i>
+                                    </div>
+                                    <div>Your cart is empty</div>
+                                </div>
+                            </div>
+                            <div class="mini-cart-footer" id="miniCartFooter" style="display: none;">
+                                <div class="mini-cart-total">
+                                    <span>Total:</span>
+                                    <span id="miniCartTotal">$0.00</span>
+                                </div>
+                                <a href="{% url 'view_cart' %}" class="btn-modern" style="width: 100%; justify-content: center;">
+                                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">shopping_cart</i>
+                                    View Cart
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="free-sample-card" onclick="window.open('{{ marketplace_settings.sample_link }}', '_blank')">
+                        <div class="free-sample-icon">
+                            <i class="material-icons">preview</i>
+                        </div>
+                        <div class="free-sample-content">
+                            <h4>{{ marketplace_settings.sample_title }}</h4>
+                            <p>{{ marketplace_settings.sample_description }}</p>
+                        </div>
+                        <div class="free-sample-arrow">
+                            <i class="material-icons">arrow_forward</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="row">
+            <aside class="col-lg-4 mb-4" id="filterSidebar">
+                <div class="material-card">
+                    <div class="card-header material-header">
+                        <h2 class="filter-title mb-0">
+                            <i class="material-icons">tune</i>
+                            Filters
+                        </h2>
+                    </div>
+                    
+                    <!-- Filter Toggle Button (Keep for internal use) -->
+                    <div class="filter-toggle-container">
+                        <button class="filter-toggle-btn" id="filterToggleBtn">
+                            <i class="material-icons" id="filterToggleIcon">expand_more</i>
+                            <span id="filterToggleText">Show Filters</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Filter Content (Initially Hidden) -->
+                    <div class="filter-content hidden" id="filterContent">
+                        <!-- Company Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">business</i>
+                                    Company
+                                </h3>
+                            </div>
+                            <input type="text" class="modern-input" id="companySearch" placeholder="Search companies...">
+                        </div>
+
+                        <!-- Country Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">public</i>
+                                    Country
+                                </h3>
+                                <button class="clear-all" data-filter="country">Clear All</button>
+                            </div>
+                            <input type="text" class="modern-input" id="countrySearch" placeholder="Search countries...">
+                            <div class="checkbox-container" id="countryFilters"></div>
+                            <div id="selectedCountries" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Active Countries</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Industry Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">category</i>
+                                    Industry
+                                </h3>
+                                <button class="clear-all" data-filter="industry">Clear All</button>
+                            </div>
+                            <input type="text" class="modern-input" id="industrySearch" placeholder="Search industries...">
+                            <div class="checkbox-container" id="industryFilters"></div>
+                            <div id="selectedIndustries" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Active Industries</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Employee Range Filter -->
+                        <div class="filter-section">
+                            <div class="filter-section-header d-flex justify-content-between align-items-center">
+                                <h3 class="filter-section-title">
+                                    <i class="material-icons" style="font-size: 1rem;">groups</i>
+                                    Employee Range
+                                </h3>
+                                <button class="clear-all" data-filter="employee-range">Clear All</button>
+                            </div>
+                            <div class="range-inputs">
+                                <input type="number" id="minEmployeeRange" class="range-input" placeholder="Min">
+                                <input type="number" id="maxEmployeeRange" class="range-input" placeholder="Max">
+                            </div>
+                            <div id="selectedEmployeeRanges" class="active-filters-sidebar" style="display: none;">
+                                <div class="active-filters-title">Employee Range</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="col-lg-8" id="mainContent">
+                <div class="company-list-card">
+                    <div class="card-header material-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="filter-title mb-0">
+                                <i class="material-icons">store</i>
+                                Organization Charts
+                            </h2>
+                            <div class="d-flex align-items-center" style="gap: 0.75rem;">
+                                <span class="badge" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem;" id="resultsCount">
+                                    Loading...
+                                </span>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm" id="gridViewBtn" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; border-radius: 8px 0 0 8px;">
+                                        <i class="material-icons" style="font-size: 1rem;">grid_view</i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm" id="listViewBtn" style="background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.3); color: #3b82f6; border-radius: 0 8px 8px 0;">
+                                        <i class="material-icons" style="font-size: 1rem;">view_list</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <h2 class="filter-title mb-0">
+                            <i class="material-icons">list_alt</i>
+                            Available Organizations
+                        </h2>
+                    </div>
+                    
+                    <!-- No Charts Message -->
+                    <div class="no-charts-modern" id="noChartsMessage" style="display: none;">
+                        <div class="no-charts-icon">
+                            <i class="material-icons" style="font-size: 4rem;">search_off</i>
+                        </div>
+                        <div class="no-charts-title">No charts available for your selection</div>
+                        <div class="no-charts-subtitle">Try adjusting your filters or request a custom org chart</div>
+                        <a href="{% url 'request_orgchart' %}" class="btn-modern">
+                            <i class="material-icons" style="font-size: 1.2rem; margin-right: 0.5rem;">add_circle</i>
+                            Request Custom Org Chart
+                        </a>
+                    </div>
+                    
+                    <div class="table-responsive" id="chartTableContainer">
+                        <table class="table table-modern marketplace-table" id="companyTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">business</i>Company Name</th>
+                                    <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">people</i>People Count</th>
+                                    <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">attach_money</i>Cost</th>
+                                    <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">update</i>Last Updated</th>
+                                    <th><i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">shopping_cart</i>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chart in charts_data %}
+                                {% if chart.mp_status == 'Published' %}
+                                <tr data-company="{{ chart.title }}" data-country="{{ chart.country }}" data-industry="{{ chart.industry }}" data-employee-range="{{ chart.employee_range }}" data-min-employees="{{ chart.min_employees }}" data-max-employees="{{ chart.max_employees }}">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.95) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="material-icons" style="color: white; font-size: 1.2rem;">domain</i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 600; color: #1e40af;">{{ chart.title }}</div>
+                                                <div style="font-size: 0.8rem; color: #3b82f6;">{{ chart.country }} • {{ chart.industry }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="background: rgba(59, 130, 246, 0.15); color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 500;">
+                                            {{ chart.personCount }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 600; color: #1e40af; font-size: 1.1rem;">${{ chart.price }}</span>
+                                    </td>
+                                    <td style="color: #3b82f6;">{{ chart.last_updated }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <!-- ORG CHART Button -->
+                                            <button class="view-chart-btn" 
+                                                    data-chart-id="{{ chart.id }}" 
+                                                    data-chart-title="{{ chart.title }}">
+                                                <i class="material-icons">visibility</i>
+                                                ORG CHART
+                                            </button>
+                                            
+                                            {% if user.is_authenticated %}
+                                            <!-- Add to Cart Button -->
+                                            <button class="add-to-cart-btn" 
+                                                    data-chart-id="{{ chart.id }}" 
+                                                    data-chart-title="{{ chart.title }}">
+                                                <i class="material-icons">add_shopping_cart</i>
+                                                Add to Cart
+                                            </button>
+                                            {% else %}
+                                            <button class="add-to-cart-btn" onclick="showLoginModal()">
+                                                <i class="material-icons">login</i>
+                                                Login
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: #718096;">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+        <!-- Modern Login Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); color: white; border: none;">
+                <h5 class="modal-title" id="confirmDeleteModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="material-icons" style="margin-right: 0.5rem;">warning</i>
+                    Confirm Removal
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true"><i class="material-icons">close</i></span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; color: #f56565; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 3rem;">delete_forever</i>
+                </div>
+                <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 1.5rem;">Are you sure you want to remove this item from your cart?</p>
+                <p style="font-size: 0.9rem; color: #718096;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <button type="button" id="confirmDeleteBtn" class="btn-modern" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); margin-right: 1rem;">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">delete</i>
+                    Remove Item
+                </button>
+                <button type="button" class="btn-modern-outline" data-dismiss="modal">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">close</i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none;">
+                <h5 class="modal-title" id="loginModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="material-icons" style="margin-right: 0.5rem;">login</i>
+                    Login Required
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true"><i class="material-icons">close</i></span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 3rem;">lock</i>
+                </div>
+                <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 1.5rem;">You need to log in to make a purchase. Please log in or sign up and try again.</p>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <a href="/signin" target="_blank" class="btn-modern" style="margin-right: 1rem;">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">login</i>
+                    Log In
+                </a>
+                <button type="button" class="btn-modern-outline" data-dismiss="modal">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">close</i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shopping Cart Delete Confirmation Modal -->
+<div class="modal fade" id="confirmShoppingCartDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmShoppingCartDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); color: white; border: none;">
+                <h5 class="modal-title" id="confirmShoppingCartDeleteModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="material-icons" style="margin-right: 0.5rem;">warning</i>
+                    Remove from Cart
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true"><i class="material-icons">close</i></span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; color: #f56565; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 3rem;">remove_shopping_cart</i>
+                </div>
+                <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 0.5rem;">Are you sure you want to remove this organization chart from your shopping cart?</p>
+                <p id="shoppingCartItemName" style="font-size: 1rem; color: #3b82f6; font-weight: 600; margin-bottom: 1.5rem;"></p>
+                <p style="font-size: 0.9rem; color: #718096;">You can always add it back later if you change your mind.</p>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <button type="button" id="confirmShoppingCartDeleteBtn" class="btn-modern" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); margin-right: 1rem;">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">remove_shopping_cart</i>
+                    Remove from Cart
+                </button>
+                <button type="button" class="btn-modern-outline" data-dismiss="modal">
+                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">close</i>
+                    Keep in Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    </main>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://www.paypal.com/sdk/js?client-id=AXydxJWSZ7cWgDius0pOV3W8g0bMLIYpJWmZAMNtjxOvHFepxqinwzwY_uhwEDglr-a04vtDQG6LJOir"></script> -->
+
+    <script>
+        $(document).ready(function() {
+            // All countries and industries from backend
+            const allCountries = {{ all_countries|safe }};
+            const allIndustries = {{ all_industries|safe }};
+            
+            // Header Filter Toggle Functionality (Main Toggle)
+            $('#headerFilterToggle').on('click', function() {
+                const filterSidebar = $('#filterSidebar');
+                const mainContent = $('#mainContent');
+                const headerFilterText = $('#headerFilterText');
+                const headerFilterToggle = $('#headerFilterToggle');
+                
+                if (filterSidebar.hasClass('hidden')) {
+                    // Show filters
+                    filterSidebar.removeClass('hidden');
+                    mainContent.removeClass('full-width').addClass('col-lg-8');
+                    headerFilterText.text('Hide Filters');
+                    headerFilterToggle.addClass('active');
+                } else {
+                    // Hide filters
+                    filterSidebar.addClass('hidden');
+                    mainContent.addClass('full-width').removeClass('col-lg-8');
+                    headerFilterText.text('Show Filters');
+                    headerFilterToggle.removeClass('active');
+                }
+            });
+            
+            // Initialize with filters hidden
+            $('#filterSidebar').addClass('hidden');
+            $('#mainContent').addClass('full-width').removeClass('col-lg-8');
+            
+            // Internal Filter Toggle Functionality (Inside Sidebar)
+            $('#filterToggleBtn').on('click', function() {
+                const filterContent = $('#filterContent');
+                const filterIcon = $('#filterToggleIcon');
+                const filterText = $('#filterToggleText');
+                
+                if (filterContent.hasClass('hidden')) {
+                    // Show filters
+                    filterContent.removeClass('hidden').addClass('visible');
+                    filterIcon.text('expand_less');
+                    filterText.text('Hide Filters');
+                } else {
+                    // Hide filters
+                    filterContent.removeClass('visible').addClass('hidden');
+                    filterIcon.text('expand_more');
+                    filterText.text('Show Filters');
+                }
+            });
+            
+            // Initialize filters
+            function initFilters() {
+                generateFilterOptions('countryFilters', 'country', allCountries);
+                generateFilterOptions('industryFilters', 'industry', allIndustries);
+            }
+
+            // Generate filter options based on provided data
+            function generateFilterOptions(filterId, dataAttr, options) {
+                options.sort();
+                $('#' + filterId).html('');
+                $.each(options, function(index, option) {
+                    var checkboxId = dataAttr + '_' + index;
+                    var checkboxHtml = `
+                        <div class="material-checkbox">
+                            <input type="checkbox" id="${checkboxId}" data-${dataAttr}="${option}">
+                            <label for="${checkboxId}">${option}</label>
+                        </div>
+                    `;
+                    $('#' + filterId).append(checkboxHtml);
+                });
+            }
+
+    function filterTable() {
+        var companySearch = $('#companySearch').val().toLowerCase();
+        var selectedCountries = getSelectedFilters('country');
+        var selectedIndustries = getSelectedFilters('industry');
+        var minRange = parseInt($('#minEmployeeRange').val(), 10) || 0;
+        var maxRange = parseInt($('#maxEmployeeRange').val(), 10) || Number.MAX_VALUE;
+        
+        var visibleRowsCount = 0;
+
+        $('#companyTable tbody tr').filter(function() {
+            var companyMatch = $(this).data('company').toLowerCase().indexOf(companySearch) > -1;
+            var countryMatch = selectedCountries.length === 0 || selectedCountries.includes($(this).data('country'));
+            var industryMatch = selectedIndustries.length === 0 || selectedIndustries.includes($(this).data('industry'));
+            var employeeRangeMatch = ($(this).data('min-employees') >= minRange && $(this).data('max-employees') <= maxRange);
+
+            var isVisible = companyMatch && countryMatch && industryMatch && employeeRangeMatch;
+            $(this).toggle(isVisible);
+            
+            if (isVisible) {
+                visibleRowsCount++;
+            }
+        });
+        
+        // Show/hide no charts message and table
+        updateNoChartsMessage(visibleRowsCount);
+        
+        // Update results count
+        updateResultsCount(visibleRowsCount);
+    }
+
+    function updateNoChartsMessage(visibleRowsCount) {
+        if (visibleRowsCount === 0) {
+            $('#noChartsMessage').show();
+            $('#chartTableContainer').hide();
+        } else {
+            $('#noChartsMessage').hide();
+            $('#chartTableContainer').show();
+        }
+    }
+    
+    function updateResultsCount(count) {
+        const total = $('#companyTable tbody tr').length;
+        $('#resultsCount').text(`${count} of ${total} charts`);
+    }
+
+    function getSelectedFilters(filterType) {
+        var selectedFilters = [];
+        $('#' + filterType + 'Filters input[type="checkbox"]:checked').each(function() {
+            selectedFilters.push($(this).data(filterType));
+        });
+        return selectedFilters;
+    }
+
+    // Update selected filter badges in sidebar
+    function updateSelectedBadges(containerId, filterType) {
+        var selectedFilters = getSelectedFilters(filterType);
+        var container = $('#' + containerId);
+        
+        if (selectedFilters.length > 0) {
+            container.show();
+            var selectedItemsHTML = selectedFilters.map(function(item) {
+                return `<span class="filter-chip">${item}<span class="chip-remove" data-${filterType}="${item}"><i class="material-icons" style="font-size: 12px;">close</i></span></span>`;
+            }).join('');
+            
+            // Find or create the chips container
+            var chipsContainer = container.find('.filter-chips');
+            if (chipsContainer.length === 0) {
+                container.append('<div class="filter-chips"></div>');
+                chipsContainer = container.find('.filter-chips');
+            }
+            chipsContainer.html(selectedItemsHTML);
+        } else {
+            container.hide();
+        }
+    }
+
+    // Event listeners
+    $('#companySearch').on('keyup', filterTable);
+
+     // Search functionality for checkboxes
+     $('#countrySearch').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#countryFilters .material-checkbox').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    $('#industrySearch').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#industryFilters .material-checkbox').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    $('#countryFilters, #industryFilters').on('change', 'input[type="checkbox"]', function() {
+        filterTable();
+        updateSelectedBadges("selectedCountries", "country");
+        updateSelectedBadges("selectedIndustries", "industry");
+    });
+
+    // Employee range filter inputs
+    $('#minEmployeeRange, #maxEmployeeRange').on('input change', function() {
+        filterTable();
+        updateEmployeeRangeDisplay();
+    });
+
+    // Update employee range display
+    function updateEmployeeRangeDisplay() {
+        var minRange = $('#minEmployeeRange').val();
+        var maxRange = $('#maxEmployeeRange').val();
+        var container = $('#selectedEmployeeRanges');
+        
+        if (minRange || maxRange) {
+            container.show();
+            var rangeText = '';
+            if (minRange && maxRange) {
+                rangeText = `${minRange} - ${maxRange} employees`;
+            } else if (minRange) {
+                rangeText = `${minRange}+ employees`;
+            } else {
+                rangeText = `Up to ${maxRange} employees`;
+            }
+            
+            var chipsContainer = container.find('.filter-chips');
+            if (chipsContainer.length === 0) {
+                container.append('<div class="filter-chips"></div>');
+                chipsContainer = container.find('.filter-chips');
+            }
+            chipsContainer.html(`<span class="filter-chip">${rangeText}<span class="chip-remove" data-employee-range="true"><i class="material-icons" style="font-size: 12px;">close</i></span></span>`);
+        } else {
+            container.hide();
+        }
+    }
+
+    // Clear all filters
+    // Clear all filters for a specific type
+    $(document).on('click', '.clear-all', function() {
+        var filterType = $(this).data('filter');
+        if (filterType === 'employee-range') {
+            $('#minEmployeeRange').val('');
+            $('#maxEmployeeRange').val('');
+            updateEmployeeRangeDisplay();
+        } else {
+            // Clear all checkboxes for this filter type
+            $('#' + filterType + 'Filters input[type="checkbox"]').prop('checked', false);
+            // Use setTimeout to ensure DOM updates before updating badges
+            setTimeout(function() {
+                var containerId = filterType === 'country' ? 'selectedCountries' : 'selectedIndustries';
+                updateSelectedBadges(containerId, filterType);
+            }, 10);
+        }
+        filterTable();
+    });
+
+    // Remove individual filter chips
+    $(document).on('click', '.chip-remove', function() {
+        var filterType = '';
+        var value = '';
+        
+        if ($(this).data('country')) {
+            filterType = 'country';
+            value = $(this).data('country');
+            $('#countryFilters input[data-country="' + value + '"]').prop('checked', false);
+            updateSelectedBadges("selectedCountries", "country");
+        } else if ($(this).data('industry')) {
+            filterType = 'industry';
+            value = $(this).data('industry');
+            $('#industryFilters input[data-industry="' + value + '"]').prop('checked', false);
+            updateSelectedBadges("selectedIndustries", "industry");
+        } else if ($(this).data('employee-range')) {
+            $('#minEmployeeRange').val('');
+            $('#maxEmployeeRange').val('');
+            updateEmployeeRangeDisplay();
+        }
+        
+        filterTable();
+    });
+
+    // Remove individual selected filter badge (legacy support)
+    $(document).on('click', '.remove-item', function() {
+        var filterType = $(this).data('country') ? 'country' : $(this).data('industry') ? 'industry' : 'employee-range';
+        var value = $(this).data(filterType);
+        $('#' + filterType + 'Filters input[data-' + filterType + '="' + value + '"]').prop('checked', false);
+        updateSelectedBadges("selected" + capitalizeFirstLetter(filterType) + "s", filterType);
+        filterTable();
+    });
+
+    // Helper function to capitalize the first letter of a string
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Check if the user is logged in
+    function checkLoginStatus(callback) {
+        $.ajax({
+            url: '/check-login/',
+            method: 'GET',
+            success: function(response) {
+                if (response.isLoggedIn) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            }
+        });
+    }
+
+
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Handle Add to Cart button click
+    $('.add-to-cart-btn').on('click', function() {
+        var chartId = $(this).data('chart-id');
+        var chartTitle = $(this).data('chart-title');
+        var button = $(this);
+        
+        // Disable button during request
+        button.prop('disabled', true);
+        button.html('<i class="material-icons" style="animation: spin 1s linear infinite; font-size: 1rem; margin-right: 0.5rem;">refresh</i> Adding...');
+        
+        $.ajax({
+            url: '/cart/add/' + chartId + '/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: {},
+            success: function(response) {
+                if (response.success) {
+                    // Update cart badge
+                    updateCartBadge(response.cart_item_count);
+                    
+                    // Show success message
+                    showToast('success', '✓ ' + chartTitle + ' has been successfully added to your cart!');
+                    
+                    // Change button appearance temporarily
+                    button.css('background', 'linear-gradient(135deg, #10b981 0%, #059669 100%)');
+                    button.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">check_circle</i> Added!');
+                    
+                    setTimeout(function() {
+                        button.css('background', 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)');
+                        button.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">add_shopping_cart</i> Add to Cart');
+                    }, 2000);
+                } else {
+                    showToast('error', 'Error adding to cart: ' + response.message);
+                }
+            },
+            error: function() {
+                showToast('error', 'Error adding to cart. Please try again.');
+            },
+            complete: function() {
+                button.prop('disabled', false);
+            }
+        });
+    });
+
+    function showLoginModal() {
+        $('#loginModal').modal('show');
+    }
+
+    function updateCartBadge(count) {
+        $('#cart-badge').text(count);
+        if (count > 0) {
+            $('#cart-badge').show();
+        } else {
+            $('#cart-badge').hide();
+        }
+        // Update mini cart when badge updates
+        loadMiniCart();
+    }
+
+    // Load mini cart items
+    function loadMiniCart() {
+        $.ajax({
+            url: '/cart/mini/',
+            method: 'GET',
+            success: function(response) {
+                updateMiniCart(response.items, response.total);
+            },
+            error: function() {
+                // If endpoint doesn't exist, use fallback
+                updateMiniCart([], 0);
+            }
+        });
+    }
+
+    // Update mini cart display
+    function updateMiniCart(items, total) {
+        var miniCartItems = $('#miniCartItems');
+        var miniCartFooter = $('#miniCartFooter');
+        
+        if (items && items.length > 0) {
+            var itemsHtml = items.map(function(item) {
+                return `
+                    <div class="mini-cart-item">
+                        <div class="mini-cart-item-main">
+                            <div class="mini-cart-item-name">${item.name}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="mini-cart-item-price">$${item.price}</div>
+                                <button class="mini-cart-item-delete" data-chart-id="${item.chart_id}" title="Remove from cart">
+                                    <i class="material-icons" style="font-size: 1rem;">delete</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mini-cart-item-details">
+                            <div class="mini-cart-item-detail">
+                                <i class="material-icons" style="font-size: 0.75rem;">public</i>
+                                ${item.country}
+                            </div>
+                            <div class="mini-cart-item-detail">
+                                <i class="material-icons" style="font-size: 0.75rem;">category</i>
+                                ${item.industry}
+                            </div>
+                            <div class="mini-cart-item-detail">
+                                <i class="material-icons" style="font-size: 0.75rem;">people</i>
+                                ${item.people_count} people
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            miniCartItems.html(itemsHtml);
+            miniCartFooter.show();
+            $('#miniCartTotal').text('$' + total.toFixed(2));
+        } else {
+            miniCartItems.html(`
+                <div class="mini-cart-empty">
+                    <div class="mini-cart-empty-icon">
+                        <i class="material-icons" style="font-size: 2rem;">shopping_cart</i>
+                    </div>
+                    <div>Your cart is empty</div>
+                </div>
+            `);
+            miniCartFooter.hide();
+        }
+    }
+
+    // Initialize mini cart on page load
+    loadMiniCart();
+
+
+
+    // Delete item from mini cart
+    $(document).on('click', '.mini-cart-item-delete', function() {
+        var chartId = $(this).data('chart-id');
+        
+        // Store the chart ID for confirmation
+        $('#confirmDeleteBtn').data('chart-id', chartId);
+        
+        // Show confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Handle confirmation of delete
+    $(document).on('click', '#confirmDeleteBtn', function() {
+        var chartId = $(this).data('chart-id');
+        var button = $(this);
+        
+        // Disable button during request
+        button.prop('disabled', true);
+        button.html('<i class="material-icons" style="animation: spin 1s linear infinite; font-size: 1rem; margin-right: 0.5rem;">refresh</i> Removing...');
+        
+        $.ajax({
+            url: '/cart/remove/' + chartId + '/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update cart badge
+                    updateCartBadge(response.cart_item_count);
+                    
+                    // Show success message
+                    showToast('success', '✓ Item has been successfully removed from your cart!');
+                    
+                    // Refresh mini cart
+                    loadMiniCart();
+                    
+                    // Hide modal
+                    $('#confirmDeleteModal').modal('hide');
+                } else {
+                    showToast('error', 'Error removing item from cart: ' + response.message);
+                }
+            },
+            error: function() {
+                showToast('error', 'Error removing item from cart. Please try again.');
+            },
+            complete: function() {
+                button.prop('disabled', false);
+                button.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">delete</i> Remove Item');
+            }
+        });
+    });
+
+    // Handle confirmation of shopping cart delete
+    $(document).on('click', '#confirmShoppingCartDeleteBtn', function() {
+        var chartId = $(this).data('chart-id');
+        var button = $(this);
+        
+        // Disable button during request
+        button.prop('disabled', true);
+        button.html('<i class="material-icons" style="animation: spin 1s linear infinite; font-size: 1rem; margin-right: 0.5rem;">refresh</i> Removing...');
+        
+        $.ajax({
+            url: '/cart/remove/' + chartId + '/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update cart badge
+                    updateCartBadge(response.cart_item_count);
+                    
+                    // Show success message
+                    showToast('success', '✓ Item has been successfully removed from your cart!');
+                    
+                    // Refresh mini cart
+                    loadMiniCart();
+                    
+                    // Hide modal
+                    $('#confirmShoppingCartDeleteModal').modal('hide');
+                } else {
+                    showToast('error', 'Error removing item from cart: ' + response.message);
+                }
+            },
+            error: function() {
+                showToast('error', 'Error removing item from cart. Please try again.');
+            },
+            complete: function() {
+                button.prop('disabled', false);
+                button.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">remove_shopping_cart</i> Remove from Cart');
+            }
+        });
+    });
+
+    function showToast(type, message) {
+        var bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+        var toastHtml = `
+            <div class="toast" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
+                <div class="toast-header ${bgClass} text-white">
+                    <strong class="mr-auto">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                        ${type === 'success' ? 'Success' : 'Error'}
+                    </strong>
+                    <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        $('body').append(toastHtml);
+        $('.toast').last().toast({delay: 3000}).toast('show');
+        
+        // Remove toast after it's hidden
+        $('.toast').last().on('hidden.bs.toast', function() {
+            $(this).remove();
+        });
+    }
+
+    // Initialize filters and handle initial table filtering
+    initFilters();
+    filterTable();
+    
+    // Update initial badges
+    updateSelectedBadges("selectedCountries", "country");
+    updateSelectedBadges("selectedIndustries", "industry");
+    updateEmployeeRangeDisplay();
+    
+    // ORG CHART button functionality
+    $(document).on('click', '.view-chart-btn', function() {
+        var chartId = $(this).data('chart-id');
+        var chartTitle = $(this).data('chart-title');
+        
+        // Redirect to blurred preview instead of full chart
+        showToast('info', 'Opening preview for: ' + chartTitle);
+        
+        // Redirect to blurred preview (new functionality)
+        window.location.href = '/preview-chart/' + chartId + '/';
+    });
+    
+
+});
+
+        </script>
+
+
+    </body>
+</html>
+

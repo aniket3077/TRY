@@ -1,0 +1,502 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Order Management - InsideOrgs{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom styles matching existing dashboard */
+    .details {
+        position: relative;
+        width: 100%;
+        padding: 20px;
+        display: grid;
+        grid-gap: 30px;
+    }
+    
+    .details .recentOrders {
+        position: relative;
+        display: grid;
+        min-height: 450px;
+        background: var(--white);
+        padding: 20px;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+    }
+    
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        height: 100px;
+    }
+    
+    .cardHeader h2 {
+        font-weight: 600;
+        color: var(--blue);
+    }
+    
+    .cardHeader .btn {
+        position: relative;
+        padding: 5px 10px;
+        background: var(--blue);
+        text-decoration: none;
+        color: var(--white);
+        border-radius: 6px;
+    }
+    
+    .cardHeader .btn:hover {
+        background: var(--black1);
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    /* Filter section */
+    .filter-section {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-label {
+        color: var(--black1);
+        font-weight: 500;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .form-control {
+        padding: 10px 15px;
+        border: 1px solid var(--black2);
+        border-radius: 6px;
+        font-size: 14px;
+        background: var(--white);
+        color: var(--black1);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--blue);
+    }
+    
+    /* Table container matching existing design */
+    .table-container {
+        max-height: 350px;
+        min-height: 350px;
+        overflow-y: scroll;
+        position: relative;
+        margin-top: -40px;
+    }
+    
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    
+    .table-container table thead td {
+        font-weight: 600;
+        background-color: #f2f2f2;
+        padding: 10px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+    
+    .table-container table tr {
+        color: var(--black1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-container table tr:last-child {
+        border-bottom: none;
+    }
+    
+    .table-container table tbody tr:hover {
+        background: #e3f2fd !important;
+        color: var(--blue) !important;
+    }
+    
+    .table-container table tr td {
+        padding: 10px;
+    }
+    
+    .btn-view {
+        position: relative;
+        padding: 6px 12px;
+        background: #85BF31;
+        text-decoration: none;
+        color: var(--white);
+        border-radius: 6px;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-view:hover {
+        background: #6a9926;
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    .order-id {
+        font-weight: bold;
+        color: var(--blue);
+        font-size: 16px;
+    }
+    
+    .user-info strong {
+        color: var(--black1);
+        display: block;
+        margin-bottom: 2px;
+    }
+    
+    .user-info small {
+        color: var(--black2);
+        font-size: 12px;
+    }
+    
+    .item-count {
+        background: #e3f2fd;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #1976d2;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .amount {
+        font-weight: bold;
+        color: #2e7d32;
+        font-size: 16px;
+    }
+    
+    .date-info strong {
+        color: var(--black1);
+        display: block;
+        margin-bottom: 2px;
+    }
+    
+    .date-info small {
+        color: var(--black2);
+        font-size: 12px;
+    }
+    
+    /* Status styles matching existing */
+    .status {
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-delivered {
+        background: #8de02c;
+        color: var(--white);
+    }
+    
+    .status-pending {
+        background: #e9b10a;
+        color: var(--white);
+    }
+    
+    .status-return {
+        background: #f00;
+        color: var(--white);
+    }
+    
+    .status-inprogress {
+        background: #1795ce;
+        color: var(--white);
+    }
+    
+    /* Pagination */
+    .pagination-container {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .pagination {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        background: var(--white);
+        border: 1px solid var(--black2);
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--blue);
+        transition: all 0.2s;
+    }
+    
+    .page-link:hover {
+        background: var(--blue);
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    .page-info {
+        padding: 8px 12px;
+        color: var(--black2);
+        font-weight: 500;
+    }
+    
+    .text-center {
+        text-align: center;
+        color: var(--black2);
+        font-style: italic;
+        padding: 40px 20px;
+    }
+      .text-muted {
+        color: var(--black2);
+        font-style: italic;
+    }
+      /* Responsive design matching existing */
+    @media (max-width: 768px) {
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .cardHeader {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            height: auto;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .table-container table {
+            min-width: 800px;
+        }
+    }
+    
+    /* Hide elements when filtering */
+    .hidden {
+        display: none !important;
+    }
+    
+    .btn-spacing {
+        margin-right: 10px;
+    }
+</style>
+
+<div class="details">
+    <div class="recentOrders">        <div class="cardHeader">
+            <h2>Order Management</h2>
+            <div>
+                <a href="{% url 'create_manual_order_dashboard' %}" class="btn btn-spacing">
+                    <i class="bi bi-plus-circle"></i> Create Manual Order
+                </a>
+                <a href="/payment-dashboard/" class="btn">
+                    <i class="bi bi-graph-up"></i> Payment Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="filter-section">
+                <div class="filter-row">
+                    <div class="form-group">
+                        <label for="statusFilter" class="form-label">Filter by Status:</label>
+                        <select id="statusFilter" class="form-control" onchange="filterOrders()">
+                            <option value="">All Orders</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="failed">Failed</option>
+                            <option value="refunded">Refunded</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFrom" class="form-label">From Date:</label>
+                        <input type="date" id="dateFrom" class="form-control" onchange="filterOrders()">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateTo" class="form-label">To Date:</label>
+                        <input type="date" id="dateTo" class="form-control" onchange="filterOrders()">
+                    </div>
+                   
+                </div>
+                <div class="filter-row">
+                    <div class="form-group">
+                         <label for="invoiceFilter" class="form-label">Invoice Number:</label>
+                        <input type="text" id="invoiceFilter" class="form-control" placeholder="Filter by invoice number" onkeyup="filterOrders()">
+                    </div>
+                     <div class="form-group">
+                        <label for="userFilter" class="form-label">User Email:</label>
+                        <input type="text" id="userFilter" class="form-control" placeholder="Filter by user email" onkeyup="filterOrders()">
+                    </div>
+                </div>
+            </div>       
+        <div class="table-container">
+                <table id="ordersTable">
+                    <thead>
+                        <tr>                            <td>Invoice ID</td>
+                            <td>User</td>
+                            <td>Items</td>
+                            <td>Total Amount</td>
+                            <td>Status</td>
+                            <td>Date</td>
+                            <td>Payment Method</td>
+                            <td>Actions</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="order-row" 
+                            data-order-id="{{ order.id }}"
+                            data-status="{{ order.status }}"
+                            data-user="{{ order.user.email }}"
+                            data-date="{{ order.created_at|date:'Y-m-d' }}">
+                            <td>
+                                <span class="order-id">#{{ order.id }}</span>
+                            </td>
+                            <td>
+                                <div class="user-info">
+                                    <strong>{{ order.user.first_name }} {{ order.user.last_name }}</strong>
+                                    <small>{{ order.user.email }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="item-count">{{ order.order_items.count }} item{{ order.order_items.count|pluralize }}</span>
+                            </td>
+                            <td>
+                                <span class="amount">${{ order.total_amount }}</span>
+                            </td>
+                            <td>
+                                <span class="status 
+                                    {% if order.status == 'completed' %}status-delivered
+                                    {% elif order.status == 'pending' %}status-pending
+                                    {% elif order.status == 'failed' %}status-return
+                                    {% else %}status-inprogress{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>                            <td>
+                                <div class="date-info">
+                                    <strong>{{ order.created_at|date:'M d, Y' }}</strong>
+                                    <small>{{ order.created_at|time:'H:i' }}</small>
+                                </div>
+                            </td>                            <td>
+                                {% if order.payment_method == 'razorpay' %}
+                                    <span class="status status-delivered">
+                                        <i class="bi bi-credit-card"></i> Razorpay
+                                    </span>
+                                {% elif order.payment_method == 'bank_transfer' %}
+                                    <span class="status status-pending">
+                                        <i class="bi bi-bank"></i> Bank Transfer
+                                    </span>
+                                {% elif order.payment_method == 'marked_paid' %}
+                                    <span class="status status-inprogress">
+                                        <i class="bi bi-person-check"></i> Marked as Paid
+                                    </span>
+                                {% else %}
+                                    <span class="status status-return">
+                                        <i class="bi bi-question-circle"></i> {{ order.payment_method|default:"Unknown" }}
+                                    </span>
+                                {% endif %}
+                                {% if order.created_by %}
+                                    <small class="text-muted d-block">Created by {{ order.created_by.username }}</small>
+                                {% else %}
+                                    <small class="text-muted d-block">Created by Online Mode</small>
+                                {% endif %}
+                            </td>
+                        
+                            <td>
+                                <a href="/orders/{{ order.id }}/" class="btn-view">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No orders found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="page-link">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">Previous</a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Last &raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>    </div>
+</div>
+
+<script>
+function filterOrders() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    const userFilter = document.getElementById('userFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('.order-row');
+    const invoiceFilter = document.getElementById('invoiceFilter').value
+    rows.forEach(row => {
+        let showRow = true;
+        
+        // Status filter
+        if (statusFilter && row.dataset.status !== statusFilter) {
+            showRow = false;
+        }
+        
+        // Date range filter
+        const rowDate = row.dataset.date;
+        if (dateFrom && rowDate < dateFrom) {
+            showRow = false;
+        }
+        if (dateTo && rowDate > dateTo) {
+            showRow = false;
+        }
+          // User filter
+        if (userFilter && !row.dataset.user.toLowerCase().includes(userFilter)) {
+            showRow = false;
+        }
+        if (invoiceFilter && !row.dataset.orderId.toLowerCase().includes(invoiceFilter)) {
+            showRow = false;
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

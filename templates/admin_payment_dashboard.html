@@ -1,0 +1,737 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Payment Dashboard - InsideOrgs{% endblock %}
+
+{% block content %}
+<style>
+/* Additional styles specific to payment dashboard that extend base styles */
+.date-filter select {
+    padding: 5px 10px;
+    border: 1px solid var(--black2);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--black1);
+    font-weight: 500;
+}
+
+.date-filter select:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.btn {
+    position: relative;
+    padding: 5px 10px;
+    background: var(--blue);
+    text-decoration: none;
+    color: var(--white);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn:hover {
+    background: var(--black1);
+    color: var(--white);
+    text-decoration: none;
+}
+
+/* Charts container - maximized sizing */
+.charts-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.chart-container {
+    position: relative;
+    background: var(--white);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    width: 100%;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    font-weight: 600;
+    color: var(--blue);
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* Maximized chart wrapper */
+.chart-wrapper {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+/* Table container extending base styles */
+.table-container {
+    max-height: 350px;
+    min-height: 350px;
+    overflow-y: auto;
+    position: relative;
+    margin-top: 20px;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.table-container table thead td {
+    font-weight: 600;
+    background-color: #f2f2f2;
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table-container table tr {
+    color: var(--black1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.table-container table tr:last-child {
+    border-bottom: none;
+}
+
+.table-container table tbody tr:hover {
+   background: #e3f2fd !important;
+        color: var(--blue) !important;
+}
+
+.table-container table tr td {
+    padding: 10px;
+}
+
+.order-link {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.order-link:hover {
+    text-decoration: underline;
+}
+
+.customer-info strong {
+    display: block;
+    color: var(--black1);
+    margin-bottom: 2px;
+}
+
+.customer-info small {
+    color: var(--black2);
+    font-size: 12px;
+}
+
+.amount {
+    font-weight: bold;
+    color: #2e7d32;
+    font-size: 16px;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-completed {
+    background: #8de02c;
+    color: var(--white);
+}
+
+.status-pending {
+    background: #e9b10a;
+    color: var(--white);
+}
+
+.status-failed {
+    background: #f00;
+    color: var(--white);
+}
+
+.status-inprogress {
+    background: #1795ce;
+    color: var(--white);
+}
+
+/* Top charts grid */
+.top-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.top-chart-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+}
+
+.top-chart-card:hover {
+    background: var(--blue);
+    transform: translateY(-2px);
+}
+
+.chart-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+}
+
+.chart-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.chart-info h6 {
+    margin-bottom: 10px;
+    color: var(--black1);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.top-chart-card:hover .chart-info h6 {
+    color: var(--white);
+}
+
+.chart-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+}
+
+.sales-count {
+    color: var(--black2);
+    font-size: 12px;
+    background: #f2f2f2;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.top-chart-card:hover .sales-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--white);
+}
+
+.revenue {
+    color: #2e7d32;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.top-chart-card:hover .revenue {
+    color: var(--white);
+}
+
+.text-center {
+    text-align: center;
+    color: var(--black2);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* Enhanced responsive design with proper container handling */
+@media (max-width: 991px) {
+    .cardBox {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 15px;
+    }
+    
+    .charts-container {
+        gap: 20px;
+    }
+}
+
+/* Navigation slide-off responsive enhancements */
+.pcoded-navbar.navbar-collapsed ~ .pcoded-main-container .details,
+.pcoded-navbar.navbar-collapsed ~ .pcoded-main-container .cardBox {
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: none;
+}
+
+.pcoded-navbar.navbar-collapsed ~ .pcoded-main-container .charts-container {
+    transition: all 0.3s ease;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.pcoded-navbar.navbar-collapsed ~ .pcoded-main-container .chart-wrapper {
+    transition: all 0.3s ease;
+    height: 350px;
+}
+
+/* When navigation is expanded on desktop */
+@media (min-width: 992px) {
+    .pcoded-navbar:not(.navbar-collapsed) ~ .pcoded-main-container .charts-container {
+        grid-template-columns: 2fr 1fr;
+    }
+    
+    .pcoded-navbar:not(.navbar-collapsed) ~ .pcoded-main-container .chart-wrapper {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .cardBox {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 10px;
+    }
+    
+    .cardHeader {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        height: auto;
+    }
+    
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .top-charts-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        margin-top: 10px;
+    }
+    
+    .table-container table {
+        min-width: 600px;
+    }
+    
+    .chart-wrapper {
+        height: 300px;
+    }
+    
+    .details {
+        padding: 10px;
+    }
+    
+    .date-filter {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .date-filter select {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cardBox {
+        padding: 10px 5px;
+    }
+    
+    .cardBox .card {
+        padding: 20px 15px;
+    }
+    
+    .cardBox .card .numbers {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        padding: 15px;
+    }
+    
+    .chart-wrapper {
+        height: 250px;
+    }
+    
+    .table-container {
+        padding: 0;
+    }
+    
+    .top-charts-grid .top-chart-card {
+        padding: 15px;
+    }
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<!-- Key Metrics Cards -->
+<div class="cardBox">
+    <div class="card">
+        <div>
+            <div class="numbers">${{ stats.total_revenue|floatformat:2 }}</div>
+            <div class="cardName">Total Revenue</div>
+        </div>
+        <div class="iconBx">
+            <i class="bi bi-currency-dollar"></i>
+        </div>
+    </div>
+
+    <div class="card">
+        <div>
+            <div class="numbers">{{ stats.total_orders }}</div>
+            <div class="cardName">Total Orders</div>
+        </div>
+        <div class="iconBx">
+            <i class="bi bi-receipt"></i>
+        </div>
+    </div>
+
+    <div class="card">
+        <div>
+            <div class="numbers">{{ stats.completed_orders }}</div>
+            <div class="cardName">Completed Orders</div>
+        </div>
+        <div class="iconBx">
+            <i class="bi bi-check-circle"></i>
+        </div>
+    </div>
+
+    <div class="card">
+        <div>
+            <div class="numbers">${{ stats.average_order_value|floatformat:2 }}</div>
+            <div class="cardName">Avg Order Value</div>
+        </div>
+        <div class="iconBx">
+            <i class="bi bi-graph-up"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Dashboard -->
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>            
+            <div class="date-filter">
+                <select id="timeRange" title="Select time range for analytics" onchange="updateTimeRange()">
+                    <option value="7" {% if request.GET.time_range == '7' %}selected{% endif %}>Last 7 days</option>
+                    <option value="30" {% if request.GET.time_range == '30' %}selected{% endif %}>Last 30 days</option>
+                    <option value="90" {% if request.GET.time_range == '90' %}selected{% endif %}>Last 90 days</option>
+                    <option value="365" {% if request.GET.time_range == '365' %}selected{% endif %}>Last year</option>
+                    <option value="all" {% if request.GET.time_range == 'all' %}selected{% endif %}>All Time</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Charts Container -->
+        <div class="charts-container">
+            <!-- Revenue Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Revenue Trend</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Order Status Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Order Status</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments Section -->
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2><i class="bi bi-clock-history"></i> Recent Payments</h2>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Order ID</td>
+                        <td>Customer</td>
+                        <td>Amount</td>
+                        <td>Status</td>
+                        <td>Payment Method</td>
+                        <td>Date</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td>
+                            <a href="/orders/{{ order.id }}/" class="order-link">
+                                #{{ order.id }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <strong>{{ order.user.first_name }} {{ order.user.last_name }}</strong>
+                                <small>{{ order.user.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="amount">${{ order.total_amount }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge 
+                                {% if order.status == 'completed' %}status-completed
+                                {% elif order.status == 'pending' %}status-pending
+                                {% elif order.status == 'failed' %}status-failed
+                                {% else %}status-inprogress{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>                        <td>
+                            {% if order.payment_method == 'razorpay' %}
+                                <span class="payment-method">
+                                    <i class="bi bi-credit-card"></i> Razorpay
+                                </span>
+                            {% elif order.payment_method == 'bank_transfer' %}
+                                <span class="payment-method">
+                                    <i class="bi bi-bank"></i> Bank Transfer
+                                </span>
+                            {% elif order.payment_method == 'marked_paid' %}
+                                <span class="payment-method">
+                                    <i class="bi bi-person-check"></i> Marked as Paid
+                                </span>
+                            {% else %}
+                                <span class="payment-method">
+                                    <i class="bi bi-question-circle"></i> {{ order.payment_method|default:"Unknown" }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No recent payments found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top Selling Charts Section -->
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2><i class="bi bi-trophy"></i> Top Selling Charts</h2>
+        </div>
+        
+        {% if top_charts %}
+            <div class="top-charts-grid">
+                {% for chart in top_charts %}
+                <div class="top-chart-card">
+                    <div class="chart-image chart-placeholder">
+                        {{ chart.title|slice:":2"|upper }}
+                    </div>
+                    <div class="chart-info">
+                        <h6>{{ chart.title|truncatechars:30 }}</h6>
+                        <div class="chart-stats">
+                            <span class="sales-count">{{ chart.total_sales }} sale{{ chart.total_sales|pluralize }}</span>
+                            <span class="revenue">${{ chart.total_revenue|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p>No chart sales data available for the selected period.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Chart.js for charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart Data (Django Template Variables) -->
+{{ revenue_chart.labels|json_script:"revenue-labels" }}
+{{ revenue_chart.data|json_script:"revenue-data" }}
+{{ status_chart.labels|json_script:"status-labels" }}
+{{ status_chart.data|json_script:"status-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get chart data from JSON scripts
+        const revenueLabels = JSON.parse(document.getElementById('revenue-labels').textContent);
+        const revenueData = JSON.parse(document.getElementById('revenue-data').textContent);
+        const statusLabels = JSON.parse(document.getElementById('status-labels').textContent);
+        const statusData = JSON.parse(document.getElementById('status-data').textContent);
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: revenueData,
+                    borderColor: '#0f0f1a',
+                    backgroundColor: 'rgba(15, 15, 26, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#0f0f1a',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 1,
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: [
+                        '#28a745',  // Completed - Green
+                        '#ffc107',  // Pending - Yellow
+                        '#dc3545',  // Failed - Red
+                        '#6c757d'   // Other - Gray
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    function updateTimeRange() {
+        const timeRange = document.getElementById('timeRange').value;
+        const timeRangeText = document.querySelector('#timeRange option:checked').textContent;
+        
+        // Show loading indicators
+        showLoadingState();
+        
+        // Update button text to show current selection
+        updateTimeRangeDisplay(timeRangeText);
+        
+        // Redirect with time range parameter
+        window.location.href = `?time_range=${timeRange}`;
+    }
+
+    function showLoadingState() {
+        // Add loading spinners to metric cards
+        document.querySelectorAll('.card .numbers').forEach(el => {
+            el.innerHTML = '<i class="bi bi-arrow-clockwise" style="animation: spin 1s linear infinite;"></i>';
+        });
+
+        // Add loading to chart containers
+        document.querySelectorAll('.chart-wrapper').forEach(el => {
+            el.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%;"><i class="bi bi-arrow-clockwise" style="font-size: 2rem; animation: spin 1s linear infinite;"></i></div>';
+        });
+    }
+
+    function updateTimeRangeDisplay(timeRangeText) {
+        // Update any display elements to show current time range
+        const titleElement = document.querySelector('.cardHeader h2');
+        if (titleElement) {
+            titleElement.innerHTML = `<i class="bi bi-graph-up"></i> Analytics Dashboard (${timeRangeText})`;
+        }
+    }
+
+    // Initialize time range display on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedOption = document.querySelector('#timeRange option:checked');
+        if (selectedOption) {
+            updateTimeRangeDisplay(selectedOption.textContent);
+        }
+    });
+</script>
+{% endblock %}

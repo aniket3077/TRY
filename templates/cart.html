@@ -1,0 +1,406 @@
+{% extends 'base_index.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - OrgMarketPlace{% endblock %}
+
+{% block content %}
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Shopping Cart</h2>            {% if cart and cart.items.all %}
+                <button class="btn" onclick="showClearCartModal()" style="background: #dc3545; color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; border: none; cursor: pointer;">
+                    <i class="bi bi-trash"></i> Clear Cart
+                </button>
+            {% endif %}
+        </div>
+
+        {% if cart and cart.items.all %}
+            <div class="cart-container">
+                {% for item in cart.items.all %}
+                    <div class="cart-item">
+                        <div class="item-details">
+                            <h5>{{ item.chart.title }}</h5>
+                            <p class="item-meta">
+                                <span><i class="bi bi-building"></i> {{ item.chart.industry|default:"N/A" }}</span>
+                                <span><i class="bi bi-geo-alt"></i> {{ item.chart.country|default:"N/A" }}</span>
+                                <span><i class="bi bi-people"></i> {{ item.chart.employee_range|default:"N/A" }}</span>
+                            </p>
+                        </div>                        <div class="item-actions">
+                            <div class="item-price">
+                                <strong>${{ item.chart.price }}</strong>
+                            </div>                            <button class="remove-btn" onclick="showShoppingCartDeleteModal({{ item.chart.id }}, '{{ item.chart.title|escapejs }}')" title="Remove item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="cart-summary">
+                    <div class="summary-content">
+                        <div class="total-section">
+                            <h4>Cart Summary</h4>
+                            <div class="total-row">
+                                <span>Total Items:</span>
+                                <span>{{ cart.get_total_items }}</span>
+                            </div>                            <div class="total-row">
+                                <span>Total Amount:</span>
+                                <span><strong>${{ cart.get_total_price }}</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="checkout-actions">
+                            <a href="{% url 'marketplace_dash' %}" class="continue-shopping">
+                                <i class="bi bi-arrow-left"></i> Continue Shopping
+                            </a>
+                            <form method="post" action="{% url 'cart_checkout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="checkout-btn">
+                                    <i class="bi bi-credit-card"></i> Proceed to Checkout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-cart-x" style="font-size: 4rem; color: var(--black2); margin-bottom: 1rem;"></i>
+                <h3>Your cart is empty</h3>
+                <p>Add some organization charts to your cart to get started.</p>
+                <a href="{% url 'marketplace_dash' %}" class="browse-btn">
+                    <i class="bi bi-shop"></i> Browse Marketplace
+                </a>
+            </div>
+        {% endif %}    </div>
+</div>
+
+<!-- Shopping Cart Delete Confirmation Modal -->
+<div class="modal fade" id="confirmShoppingCartDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmShoppingCartDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); color: white; border: none;">
+                <h5 class="modal-title" id="confirmShoppingCartDeleteModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="bi bi-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+                    Remove from Cart
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; color: #f56565; margin-bottom: 1rem;">
+                    <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+                </div>
+                <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 0.5rem;">Are you sure you want to remove this organization chart from your shopping cart?</p>
+                <p id="shoppingCartItemName" style="font-size: 1rem; color: #3b82f6; font-weight: 600; margin-bottom: 1.5rem;"></p>
+                <p style="font-size: 0.9rem; color: #718096;">You can always add it back later if you change your mind.</p>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <button type="button" id="confirmShoppingCartDeleteBtn" class="btn btn-danger" style="margin-right: 1rem;">
+                    <i class="bi bi-cart-x" style="margin-right: 0.5rem;"></i>
+                    Remove from Cart
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="bi bi-x-circle" style="margin-right: 0.5rem;"></i>
+                    Keep in Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Cart Confirmation Modal -->
+<div class="modal fade" id="confirmClearCartModal" tabindex="-1" role="dialog" aria-labelledby="confirmClearCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none;">
+                <h5 class="modal-title" id="confirmClearCartModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
+                    <i class="bi bi-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+                    Clear Cart
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; color: #dc3545; margin-bottom: 1rem;">
+                    <i class="bi bi-trash" style="font-size: 3rem;"></i>
+                </div>
+                <p style="font-size: 1.1rem; color: #4a5568; margin-bottom: 0.5rem;">Are you sure you want to clear your entire shopping cart?</p>
+                <p style="font-size: 1rem; color: #dc3545; font-weight: 600; margin-bottom: 1.5rem;">This will remove all {{ cart.get_total_items }} item{{ cart.get_total_items|pluralize }} from your cart.</p>
+                <p style="font-size: 0.9rem; color: #718096;">This action cannot be undone. You'll need to add items back manually.</p>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
+                <button type="button" id="confirmClearCartBtn" class="btn btn-danger" style="margin-right: 1rem;">
+                    <i class="bi bi-trash" style="margin-right: 0.5rem;"></i>
+                    Clear Cart
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="bi bi-x-circle" style="margin-right: 0.5rem;"></i>
+                    Keep Items
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.cart-container {
+    margin-top: 1rem;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.item-details h5 {
+    margin: 0 0 0.5rem 0;
+    color: var(--black1);
+    font-weight: 500;
+}
+
+.item-meta {
+    margin: 0;
+    color: var(--black2);
+    font-size: 0.9rem;
+}
+
+.item-meta span {
+    margin-right: 1rem;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.item-price {
+    font-size: 1.1rem;
+    color: var(--black1);
+}
+
+.remove-btn {
+    background: none;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.remove-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.cart-summary {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.total-section h4 {
+    margin-bottom: 1rem;
+    color: var(--black1);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.total-row:last-child {
+    border-top: 1px solid #eee;
+    padding-top: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.checkout-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+
+.continue-shopping {
+    padding: 0.75rem 1.5rem;
+    background: var(--gray);
+    color: var(--black1);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.continue-shopping:hover {
+    background: #e9ecef;
+    color: var(--black1);
+    text-decoration: none;
+}
+
+.checkout-btn {
+    padding: 0.75rem 2rem;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.3s;
+    font-size: 1rem;
+}
+
+.checkout-btn:hover {
+    background: #0a0a15;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state h3 {
+    color: var(--black1);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--black2);
+    margin-bottom: 2rem;
+}
+
+.browse-btn {
+    padding: 0.75rem 2rem;
+    background: var(--blue);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.browse-btn:hover {
+    background: #0a0a15;
+    color: white;
+    text-decoration: none;
+}
+</style>
+
+<script>
+let chartToDelete = null;
+
+function showShoppingCartDeleteModal(chartId, chartTitle) {
+    chartToDelete = chartId;
+    document.getElementById('shoppingCartItemName').textContent = chartTitle;
+    $('#confirmShoppingCartDeleteModal').modal('show');
+}
+
+function showClearCartModal() {
+    $('#confirmClearCartModal').modal('show');
+}
+
+// Handle the actual deletion when user confirms
+document.getElementById('confirmShoppingCartDeleteBtn').addEventListener('click', function() {
+    if (chartToDelete) {
+        removeFromCart(chartToDelete);
+    }
+});
+
+// Handle clear cart confirmation
+document.getElementById('confirmClearCartBtn').addEventListener('click', function() {
+    clearCart();
+});
+
+function removeFromCart(chartId) {
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmShoppingCartDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite; margin-right: 0.5rem;"></i>Removing...';
+    confirmBtn.disabled = true;
+    
+    fetch(`/cart/remove/${chartId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#confirmShoppingCartDeleteModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error removing item from cart: ' + data.message);
+            // Reset button state
+            confirmBtn.innerHTML = originalText;
+            confirmBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error removing item from cart');
+        // Reset button state
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    });
+}
+
+function clearCart() {
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmClearCartBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite; margin-right: 0.5rem;"></i>Clearing...';
+    confirmBtn.disabled = true;
+    
+    fetch('/cart/clear/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#confirmClearCartModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error clearing cart: ' + data.message);
+            // Reset button state
+            confirmBtn.innerHTML = originalText;
+            confirmBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error clearing cart');
+        // Reset button state
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    });
+}
+
+// Add CSS for the spinning animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

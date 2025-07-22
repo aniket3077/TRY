@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Please Confirm Your Email</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #37474f;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .email-header {
+            background: #4caf50;
+            color: white;
+            padding: 30px 24px;
+            text-align: center;
+        }
+        
+        .email-header h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        
+        .email-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .email-content {
+            padding: 32px 24px;
+        }
+        
+        .greeting {
+            font-size: 16px;
+            color: #263238;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .message-text {
+            font-size: 14px;
+            color: #546e7a;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        
+        .confirm-button {
+            display: inline-block;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            margin: 16px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .confirm-button:hover {
+            background: #1565c0;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 24px 0;
+        }
+        
+        .info-box h4 {
+            color: #1976d2;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #1565c0;
+            font-size: 13px;
+            margin: 0;
+        }
+        
+        .footer {
+            background: #f5f5f5;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .footer p {
+            color: #616161;
+            font-size: 12px;
+            margin: 4px 0;
+        }
+        
+        .footer strong {
+            color: #37474f;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .email-content {
+                padding: 24px 16px;
+            }
+            
+            .email-header {
+                padding: 24px 16px;
+            }
+            
+            .info-box {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Welcome!</h1>
+            <p>Please confirm your email address to get started</p>
+        </div>
+        
+        <div class="email-content">
+            <p class="greeting">Hello {{ name }}!</p>
+            
+            <p class="message-text">
+                Welcome to our platform! To complete your registration and start accessing organization charts, please confirm your email address by clicking the button below.
+            </p>
+            
+            <div style="text-align: center; margin: 24px 0;">
+                <a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}" class="confirm-button">Confirm My Email</a>
+            </div>
+            
+            <div class="info-box">
+                <h4>What happens next?</h4>
+                <p>Once you confirm your email, you'll be able to access all features and start exploring our organization chart marketplace.</p>
+            </div>
+            
+            <p class="message-text">
+                If you didn't create an account with us, please ignore this email.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Welcome to the team!</strong></p>
+            <p>This is an automated welcome email</p>
+            <p>If you need help, contact our support team</p>
+        </div>
+    </div>
+</body>
+</html>

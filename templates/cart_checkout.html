@@ -1,0 +1,797 @@
+{% extends 'base_index.html' %}
+{% load static %}
+
+{% block title %}Checkout - OrgMarketPlace{% endblock %}
+
+{% block content %}
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Checkout</h2>
+            <a href="{% url 'view_cart' %}" style="background: var(--gray); color: var(--black1); padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none;">
+                <i class="bi bi-arrow-left"></i> Back to Cart
+            </a>
+        </div>
+
+        {% if cart and cart.items.all %}
+            <div class="checkout-container">
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h4>Order Summary</h4>
+                    {% for item in cart_items %}
+                        <div class="item-row">
+                            <div class="item-info">
+                                <h6>{{ item.chart.title }}</h6>
+                                <small>{{ item.chart.industry }} • {{ item.chart.country }}</small>
+                            </div>
+                            <div class="item-price">
+                                <strong>${{ item.chart.price }}</strong>
+                            </div>
+                        </div>
+                    {% endfor %}                      <div class="total-section">
+                        <div class="total-row">
+                            <span>Total Items:</span>
+                            <span>{{ cart.get_total_items }}</span>
+                        </div>                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal-amount">${{ subtotal|floatformat:2 }}</span>
+                        </div>
+                        
+                        <!-- Coupon Section -->
+                        <div class="coupon-section">
+                            {% if applied_coupon %}
+                                <div class="total-row coupon-applied">
+                                    <span>
+                                        <i class="bi bi-tag-fill text-success"></i> 
+                                        Coupon Applied: {{ applied_coupon.code }}
+                                    </span>
+                                    <span class="text-success">-${{ discount_amount|floatformat:2 }}</span>
+                                </div>
+                                <div class="coupon-controls">
+                                    <small class="text-muted">{{ coupon.name }}</small>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCoupon()">
+                                        <i class="bi bi-x"></i> Remove
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="coupon-input-section">
+                                    <div class="input-group">
+                                        <input type="text" id="coupon-code" class="form-control" placeholder="Enter coupon code" maxlength="50">
+                                        <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                                            <i class="bi bi-tag"></i> Apply
+                                        </button>
+                                    </div>
+                                    <div id="coupon-message" class="mt-2" style="display: none;"></div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="total-row">
+                            <span>Processing Fee (5.5%):</span>
+                            <span id="processing-fee-amount">${{ processing_fee|floatformat:2 }}</span>
+                        </div>
+                        <div class="total-row final-total">
+                            <span><strong>Total Amount:</strong></span>
+                            <span><strong id="total-amount">${{ total_amount|floatformat:2 }}</strong></span>
+                        </div>
+                    </div>
+                </div>                <!-- Billing Information Section -->
+                <div class="order-summary">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Billing Information</h4>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Edit in Profile
+                        </a>
+                    </div>
+                      {% if customer_info %}
+                    <div class="billing-info">
+                        <div class="billing-grid">
+                            <div class="info-row">
+                                <strong>Customer Name:</strong>
+                                <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Email:</strong>
+                                <span>{{ request.user.email }}</span>
+                            </div>                            <div class="info-row">
+                                <strong>Company Name:</strong>
+                                <span>{{ customer_info.company_name|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <strong>Phone:</strong>
+                                <span>{{ customer_info.phone|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-row address-row">
+                                <strong>Address:</strong>
+                                <span>{{ customer_info.full_address|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Please update your billing information in your profile to receive proper invoices.
+                        <a href="{% url 'profile' %}">Update Now</a>
+                    </div>
+                    {% endif %}
+                           
+                </div>
+                <!-- End Company Information Section -->                <!-- Payment Section -->
+                <div class="payment-section">
+                    <h4>Payment Details</h4>
+                    <div class="secure-badge">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Secure payment powered by Razorpay</span>
+                    </div>                    {% if order_id %}
+                        <!-- <form action="{% url 'execute_cart_payment' %}" class="payment-btn btn btn-outline-primary btn-sm" method="POST">
+                            {% csrf_token %}
+                            <script
+                                src="https://checkout.razorpay.com/v1/checkout.js"
+                                data-key="{{ razorpay_key }}"
+                                data-amount="{{ amount_in_cents }}"
+                                data-currency="{{ currency }}"
+                                data-order_id="{{ order_id }}"
+                                data-buttontext="Pay ${{ total_amount|floatformat:2 }}"
+                                data-name="OrgMarketPlace"
+                                data-description="Organization Chart Purchase"
+                                data-image="{% static 'logo.svg' %}"
+                                data-prefill.name="{{ user_name }}"
+                                data-prefill.email="{{ user_email }}"
+                                data-theme.color="#3399cc">
+                            </script>
+                            <input type="hidden" custom="Hidden Element" name="hidden">
+                        </form> -->
+                        <button id="rzp-button" class="payment-btn btn btn-outline-primary">
+                        <i class="bi bi-credit-card"></i> Pay ${{ total_amount|floatformat:2 }}
+                        </button>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="payment-btn btn btn-outline-primary btn-sm">
+                                <i class="bi bi-credit-card"></i> Proceed to Payment
+                            </button>
+                        </form>
+                    {% endif %}
+                    <p class="text-muted small mt-2">
+                            <i class="bi bi-info-circle"></i>
+                            Secure international payment in USD. No additional taxes for international clients.
+                        </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-cart-x"></i>
+                <h3>No items to checkout</h3>
+                <p>Your cart is empty. Add some organization charts to proceed.</p>
+                <a href="{% url 'marketplace_dash' %}" class="browse-btn">
+                    <i class="bi bi-shop"></i> Browse Marketplace
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    
+/* Container styles */
+.checkout-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Card Header */
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.cardHeader h2 {
+    color: var(--black1);
+    font-weight: 600;
+}
+
+/* Order Summary */
+.order-summary {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.order-summary h4 {
+    color: var(--black1);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+/* Item rows */
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.item-row:last-child {
+    border-bottom: none;
+}
+
+.item-info h6 {
+    color: var(--black1);
+    margin: 0;
+    font-weight: 500;
+}
+
+.item-info small {
+    color: var(--black2);
+    font-size: 0.875rem;
+}
+
+.item-price {
+    color: var(--blue);
+    font-weight: 600;
+}
+
+/* Total Section */
+.total-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.total-row.final-total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 2px solid var(--blue);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Payment Section */
+.payment-section {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.payment-section h4 {
+    color: var(--black1);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+/* Secure Badge */
+.secure-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    background: #e8f5ff;
+    border-radius: 8px;
+}
+
+.secure-badge i {
+    color: var(--blue);
+    font-size: 1.25rem;
+}
+
+.secure-badge span {
+    color: var(--black2);
+    font-size: 0.875rem;
+}
+
+/* Payment Button */
+.payment-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--blue);
+    color: var(--white);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--black2);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: var(--black1);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--black2);
+    margin-bottom: 1.5rem;
+}
+
+/* Form Styles */
+.billing-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.billing-form label {
+    color: var(--black1);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.billing-form .form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: border-color 0.3s ease;
+}
+
+.billing-form .form-control:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.btn-save {
+    background: var(--blue);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Billing Info Styles */
+.billing-info {
+    padding: 1rem 0;
+}
+
+.billing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--white);
+}
+
+.address-row {
+    grid-column: 1 / -1;
+}
+
+.info-row strong {
+    color: var(--black2);
+    min-width: 120px;
+    margin-right: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .billing-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.info-row span {
+    color: var(--black1);
+    font-weight: 500;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-info a {
+    color: var(--blue);
+    font-weight: 600;
+    margin-left: 0.5rem;
+    text-decoration: none;
+}
+
+.alert-info a:hover {
+    text-decoration: underline;
+}
+
+.btn-outline-primary {
+    color: var(--blue);
+    border: 1px solid var(--blue);
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--blue);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Tax breakdown styles */
+.tax-total {
+    border-top: 1px solid var(--border-color);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+/* Coupon Section Styles */
+.coupon-section {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.coupon-input-section .input-group {
+    margin-bottom: 0.5rem;
+}
+
+.coupon-applied {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.coupon-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.coupon-controls small {
+    flex-grow: 1;
+}
+
+.coupon-controls .btn {
+    margin-left: 0.5rem;
+}
+
+#coupon-message {
+    min-height: 1.5rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.total-row.final-total {
+    border-top: 2px solid #dee2e6;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 1.1em;
+}
+</style>
+
+{% if order_id %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('rzp-button').onclick = function(e) {
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ amount_in_cents }}", // Amount in paise
+        "currency": "{{ currency }}",
+        "name": "Sphurti WebApp Solutions",
+        "description": "Organization Charts Purchase",
+        "order_id": "{{ order_id }}",
+        "handler": function (response) {
+            // Create form to submit payment details
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "execute_cart_payment" %}';
+            
+            // Add CSRF token
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+            
+            // Add payment details
+            var paymentIdInput = document.createElement('input');
+            paymentIdInput.type = 'hidden';
+            paymentIdInput.name = 'razorpay_payment_id';
+            paymentIdInput.value = response.razorpay_payment_id;
+            form.appendChild(paymentIdInput);
+            
+            var orderIdInput = document.createElement('input');
+            orderIdInput.type = 'hidden';
+            orderIdInput.name = 'razorpay_order_id';
+            orderIdInput.value = response.razorpay_order_id;
+            form.appendChild(orderIdInput);
+            
+            var signatureInput = document.createElement('input');
+            signatureInput.type = 'hidden';
+            signatureInput.name = 'razorpay_signature';
+            signatureInput.value = response.razorpay_signature;
+            form.appendChild(signatureInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        },
+        "prefill": {
+            "name": "{{ user_name }}",
+            "email": "{{ user_email }}"
+        },
+        "theme": {
+            "color": "#0f0f1a"
+        }
+    };
+    
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endif %}
+
+<!-- Coupon functionality -->
+<script>
+function applyCoupon() {
+    const couponCode = document.getElementById('coupon-code').value.trim().toUpperCase();
+    const messageDiv = document.getElementById('coupon-message');
+    
+    if (!couponCode) {
+        showCouponMessage('Please enter a coupon code', 'error');
+        return;
+    }
+    
+    // Show loading state
+    showCouponMessage('Validating coupon...', 'info');
+    
+    fetch('{% url "apply_coupon_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            coupon_code: couponCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {        if (data.success) {
+            // Update UI dynamically instead of reloading
+            updateCheckoutTotals(data);
+            showCouponApplied(couponCode, data.coupon_name, data.discount_amount);
+            // Don't show success message in input since we're replacing the input section
+        } else {
+            showCouponMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showCouponMessage('Error applying coupon. Please try again.', 'error');
+    });
+}
+
+function removeCoupon() {
+    if (!confirm('Are you sure you want to remove this coupon?')) {
+        return;
+    }
+    
+    fetch('{% url "remove_coupon_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI dynamically instead of reloading
+            updateCheckoutTotalsAfterRemoval(data);
+            showCouponInput();
+            showCouponMessage('Coupon removed successfully!', 'info');
+        } else {
+            alert('Error removing coupon: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error removing coupon. Please try again.');
+    });
+}
+
+// Helper function to update checkout totals dynamically
+function updateCheckoutTotals(data) {
+    // Update processing fee
+    document.getElementById('processing-fee-amount').textContent = '$' + parseFloat(data.processing_fee).toFixed(2);
+    
+    // Update total amount
+    document.getElementById('total-amount').textContent = '$' + parseFloat(data.new_total).toFixed(2);
+}
+
+// Helper function to update checkout totals after coupon removal
+function updateCheckoutTotalsAfterRemoval(data) {
+    // Remove coupon discount row if it exists
+    const couponRow = document.querySelector('.coupon-applied');
+    if (couponRow) {
+        couponRow.remove();
+    }
+    
+    // Remove discount row from totals
+    const discountRow = document.querySelector('.discount-row');
+    if (discountRow) {
+        discountRow.remove();
+    }
+    
+    // Update processing fee
+    document.getElementById('processing-fee-amount').textContent = '$' + parseFloat(data.processing_fee).toFixed(2);
+    
+    // Update total amount
+    document.getElementById('total-amount').textContent = '$' + parseFloat(data.new_total).toFixed(2);
+}
+
+// Helper function to show coupon as applied
+function showCouponApplied(couponCode, couponName, discountAmount) {
+    const couponSection = document.querySelector('.coupon-section');
+    
+    // Remove input section
+    const inputSection = couponSection.querySelector('.coupon-input-section');
+    if (inputSection) {
+        inputSection.remove();
+    }
+    
+    // Add applied coupon display
+    const appliedCouponHTML = `
+        <div class="total-row coupon-applied">
+            <span>
+                <i class="bi bi-tag-fill text-success"></i> 
+                Coupon Applied: ${couponCode}
+            </span>
+            <span class="text-success">-$${parseFloat(discountAmount).toFixed(2)}</span>
+        </div>
+        <div class="coupon-controls">
+            <small class="text-muted">${couponName}</small>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCoupon()">
+                <i class="bi bi-x"></i> Remove
+            </button>
+        </div>
+    `;
+    
+    couponSection.innerHTML = appliedCouponHTML;
+    
+    // Also add discount row to the totals if it doesn't exist
+    const totalSection = document.querySelector('.total-section');
+    const existingDiscountRow = totalSection.querySelector('.discount-row');
+    if (!existingDiscountRow) {
+        // Find the subtotal row and add discount after it
+        const subtotalRow = totalSection.querySelector('.total-row');
+        if (subtotalRow) {
+            const discountRowHTML = `
+                <div class="total-row discount-row">
+                    <span>Discount (${couponCode}):</span>
+                    <span class="text-success">-$${parseFloat(discountAmount).toFixed(2)}</span>
+                </div>
+            `;
+            subtotalRow.insertAdjacentHTML('afterend', discountRowHTML);
+        }
+    }
+}
+
+// Helper function to show coupon input again
+function showCouponInput() {
+    const couponSection = document.querySelector('.coupon-section');
+    
+    const inputHTML = `
+        <div class="coupon-input-section">
+            <div class="input-group">
+                <input type="text" id="coupon-code" class="form-control" placeholder="Enter coupon code" maxlength="50">
+                <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                    <i class="bi bi-tag"></i> Apply
+                </button>
+            </div>
+            <div id="coupon-message" class="mt-2" style="display: none;"></div>
+        </div>
+    `;
+    
+    couponSection.innerHTML = inputHTML;
+}
+
+function showCouponMessage(message, type) {
+    // Try to find existing message div
+    let messageDiv = document.getElementById('coupon-message');
+    
+    // If no message div exists (e.g., when coupon is applied), create a temporary one
+    if (!messageDiv) {
+        const couponSection = document.querySelector('.coupon-section');
+        if (couponSection) {
+            messageDiv = document.createElement('div');
+            messageDiv.id = 'coupon-message-temp';
+            messageDiv.className = 'mt-2';
+            couponSection.appendChild(messageDiv);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv && messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        } else {
+            // Fallback to console if no coupon section
+            console.log(message);
+            return;
+        }
+    }
+    
+    messageDiv.style.display = 'block';
+    messageDiv.className = `mt-2 ${type === 'error' ? 'text-danger' : type === 'success' ? 'text-success' : 'text-info'}`;
+    messageDiv.innerHTML = `<small><i class="bi bi-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}</small>`;
+    
+    // Auto-hide success/info messages after 3 seconds
+    if (type !== 'error') {
+        setTimeout(() => {
+            if (messageDiv) {
+                messageDiv.style.display = 'none';
+            }
+        }, 3000);
+    }
+}
+
+// Allow Enter key to apply coupon
+document.addEventListener('DOMContentLoaded', function() {
+    // Use event delegation since the input might be dynamically created
+    document.addEventListener('keypress', function(e) {
+        if (e.target && e.target.id === 'coupon-code' && e.key === 'Enter') {
+            e.preventDefault();
+            applyCoupon();
+        }
+    });
+});
+</script>
+{% endblock %}

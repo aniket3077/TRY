@@ -1,0 +1,340 @@
+{% extends 'base_index.html' %}
+{% block title %}User Profile{% endblock %}
+
+{% block styles %}
+<style>
+.profile-sections {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-section {
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.card-header {
+    background: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header h5 {
+    margin: 0;
+    color: var(--black1);
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.info-item {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-item label {
+    display: block;
+    color: var(--black2);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.info-item p {
+    color: var(--black1);
+    font-weight: 600;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.billing-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.billing-form label {
+    color: var(--black1);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.billing-form .form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--black1);
+    background: var(--white);
+    transition: all 0.3s ease;
+}
+
+.billing-form .form-control:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.billing-form .form-control::placeholder {
+    color: var(--black2);
+    opacity: 0.5;
+}
+
+.form-actions {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-primary {
+    background: var(--blue);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.alert {
+    border-radius: 12px;
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row strong {
+    color: var(--black2);
+    min-width: 120px;
+}
+
+.info-row span {
+    color: var(--black1);
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>My Profile</h2>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="profile-sections">
+        <!-- Personal Information -->
+        <div class="profile-section">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Personal Information</h5>
+                </div>                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label>User ID</label>
+                                <p>{{ user.id }}</p>
+                            </div>
+                            <div class="info-item">
+                                <label>Username</label>
+                                <p>{{ user.username }}</p>
+                            </div>
+                            <div class="info-item">
+                                <label>Email</label>
+                                <p>{{ user.email }}</p>
+                            </div>
+                            <div class="info-item">
+                                <label>User Role</label>
+                                <p>
+                                {% for group in user.groups.all %}
+                                    {{ group.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    Subscriber
+                                {% endfor %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label>Full Name</label>
+                                <p>{{ user.first_name }} {{ user.last_name }}</p>
+                            </div>
+                            <div class="info-item">
+                                <label>Date Joined</label>
+                                <p>{{ user.date_joined|date:"F j, Y, g:i a" }}</p>
+                            </div>
+                            <div class="info-item">
+                                <label>Last Login</label>
+                                <p>{{ user.last_login|date:"F j, Y, g:i a" }}</p>
+                            </div>
+                            <div class="mt-2 button-container">
+                            <a href="/reset-password/" class="password-reset-btn" target="_blank">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Billing Information -->
+        <div class="profile-section">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Company Billing Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="billing-form">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_name">Company Name</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" 
+                                        value="{{ customer_info.company_name|default:'' }}" placeholder="Your Company Name">
+                                </div>
+                            </div>                            <div class="col-md-6">                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" 
+                                        value="{{ customer_info.phone|default:'' }}" placeholder="Your Phone Number">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="address_line1">Address Line 1</label>
+                            <input type="text" class="form-control" id="address_line1" name="address_line1" 
+                                value="{{ customer_info.address_line1|default:'' }}" placeholder="Street Address">
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="address_line2">Address Line 2</label>
+                            <input type="text" class="form-control" id="address_line2" name="address_line2" 
+                                value="{{ customer_info.address_line2|default:'' }}" placeholder="Apartment, Suite, etc.">
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="city">City</label>
+                                    <input type="text" class="form-control" id="city" name="city" 
+                                        value="{{ customer_info.city|default:'' }}" placeholder="City">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="state">State</label>
+                                    <input type="text" class="form-control" id="state" name="state" 
+                                        value="{{ customer_info.state|default:'' }}" placeholder="State">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="postal_code">Postal Code</label>
+                                    <input type="text" class="form-control" id="postal_code" name="postal_code" 
+                                        value="{{ customer_info.postal_code|default:'' }}" placeholder="Postal Code">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="country">Country</label>
+                                    <input type="text" class="form-control" id="country" name="country" 
+                                        value="{{ customer_info.country|default:'' }}" placeholder="Country">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Changes
+                            </button>                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function validateForm() {
+  var selectBox = document.getElementById("user-select");
+  var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+  
+  if (selectedValue === "Select") {
+    alert("Please select an option.");
+    return false; // Prevent form submission
+  }
+  var form = document.getElementById("myForm");
+  console.log(form.action)
+//   var form = document.getElementById("myForm");
+//   form.action += selectedValue;
+  // Form submission allowed
+  return true;
+}
+
+
+$(document).ready(function(){
+    $("#edit_button").click(function(){
+        $("input[type='text']").prop('readonly', false);
+        $("#edit_button").hide();
+        $("#save_button").show();
+    });
+    
+    $("#save_button").click(function(){
+        $("input[type='text']").prop('readonly', true);
+        $("#edit_button").show();
+        $("#save_button").hide();
+    });
+});
+
+</script>
+{% endblock %}

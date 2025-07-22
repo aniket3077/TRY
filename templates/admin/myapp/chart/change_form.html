@@ -1,0 +1,160 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .preview-help {
+        background: #e7f3ff;
+        border: 2px solid #2196F3;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .preview-help h3 {
+        color: #1976D2;
+        margin-top: 0;
+    }
+    
+    .preview-steps {
+        background: #f8f9fa;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .preview-steps ol {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    
+    .preview-steps li {
+        margin: 8px 0;
+        line-height: 1.5;
+    }
+    
+    .file-status {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .command-box {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        margin: 15px 0;
+        overflow-x: auto;
+    }
+    
+    .warning-box {
+        background: #fff3e0;
+        border: 2px solid #ff9800;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .success-box {
+        background: #e8f5e8;
+        border: 2px solid #4caf50;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+</style>
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+
+{% if original.has_preview_version %}
+<div class="preview-help">
+    <h3>📊 Dual Chart System - Preview Mode Enabled</h3>
+    
+    <div class="success-box">
+        <strong>✅ Preview Version Configured</strong><br>
+        Preview Title: <code>{{ original.preview_chart_title }}</code>
+    </div>
+    
+    <div class="preview-steps">
+        <h4>📋 Setup Checklist:</h4>
+        <ol>
+            <li><strong>Upload Original Files:</strong>
+                <ul>
+                    <li>JSON: <code>{{ original.title }}.json</code> → <code>media/chart_data/</code></li>
+                    <li>CSV: <code>{{ original.title }}.csv</code> → <code>media/csv_files/</code></li>
+                </ul>
+            </li>
+            <li><strong>Create Preview Files:</strong>
+                <ul>
+                    <li>Option A: Upload manually blurred versions</li>
+                    <li>Option B: Use auto-generation command (recommended)</li>
+                </ul>
+            </li>
+            <li><strong>Verify Files:</strong> Check file status above</li>
+            <li><strong>Test:</strong> View marketplace to see preview in action</li>
+        </ol>
+    </div>
+    
+    <div class="command-box">
+        <strong>🚀 Auto-Generate Preview Data:</strong><br>
+        python manage.py create_preview_data --chart-id {{ original.id }}
+    </div>
+    
+    <div class="warning-box">
+        <strong>⚠️ Important Notes:</strong>
+        <ul>
+            <li>Original files are shown to <strong>purchased users</strong></li>
+            <li>Preview files are shown in <strong>marketplace</strong></li>
+            <li>Auto-generation blurs: names, emails, phones, IDs, LinkedIn profiles</li>
+            <li>Manual review of generated preview files is recommended</li>
+        </ul>
+    </div>
+</div>
+{% else %}
+<div class="preview-help">
+    <h3>📊 Dual Chart System - Standard Mode</h3>
+    
+    <div class="preview-steps">
+        <h4>📋 Current Setup:</h4>
+        <ul>
+            <li>✅ Single chart version (original only)</li>
+            <li>🔍 Same data shown in marketplace and after purchase</li>
+            <li>📁 Upload files as: <code>{{ original.title }}.json</code> and <code>{{ original.title }}.csv</code></li>
+        </ul>
+    </div>
+    
+    <div class="success-box">
+        <strong>💡 Want to enable preview mode?</strong><br>
+        1. Check "Has preview version" above<br>
+        2. Set a "Preview chart title" (e.g., {{ original.title }}_Preview)<br>
+        3. Save and follow the setup checklist
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add help tooltips for preview fields
+    const previewCheckbox = document.querySelector('input[name="has_preview_version"]');
+    const previewTitleField = document.querySelector('input[name="preview_chart_title"]');
+    
+    if (previewCheckbox) {
+        previewCheckbox.addEventListener('change', function() {
+            if (this.checked && previewTitleField && !previewTitleField.value) {
+                const originalTitle = document.querySelector('input[name="title"]').value;
+                if (originalTitle) {
+                    previewTitleField.value = originalTitle + '_Preview';
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

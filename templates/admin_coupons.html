@@ -1,0 +1,481 @@
+{% extends 'base_index.html' %}
+{% load static %}
+
+{% block title %}Coupon Management - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .coupon-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid #1976d2;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    
+    .coupon-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .coupon-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .coupon-code {
+        font-family: 'Courier New', monospace;
+        font-size: 18px;
+        font-weight: bold;
+        color: #1976d2;
+        margin: 0;
+    }
+    
+    .coupon-name {
+        font-size: 14px;
+        color: #546e7a;
+        margin: 0;
+    }
+    
+    .coupon-body {
+        padding: 20px;
+    }
+    
+    .coupon-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 4px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background: #e8f5e8;
+        color: #2e7d32;
+    }
+    
+    .status-inactive {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    .status-expired {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+    
+    .toggle-status {
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .toggle-status:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .toggle-status[data-current-status="active"] {
+        color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .toggle-status[data-current-status="active"]:hover {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .toggle-status[data-current-status="inactive"] {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .toggle-status[data-current-status="inactive"]:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-outline-warning {
+        transition: all 0.3s ease;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+      .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    /* Table Styles */
+    .coupon-table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 0;
+    }
+    
+    .coupon-table thead th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem 0.75rem;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .coupon-table tbody tr {
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+    }
+    
+    .coupon-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .coupon-table tbody td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .coupon-code {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        color: #1976d2;
+        font-size: 0.9rem;
+        background: #e3f2fd;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    .coupon-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .discount-value {
+        font-weight: 600;
+        color: #28a745;
+        font-size: 0.95rem;
+    }
+    
+    .usage-info {
+        margin-bottom: 0.25rem;
+    }
+    
+    .progress-sm {
+        height: 4px;
+        background-color: #e9ecef;
+        border-radius: 2px;
+    }
+    
+    .progress-bar {
+        background-color: #007bff;
+        transition: width 0.3s ease;
+    }
+    
+    .valid-until {
+        font-weight: 500;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    
+    .btn-primary {
+        background: #1976d2;
+        border-color: #1976d2;
+    }
+    
+    .btn-primary:hover {
+        background: #1565c0;
+        border-color: #1565c0;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-tag"></i> Coupon Management</h2>
+                <a href="{% url 'create_coupon' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create New Coupon
+                </a>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <h5>Filter Coupons</h5>
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                            <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary">Filter</button>
+                        <a href="{% url 'admin_coupons' %}" class="btn btn-outline-secondary">Clear</a>
+                    </div>
+                </form>
+            </div>
+              <!-- Coupons List -->
+            {% if coupons %}
+                <div class="table-responsive">
+                    <table class="table coupon-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Discount</th>
+                                <th>Status</th>
+                                <th>Usage</th>
+                                <th>Valid Until</th>
+                                <th>Created</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coupon in coupons %}
+                            <tr class="coupon-row" data-coupon-id="{{ coupon.id }}">
+                                <td>
+                                    <span class="coupon-code">{{ coupon.code }}</span>
+                                </td>
+                                <td>
+                                    <div class="coupon-name">{{ coupon.name }}</div>
+                                    {% if coupon.description %}
+                                        <small class="text-muted">{{ coupon.description|truncatewords:8 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="discount-value">{{ coupon.get_discount_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ coupon.status }}">
+                                        {{ coupon.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="usage-info">
+                                        <strong>{{ coupon.current_uses }}</strong>
+                                        {% if coupon.max_uses %}
+                                            <span class="text-muted">/ {{ coupon.max_uses }}</span>
+                                        {% else %}
+                                            <span class="text-muted">/ ∞</span>
+                                        {% endif %}
+                                    </div>                                    {% if coupon.max_uses %}
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar"></div>
+                                            <small class="text-muted">
+                                                {{ coupon.current_uses|floatformat:2 }} / {{ coupon.max_uses }} ({% widthratio coupon.current_uses coupon.max_uses 100 %}%)
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="valid-until">{{ coupon.valid_until|date:"M d, Y" }}</span>
+                                    <br><small class="text-muted">{{ coupon.valid_until|date:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <span>{{ coupon.created_at|date:"M d, Y" }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'coupon_detail' coupon.id %}" 
+                                           class="btn btn-outline-primary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'edit_coupon' coupon.id %}" 
+                                           class="btn btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                       <button type="button" 
+                                        class="btn btn-outline-warning toggle-status" 
+                                        data-coupon-id="{{ coupon.id }}" 
+                                        data-current-status="{{ coupon.status }}"
+                                        title="{% if coupon.status == 'active' %}Deactivate{% else %}Activate{% endif %}">
+                                    <i class="bi bi-toggle-{% if coupon.status == 'active' %}on{% else %}off{% endif %}"></i>
+                                </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if coupons.has_other_pages %}
+                <nav aria-label="Coupon pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if coupons.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coupons.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in coupons.paginator.page_range %}
+                            {% if coupons.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > coupons.number|add:'-3' and num < coupons.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if coupons.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coupons.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coupons.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-tag" style="font-size: 48px; color: #ccc;"></i>
+                    <h4 class="mt-3 text-muted">No Coupons Found</h4>
+                    <p class="text-muted">Create your first coupon to start offering discounts to customers.</p>
+                    <a href="{% url 'create_coupon' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create First Coupon
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle toggle coupon status
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-status');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const couponId = this.dataset.couponId;
+            const currentStatus = this.dataset.currentStatus;
+            
+            // Disable button during request
+            this.disabled = true;
+            
+            fetch(`{% url 'toggle_coupon_status' 0 %}`.replace('0', couponId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update button appearance
+                    const icon = this.querySelector('i');
+                    this.dataset.currentStatus = data.new_status;
+                    
+                    if (data.new_status === 'active') {
+                        icon.className = 'bi bi-toggle-on';
+                        this.classList.remove('btn-outline-danger');
+                        this.classList.add('btn-outline-success');
+                    } else {
+                        icon.className = 'bi bi-toggle-off';
+                        this.classList.remove('btn-outline-success');
+                        this.classList.add('btn-outline-danger');
+                    }
+                    
+                    // Show success message
+                    showToast('success', data.message);
+                    
+                    // Optionally reload the page to update status badges
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('error', data.message || 'Failed to toggle coupon status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Network error occurred');
+            })
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+});
+
+// Simple toast notification function
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Auto-refresh page every 30 seconds to update usage stats
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'base_index.html' %}
+{% block title %}Upload Image{% endblock %}
+{% block content %}
+
+<style>
+/* Pagination Styles */
+.pagination-container {
+    margin: 30px 0;
+}
+
+.pagination .page-link {
+    color: var(--blue, #007bff);
+    border-color: #dee2e6;
+    padding: 0.5rem 0.75rem;
+    margin: 0 2px;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.pagination .page-link:hover {
+    color: #0056b3;
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--blue, #007bff);
+    border-color: var(--blue, #007bff);
+    color: white;
+    font-weight: 600;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.per-page-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.per-page-selector label {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.per-page-selector select {
+    min-width: 70px;
+    height: 32px;
+    font-size: 0.875rem;
+}
+
+.goto-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.goto-page label {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.goto-page input {
+    text-align: center;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+        margin: 1px;
+    }
+    
+    .per-page-selector {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+    }
+    
+    .row > div {
+        margin-bottom: 10px;
+    }
+}
+
+/* Hide some pagination links on very small screens */
+@media (max-width: 576px) {
+    .pagination .page-item:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
+        display: none;
+    }
+}
+</style>
+
+<h2 style="text-align: center; margin-bottom: 50px;">Upload Images</h2>
+
+<div class="input-box-container">
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" id="imageInput" accept="image/*" name="images" hidden multiple>
+    <label class="input-box" for="imageInput">Choose File</label>
+    <span id="file-chosen">No file chosen</span>
+    <ion-icon class="remove-btn" id="removeButton" style="display: none; color:red;" size="large" name="close-sharp"></ion-icon>
+    <button class="upload-btn" type="submit">Upload</button>
+</form>
+</div>    <div class="row" style="margin-right: 50px !important; margin-top: 50px !important;">
+        <div class="col-md-4">            <div class="d-flex justify-content-start align-items-center">
+                <button id="selectAllButton" onclick="toggleSelectAllCheckboxes()" class="btn btn-primary mx-2">Select All</button> 
+                <input type="number" id="selectCountInput" value="1" min="1" max="{{ images|length }}" oninput="checkInput(this)">
+                <button id="selectButton" onclick="selectCheckboxes()" class="btn btn-secondary mx-2">Select</button>
+            
+            </div>
+
+        </div>
+        <div class="col-md-4 d-flex justify-content-center align-items-center">
+            <div class="pagination-info">
+                <small class="text-muted">
+                    Showing {{ images.start_index }}-{{ images.end_index }} of {{ image_count }} images
+                </small>
+            </div>
+            <div class="per-page-selector mr-1 ml-5">
+                <label for="perPageSelect" class="mr-2">Per page:</label>
+                <select id="perPageSelect" class="form-control form-control-sm" style="width: auto; display: inline-block;" onchange="changePerPage()">
+                    <option value="10" {% if images_per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="20" {% if images_per_page == 20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if images_per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if images_per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            
+            <button onclick="exportSelected()" class="btn btn-warning mx-2">Export Selected</button>
+            <button onclick="deleteSelected()" class="btn btn-danger mx-2">Delete Selected</button>
+        </div>
+    </div>
+<div class="gallery" style="padding-bottom: 50px; padding-top: 50px; ">
+    {% for image in images %}
+    <div class="gallery-item">
+        <input type="checkbox" name="imageCheckbox" id="checkbox{{ forloop.counter }}" value="{{ image.filename }}" class="select-checkbox">
+        <img src="{{ image.image.url }}" alt="{{ image.filename }}">
+        <div class="overlay">
+            <div class="overlay-content">
+                <p>{{ image.filename  }}</p>
+                <button class="copy-link-button" onclick="copyImageLink(this,'{{ image.image.url }}')">Copy Link</button>
+            </div>
+        </div>
+    </div>    {% endfor %}
+</div>
+
+<!-- Pagination Controls -->
+{% if images.has_other_pages %}
+<div class="pagination-container" style="margin-top: 30px;">
+    <nav aria-label="Image pagination">
+        <ul class="pagination justify-content-center">
+            {% if images.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&per_page={{ images_per_page }}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ images.previous_page_number }}&per_page={{ images_per_page }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;&laquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+
+            {% for page_num in page_range %}
+                {% if page_num == images.number %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% elif page_num == '…' %}
+                    <li class="page-item disabled">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}&per_page={{ images_per_page }}">{{ page_num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if images.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ images.next_page_number }}&per_page={{ images_per_page }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ images.paginator.num_pages }}&per_page={{ images_per_page }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>    
+    <div class="pagination-info text-center mt-2">
+        <small class="text-muted">
+            Page {{ images.number }} of {{ images.paginator.num_pages }} 
+            ({{ image_count }} total images)
+        </small>
+        
+        {% if images.paginator.num_pages > 1 %}
+        <div class="goto-page mt-2">
+            <label for="gotoPageInput" class="mr-2">Go to page:</label>
+            <input type="number" id="gotoPageInput" min="1" max="{{ images.paginator.num_pages }}" 
+                   value="{{ images.number }}" class="form-control form-control-sm" 
+                   style="width: 80px; display: inline-block;" 
+                   onkeypress="if(event.key==='Enter') goToPage()">
+            <button onclick="goToPage()" class="btn btn-sm btn-outline-primary ml-1">Go</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    window.csrfToken = "{{ csrf_token }}";
+      // Function to change items per page
+    function changePerPage() {
+        const perPage = document.getElementById('perPageSelect').value;
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set('per_page', perPage);
+        currentUrl.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = currentUrl.toString();
+    }
+      // Function to go to specific page
+    function goToPage() {
+        const pageInput = document.getElementById('gotoPageInput');
+        const pageNum = parseInt(pageInput.value);
+        const maxPages = parseInt(pageInput.max);
+        
+        if (pageNum && pageNum >= 1 && pageNum <= maxPages) {
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('page', pageNum);
+            window.location.href = currentUrl.toString();
+        } else {
+            alert(`Please enter a valid page number between 1 and ${maxPages}`);
+            pageInput.value = "{{ images.number }}";
+        }
+    }
+</script>
+ 
+    
+{% endblock %}

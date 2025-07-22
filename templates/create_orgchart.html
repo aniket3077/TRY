@@ -1,0 +1,119 @@
+{% extends 'base_index.html' %}
+
+{% block title %}Create{% endblock %}
+{% block content %}
+
+<h2 style="text-align: center; margin-bottom: 50px;">Create OrgChart</h2>
+<div class="input-box-container">
+    <input type="file" id="csvFileInput" accept=".csv" hidden/>
+    <label class="input-box" for="csvFileInput">Choose File</label>
+    <span id="file-chosen">No file chosen</span>
+    <ion-icon class="remove-btn" id="removeButton" style="display: none; color:red;" size="large" name="close-sharp"></ion-icon>        
+            <select class="form-select" id="user-select" name="user_id">
+                <option disabled selected>Select User Profile</option>
+                {% for users in available_users %}
+                    <option value="{{ users.id }}">{{ users.id }} - {{ users.username }}</option>
+                {% endfor %}
+            </select>
+    <button class="upload-btn" id="uploadButton">Generate Chart</button> 
+   
+</div>
+<div class="details">
+    <div class="recentOrders">
+        <div class="cardHeader">
+            <h2>Recent Charts</h2>
+            <a href="/org/list" class="btn">View All</a>
+        </div>
+        <div class="table-container">
+        <table>
+            <thead class="table-header">
+                <tr>
+                    <td>Sr.No.</td>
+                    <td>Title</td>
+                    <td>Created At</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chart in charts %}
+                <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ chart.title }}</td>
+                <td>{{ chart.creation_date }}</td>
+                <td><a href="{% url 'view_orgchart_temp' chart.uuid %}" class="btn visitbtn" target="_blank">Visit</a></td>
+                <td>
+                    <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ chart.pk }}">
+                        Delete
+                    </button>
+                </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% for chart in charts %}
+<div class="modal fade" id="deleteModal{{ chart.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "{{ chart.title }}"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="{% url 'delete_file' chart.pk %}" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Chart Created successfully.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="location.reload();" class="btn btn-success">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+               
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="location.reload();" class="btn btn-danger">Understood!</button>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+{% load static %}
+<script src="{% static 'orgchart/js/script1.js' %}"></script>
+{% endblock %}
+

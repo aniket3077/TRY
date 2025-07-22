@@ -1,0 +1,298 @@
+{% extends 'base_index.html' %}
+{% load static %}
+
+{% block title %}Purchase Successful - OrgMarketPlace{% endblock %}
+
+{% block content %}
+<div class="details">
+    <div class="recentOrders">
+        <div class="success-container">
+            <div class="success-header">
+                <i class="bi bi-check-circle-fill success-icon"></i>
+                <h2>Payment Successful!</h2>
+                <p>Thank you for your purchase. Your payment has been processed successfully.</p>
+            </div>
+
+            <div class="order-details">
+                <h4>Order Details</h4>
+                <div class="detail-row">
+                    <span>Payment ID:</span>
+                    <span><code>{{ payment_id }}</code></span>
+                </div>
+                {% if order_id %}
+                <div class="detail-row">
+                    <span>Order ID:</span>
+                    <span><code>{{ order_id }}</code></span>
+                </div>
+                {% endif %}                <div class="detail-row">
+                    <span>Total Amount:</span>
+                    <span><strong>${{ total_amount|floatformat:2 }}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span>Transaction Date:</span>
+                    <span>{{ transaction_date|date:"F d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Breakdown -->
+            <div class="payment-breakdown">
+                <h4>Payment Breakdown</h4>
+                <div class="detail-row">
+                    <span>Subtotal:</span>
+                    <span>${{ subtotal|floatformat:2 }}</span>
+                </div>
+                {% if discount_amount and discount_amount > 0 %}
+                <div class="detail-row coupon-discount">
+                    <span>
+                        <i class="bi bi-tag-fill text-success"></i> 
+                        Coupon Discount ({{ coupon_code }}):
+                    </span>
+                    <span class="text-success">-${{ discount_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-row">
+                    <span>Processing Fee (5.5%):</span>
+                    <span>${{ processing_fee|floatformat:2 }}</span>
+                </div>
+                <div class="detail-row total-row">
+                    <span><strong>Final Total:</strong></span>
+                    <span><strong>${{ total_amount|floatformat:2 }}</strong></span>
+                </div>
+            </div>
+
+            {% if purchased_items %}
+            <div class="purchased-items">
+                <h4>Purchased Items</h4>
+                <div class="items-list">
+                    {% for item in purchased_items %}
+                    <div class="purchased-item">
+                        <div class="item-details">
+                            <h6>{{ item.title }}</h6>
+                            <span class="item-price">${{ item.price }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="access-info">
+                <div class="info-card">
+                    <div class="info-content">
+                        <h6>Access Information</h6>
+                        <p>You now have access to all purchased organization charts for 30 days. You can view and download them from your account.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'listorgchart' %}" class="action-btn primary">
+                    <i class="bi bi-list-task"></i> View My Charts
+                </a>
+                <a href="{% url 'marketplace_dash' %}" class="action-btn secondary">
+                    <i class="bi bi-shop"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Overall container style */
+.success-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Success icon and header */
+.success-header {
+    text-align: center;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.success-icon {
+    font-size: 4rem;
+    color: var(--blue);
+    margin-bottom: 1rem;
+}
+
+.success-header h2 {
+    color: var(--black1);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.success-header p {
+    color: var(--black2);
+    font-size: 1.1rem;
+}
+
+/* Order details card */
+.order-details, .payment-breakdown {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.order-details h4, .purchased-items h4, .payment-breakdown h4 {
+    color: var(--black1);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+/* Payment breakdown specific styles */
+.payment-breakdown .coupon-discount span {
+    color: var(--green) !important;
+}
+
+.payment-breakdown .total-row {
+    border-top: 2px solid var(--border-color);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: 1.1rem;
+}
+
+/* Detail rows */
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span:first-child {
+    color: var(--black2);
+    font-weight: 500;
+}
+
+.detail-row span:last-child {
+    color: var(--black1);
+    font-weight: 600;
+}
+
+.detail-row code {
+    background: var(--border-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--black1);
+}
+
+/* Purchased items */
+.purchased-items {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.items-list {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.purchased-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.purchased-item:last-child {
+    border-bottom: none;
+}
+
+.item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-details h6 {
+    margin: 0;
+    color: var(--black1);
+    font-weight: 500;
+}
+
+.item-price {
+    color: var(--blue);
+    font-weight: 600;
+}
+
+/* Access info card */
+.access-info {
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: #e8f5ff;
+    border: 1px solid var(--blue);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.info-content h6 {
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.info-content p {
+    color: var(--black2);
+    margin: 0;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.action-btn.secondary {
+    background: var(--gray);
+    color: var(--black1);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.action-btn.primary:hover {
+    background: #0056b3;
+    color: var(--white);
+}
+
+.action-btn.secondary:hover {
+    background: #e9ecef;
+    color: var(--black1);
+}
+</style>
+{% endblock %}

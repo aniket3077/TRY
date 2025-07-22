@@ -12,10 +12,10 @@ import os
 urlpatterns = [
     path('', views.landing, name='landing'),  # Public landing page
     path('dashboard/', views.home, name='home'),  # Authenticated dashboard
-    path('signup', views.signup, name='signup'),
-    path('activate/<uidb64>/<token>', views.activate, name='activate'),
-    path('signin', views.signin, name='signin'),
-    path('signout', views.signout, name='signout'),
+    path('signup/', views.signup, name='signup'),  # Added trailing slash
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    path('signin/', views.signin, name='signin'),  # Added trailing slash
+    path('signout/', views.signout, name='signout'),  # Added trailing slash
     path('reset-password/', views.password_reset_request, name='password_reset'),
     path('reset-password/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
     path('org/create', views.createorgchart, name='createorgchart'),

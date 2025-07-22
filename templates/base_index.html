@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="icon" type="image/svg+xml" href="/media/img/favicon.svg">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap">
+
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .navigation ul li a .icon {
+            position: relative;
+        }
+    </style>
+
+</head>
+
+<body>
+    {% if user.is_authenticated %}
+    <div class="container1">
+        <div class="navigation">            <ul class="menunavigation">
+                <li>
+                    <a href="/">
+                       
+                 <span class="title" style="margin-top: 10px; margin-bottom: 5px;"><img src="/media/img/logo.svg" alt="" height="90px" width="auto"></span>
+
+                    </a>
+                </li>
+                
+                <!-- Dashboard -->
+                <li>
+                    <a href="{% url 'home' %}">
+                        <span class="icon">
+                            <i class="bi bi-house-door"></i>
+                        </span>
+                        <span class="title">Dashboard</span>
+                    </a>
+                </li>
+
+                {% if user.is_staff %}
+                {% for group in user.groups.all %}
+                {% if group.name == 'Admin' %}
+                <!-- Create -->
+                <li>
+                    <a href="/org/create">
+                        <span class="icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </span>
+                        <span class="title">Create OrgChart</span>
+                    </a>
+                </li>
+                <!-- Manage -->
+                <li>
+                    <a href="/org/manage">
+                        <span class="icon">
+                            <i class="bi bi-sliders"></i>
+                        </span>
+                        <span class="title">Manage OrgCharts</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                <!-- My OrgCharts -->
+                <li>
+                    <a href="/org/list">
+                        <span class="icon">
+                            <i class="bi bi-list-task"></i>
+                        </span>
+                        <span class="title">My OrgCharts</span>
+                    </a>
+                </li>
+
+                {% if user.is_staff %}
+                {% for group in user.groups.all %}
+                {% if group.name == 'Admin' %}
+                <!-- Media Upload -->
+                <li>
+                    <a href="/upload_image">
+                        <span class="icon">
+                            <i class="bi bi-card-image"></i>
+                        </span>
+                        <span class="title">Media Upload</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if user.userprofile.is_superadmin %}
+                <!-- Assign Client -->
+                <li>
+                    <a href="/client/lead/assign">
+                        <span class="icon">
+                            <i class="bi bi-person-fill-add"></i>
+                        </span>
+                        <span class="title">Assign Client</span>
+                    </a>
+                </li>
+                <!-- User Operations -->
+                <li>
+                    <a href="/user/operations">
+                        <span class="icon">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                        <span class="title">User Operations</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for group in user.groups.all %}
+                {% if group.name == 'Admin' %}
+                <!-- User Profile -->
+                <li>
+                    <a href="/profile">
+                        <span class="icon">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </span>
+                        <span class="title">User Profile</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                <!-- View Access -->
+                <li>
+                    <a href="/org/access">
+                        <span class="icon">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                        <span class="title">View Access</span>
+                    </a>
+                </li>
+                <!-- Add Client Lead -->
+                <li>
+                    <a href="/client/details/add">
+                        <span class="icon">
+                            <i class="bi bi-plus"></i>
+                        </span>
+                        <span class="title">Add Client Lead</span>
+                    </a>
+                </li>
+                <!-- Show Client Leads -->
+                <li>
+                    <a href="/client/details/show">
+                        <span class="icon">
+                            <i class="bi bi-send"></i>
+                        </span>
+                        <span class="title">Show Client Leads</span>
+                    </a>
+                </li>
+
+                {% if user.userprofile.is_superadmin %}
+                <!-- Payment Dashboard -->
+                <li>
+                    <a href="/payment-dashboard/">
+                        <span class="icon">
+                            <i class="bi bi-graph-up"></i>
+                        </span>
+                        <span class="title">Payment Dashboard</span>
+                    </a>
+                </li>
+                <!-- MarketPlace (Superadmin) -->
+                <li>
+                    <a href="/marketplace/config">
+                        <span class="icon">
+                            <i class="bi bi-shop"></i>
+                        </span>
+                        <span class="title">Marketplace</span>
+                    </a>
+                </li>
+                <!-- Order Management -->
+                <li>
+                    <a href="/orders/">
+                        <span class="icon">
+                            <i class="bi bi-receipt"></i>
+                        </span>
+                        <span class="title">Order Management</span>
+                    </a>
+                </li>
+                <!-- Coupon Management -->
+                <li>
+                    <a href="/coupons/">
+                        <span class="icon">
+                            <i class="bi bi-tag"></i>
+                        </span>
+                        <span class="title">Coupon Management</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+
+                {% if not user.is_staff %}
+                <!-- Request InsideOrgs (for non-staff) -->
+                <li>
+                    <a href="/org/request">
+                        <span class="icon">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <span class="title">Request InsideOrgs</span>
+                    </a>
+                </li>
+                <!-- MarketPlace (Regular User) -->
+                <li>
+                    <a href="/marketplace">
+                        <span class="icon">
+                            <i class="bi bi-shop"></i>
+                        </span>
+                        <span class="title">Marketplace</span>
+                    </a>
+                </li>
+                <!-- Shopping Cart -->
+                <li>
+                    <a href="/cart/">
+                        <span class="icon">
+                            <i class="bi bi-cart3"></i>
+                            {% if cart_item_count > 0 %}
+                            <span class="cart-badge">{{ cart_item_count }}</span>
+                            {% endif %}
+                        </span>
+                        <span class="title">Shopping Cart</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- My Account -->
+                <li>
+                    <a href="/user/profile/">
+                        <span class="icon">
+                            <i class="bi bi-person-circle"></i>
+                        </span>
+                        <span class="title">My Profile</span>
+                    </a>
+                </li>
+
+                <!-- Sign Out -->
+                <li>
+                    <a href="/signout">
+                        <span class="icon">
+                            <i class="bi bi-box-arrow-left"></i>
+                        </span>
+                        <span class="title">Sign Out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+	<div class="main">
+
+            <div class="topbar">
+                <div class="toggle">
+                    <ion-icon name="menu-outline"></ion-icon>
+                </div>
+            </div>
+            
+            {% for message in messages %}
+            {% if message.tags == 'error' %}
+            <div class="alert">
+                <strong>Error:</strong> {{ message }}
+                <span class="closebtn">&times;</span> 
+            </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+            <div class="alert success">
+                <span class="closebtn">&times;</span>  
+                <strong>Success!</strong> {{ message }}
+            </div>
+            {% endif %}
+            {% if message.tags == 'warning' %}
+            <div class="alert warning">
+                <span class="closebtn">&times;</span>  
+                <strong>Warning!</strong> {{ message }}
+            </div>
+            {% endif %}
+            {% if message.tags == 'info' %}
+            <div class="alert info">
+                <span class="closebtn">&times;</span>  
+                <strong>Info!</strong> {{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+        
+            {% block content %}{% endblock %}
+            
+        </div>
+    </div>
+    {% endif %}
+    <!-- =========== Scripts =========  -->
+    {% load static %}
+    <script src="{% static 'home/js/main.js' %}"></script>
+    <script src="{% static 'authentication/js/script.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
+   
+</body>
+
+</html>
