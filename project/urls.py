@@ -1,5 +1,5 @@
 """
-URL configuration for orgchart project.
+URL configuration for project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -24,8 +24,12 @@ urlpatterns = [
     path("", include('myapp.urls')),  # Include myapp URLs
 ]
 
+# Serve static and media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+# Custom error handlers
 handler404 = 'myapp.views.view_404'
+handler403 = 'myapp.views.view_403'
+handler500 = 'myapp.views.view_500'

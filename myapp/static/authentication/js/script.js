@@ -181,6 +181,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
+            // Ensure form action ends with trailing slash
+            let formAction = form.getAttribute('action');
+            if (formAction && !formAction.endsWith('/')) {
+                form.setAttribute('action', formAction + '/');
+            }
+            
             // Show loading state
             if (submitBtn) {
                 submitBtn.classList.add('loading');
