@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.static import serve as static_serve
+from django.conf.urls.static import static
 import os
 
 
@@ -106,9 +107,9 @@ urlpatterns = [
     path('coupons/validate-manual-order/', views.validate_manual_order_coupon_ajax, name='validate_manual_order_coupon_ajax'),
     path('api/test/request/chart/', views.serve_file_testing, name='serve_file_testing'), #for access management
     re_path(r'^media/img/(?P<path>.*)$', static_serve, {
-        'document_root': settings.MEDIA_ROOT / 'img',
+        'document_root': os.path.join(settings.MEDIA_ROOT, 'img'),
     }),
-]
+] + static('/media/img/', document_root=os.path.join(settings.MEDIA_ROOT, 'img'))
 
 
 

@@ -468,9 +468,9 @@ font-family: 'Inter', sans-serif;
 
 .filter-group-item {
     margin-bottom: 16px;
-    border: 1px solid rgba(251, 255, 255, 0.74);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    background: rgba(123, 236, 253, 0.05);
+    background: rgba(255, 255, 255, 0.05);
     overflow: hidden;
 }
 
@@ -486,7 +486,7 @@ font-family: 'Inter', sans-serif;
 }
 
 .filter-group-header:hover {
-    background: rgba(103, 219, 248, 0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .filter-group-title {
@@ -841,10 +841,10 @@ font-family: 'Inter', sans-serif;
     top: 50px;
     backface-visibility: hidden;
     transform: translateX(-50%);
-    min-width: -webkit-fill-available; /* Samsung Internet 5.0+ support */
     min-width: -webkit-max-content; /* Safari/WebKit support */
     min-width: -moz-max-content; /* Firefox support */
     min-width: max-content; /* Fallback for older browsers */
+    min-width: -webkit-fill-available; /* Samsung Internet 5.0+ support */
     min-width: fit-content; /* Modern browsers */
 }
 

@@ -26,7 +26,7 @@ import numpy as np
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .code.generate_org import generate_org
-from .models import chart, ChartAccess, Image, UserProfile, ClientLead, Cart, CartItem, Order, OrderItem, CompanyInfo, CustomerInfo, Coupon, CouponUsage
+from .models import chart, ChartAccess, Image, UserProfile, ClientLead, Cart, CartItem, Order, OrderItem, CompanyInfo, CustomerInfo, Coupon, CouponUsage, SampleRequest
 from datetime import timedelta, datetime
 from django.utils.dateparse import parse_date
 import razorpay
@@ -55,6 +55,7 @@ except (ImportError, OSError) as e:
             pass
 from django.core.mail import EmailMessage
 import io
+import pandas as pd
 
 
 # Landing page view (public access)
@@ -69,7 +70,13 @@ def landing(request):
 
 @login_required
 def home(request):
-    if request.user.userprofile.is_superadmin or request.user.groups.filter(name='Admin').exists(): 
+    # Check if user has UserProfile, create if it doesn't exist
+    try:
+        user_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user, is_superadmin=False)
+    
+    if user_profile.is_superadmin or request.user.groups.filter(name='Admin').exists(): 
         charts = chart.objects.all()
         users = User.objects.filter(groups__name="Subscriber")
     elif request.user.groups.filter(name='Sales Partner').exists():
@@ -375,9 +382,17 @@ def listorgchart(request):
     try:
         access_key = UserProfile.objects.get(user=request.user).access_uuid  
     except UserProfile.DoesNotExist:
-        access_key = None
+        user_profile = UserProfile.objects.create(user=request.user)
+        access_key = user_profile.access_uuid
     ChartAccess.remove_expired_access()
-    if request.user.userprofile.is_superadmin or request.user.groups.filter(name='Admin').exists():
+    
+    # Check if user has UserProfile, create if it doesn't exist
+    try:
+        user_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user, is_superadmin=False)
+    
+    if user_profile.is_superadmin or request.user.groups.filter(name='Admin').exists():
         charts_data = [{'chart': chart, 'creation_time': chart.creation_date} for chart in chart.objects.all()]
 
     else:
@@ -3968,156 +3983,54 @@ def view_chart_preview(request, chart_id):
         messages.error(request, f"Error accessing chart: {str(e)}")
         return redirect('marketplace_dash')
 
+@login_required  
 def view_chart_blurred_preview(request, chart_id):
     """
-    View function for the 'ORG CHART' button in marketplace.
-    Shows a blurred/limited preview of the organizational chart with restricted functionality.
-    
-    IMPORTANT: This view is PUBLIC and accessible without login.
-    Anyone can access preview org charts regardless of authentication status.
+    View function for showing a blurred preview of a chart.
     """
     try:
         chart_instance = get_object_or_404(chart, pk=chart_id)
         
-        # Log access for debugging (can be removed in production)
-        user_status = "authenticated" if request.user.is_authenticated else "anonymous"
-        print(f"Preview access by {user_status} user for chart ID: {chart_id}")
-        
-        # For preview mode, we don't need the actual data file
-        # The template will use the original chart data but apply blurring
-        context = {
-            'chart_title': chart_instance.title,
-            'chart_uuid': chart_instance.uuid,
-            'chart_data': None,  # Let the template handle data loading
-            'chart': chart_instance,
-            'total_employees': chart_instance.personCount,
-            'is_preview_mode': True,
-            'has_preview_version': chart_instance.has_preview_version,
-            'user_can_purchase': True,  # Always allow purchase redirect
-            'is_authenticated': request.user.is_authenticated,  # Pass auth status for UI
-            'user': request.user if request.user.is_authenticated else None,
-            'access_type': 'Public Preview - No Login Required',
-        }
-        
-        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
-        
-    except Exception as e:
-        # If there's any error, provide a minimal context
-        # Still accessible to anonymous users
-        print(f"Error in preview for chart {chart_id}: {str(e)}")
-        context = {
-            'chart_title': 'Organization Chart Preview',
-            'chart_uuid': 'preview-demo',
-            'chart_data': None,
-            'chart': None,
-            'total_employees': 52,
-            'is_preview_mode': True,
-            'has_preview_version': False,
-            'user_can_purchase': True,
-            'is_authenticated': request.user.is_authenticated,
-            'user': request.user if request.user.is_authenticated else None,
-            'access_type': 'Public Preview - No Login Required',
-        }
-        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
-
-@login_required  
-def download_chart_sample(request, chart_id):
-    """
-    View function for the 'GET SAMPLE' button in marketplace.
-    Downloads a sample/preview version of the chart data.
-    """
-    try:
-        chart_instance = get_object_or_404(chart, pk=chart_id)
-        
-        # Create sample CSV with limited data (first 10 rows)
+        # Get the chart data
         file_path = os.path.join(settings.MEDIA_ROOT, "csv_files", f"{chart_instance.title}.csv")
         
-        if os.path.exists(file_path):
-            import csv
-            import io
-            
-            # Read original CSV and create sample
-            sample_data = []
-            with open(file_path, 'r', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                headers = next(reader, None)  # Get headers
-                if headers:
-                    sample_data.append(headers)
-                    
-                    # Add first 10 data rows
-                    for i, row in enumerate(reader):
-                        if i < 10:  # Limit to first 10 rows for sample
-                            sample_data.append(row)
-                        else:
-                            break
-            
-            # Create CSV response
-            output = io.StringIO()
-            writer = csv.writer(output)
-            for row in sample_data:
-                writer.writerow(row)
-            
-            response = HttpResponse(
-                output.getvalue().encode('utf-8'),
-                content_type='text/csv'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{chart_instance.title}_sample.csv"'
-            
-            # Add success message
-            messages.success(request, f"Sample data for '{chart_instance.title}' downloaded successfully!")
-            
-            return response
-        else:
-            messages.error(request, "Sample data not available for this chart.")
+        if not os.path.exists(file_path):
+            messages.error(request, "Chart data not found.")
             return redirect('marketplace_dash')
             
+        # Read CSV data
+        df = pd.read_csv(file_path)
+        
+        # Convert DataFrame to JSON for template
+        chart_data = df.to_json(orient='records')
+        
+        context = {
+            'chart': chart_instance,
+            'chart_data': chart_data,
+            'is_preview': True
+        }
+        
+        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
     except Exception as e:
-        messages.error(request, f"Error downloading sample: {str(e)}")
+        messages.error(request, f"Error loading chart: {str(e)}")
         return redirect('marketplace_dash')
 
-@csrf_exempt
-def request_sample_ajax(request):
-    """
-    Handle AJAX request for sample request form submission.
-    """
+def submit_sample_request(request):
+    """Handle sample request submissions"""
     if request.method == 'POST':
         try:
-            import json
-            from .models import SampleRequest
-            
             data = json.loads(request.body)
-            
-            email = data.get('email', '').strip()
-            requirements = data.get('requirements', '').strip()
             chart_id = data.get('chart_id')
-            chart_title = data.get('chart_title', '')
+            chart_title = data.get('chart_title')
+            email = data.get('email')
+            requirements = data.get('requirements')
             
-            # Basic validation
-            if not email or not requirements:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Email and requirements are required.'
-                })
-            
-            # Get chart instance
-            try:
-                chart_instance = chart.objects.get(pk=chart_id)
-            except chart.DoesNotExist:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Chart not found.'
-                })
-            
-            # Get user if authenticated
-            current_user = request.user if request.user.is_authenticated else None
-            
-            # Save the sample request to database
+            # Create sample request record
             sample_request = SampleRequest.objects.create(
+                chart_id=chart_id,
+                chart_title=chart_title,
                 email=email,
                 requirements=requirements,
-                chart=chart_instance,
-                chart_title=chart_title,
-                user=current_user,
                 status='pending'
             )
             
@@ -4136,6 +4049,109 @@ def request_sample_ajax(request):
                 'request_id': sample_request.id
             })
             
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error processing request: {str(e)}'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method.'
+    })
+
+@login_required
+def download_chart_sample(request, chart_id):
+    """Download a sample version of the chart"""
+    try:
+        chart_instance = get_object_or_404(chart, pk=chart_id)
+        
+        # Get the marketplace/preview version of the chart
+        file_path = chart_instance.get_marketplace_chart_data()
+        
+        if not file_path or not os.path.exists(file_path):
+            messages.error(request, "Sample data not found.")
+            return redirect('marketplace_dash')
+        
+        # Read the JSON file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            chart_data = json.load(f)
+        
+        # Create a response with the file
+        response = HttpResponse(json.dumps(chart_data, indent=2), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="{chart_instance.title}_sample.json"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Error downloading sample: {str(e)}")
+        return redirect('marketplace_dash')
+
+@csrf_exempt
+def request_sample_ajax(request):
+    """Handle AJAX requests for chart samples"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            chart_id = data.get('chart_id')
+            email = data.get('email')
+            requirements = data.get('requirements', '')
+            
+            # Validate required fields
+            if not chart_id or not email:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Chart ID and email are required.'
+                })
+            
+            # Get chart details
+            chart_instance = get_object_or_404(chart, pk=chart_id)
+            
+            # Create sample request
+            sample_request = SampleRequest.objects.create(
+                chart_id=chart_id,
+                chart_title=chart_instance.title,
+                email=email,
+                requirements=requirements,
+                status='pending'
+            )
+            
+            # Optional: Send notification email to admin
+            try:
+                admin_email = settings.EMAIL_SENDER_ID
+                subject = f'New Sample Request - {chart_instance.title}'
+                message = f"""
+                New sample request received:
+                
+                Chart: {chart_instance.title}
+                Email: {email}
+                Requirements: {requirements}
+                
+                Request ID: {sample_request.id}
+                """
+                
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_SENDER_ID,
+                    [admin_email],
+                    fail_silently=True
+                )
+            except:
+                # Don't fail if email sending fails
+                pass
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Sample request submitted successfully! We will review your request and contact you shortly.',
+                'request_id': sample_request.id
+            })
+            
+        except chart.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Chart not found.'
+            })
         except Exception as e:
             return JsonResponse({
                 'success': False,

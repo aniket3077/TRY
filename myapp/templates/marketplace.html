@@ -1319,14 +1319,6 @@
                                                 ORG CHART
                                             </button>
                                             
-                                            <!-- GET SAMPLE Button -->
-                                            <button class="get-sample-btn" 
-                                                    data-chart-id="{{ chart.id }}" 
-                                                    data-chart-title="{{ chart.title }}">
-                                                <i class="material-icons">download</i>
-                                                GET SAMPLE
-                                            </button>
-                                            
                                             {% if user.is_authenticated %}
                                             <!-- Add to Cart Button -->
                                             <button class="add-to-cart-btn" 
@@ -1460,47 +1452,7 @@
     </div>
 </div>
 
-<!-- Request Free Sample Modal -->
-<div class="modal fade" id="requestSampleModal" tabindex="-1" role="dialog" aria-labelledby="requestSampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
-                <h5 class="modal-title" id="requestSampleModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
-                    <i class="material-icons" style="margin-right: 0.5rem;">download</i>
-                    Request Free Sample
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
-                    <span aria-hidden="true"><i class="material-icons">close</i></span>
-                </button>
-            </div>
-            <div class="modal-body" style="padding: 2rem;">
-                <form id="sampleRequestForm">
-                    <div class="form-group mb-4">
-                        <label for="sampleEmail" style="color: #3b82f6; font-weight: 600; margin-bottom: 0.5rem; display: block;">Email Address</label>
-                        <input type="email" class="modern-input" id="sampleEmail" name="email" placeholder="Enter your email*" required style="width: 100%; margin-bottom: 0;">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="sampleRequirements" style="color: #4a5568; font-weight: 500; margin-bottom: 0.5rem; display: block;">Sample Requirements</label>
-                        <textarea class="modern-input" id="sampleRequirements" name="requirements" rows="8" 
-                                placeholder="Please mention details of your Account Map for the free sample.&#10;e.g. Account Name - Apple, Microsoft or any large financial services company etc. Geography - US, UK , India etc. or All.&#10;Business Units of your interest - Storage BU, Enterprise Services etc. or All Functions - Finance, Sales, Marketing etc or All Titles of your interest - CXOs, Director IT and above etc. Whose connections you want to map - Your management, Sales persons , Advisors etc. Insights - What insights like news about product release, expansion, speaker in an event needs to be mapped" 
-                                style="width: 100%; margin-bottom: 0; resize: vertical; min-height: 200px;"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer" style="border: none; padding: 1rem 2rem 2rem; justify-content: center;">
-                <button type="button" id="submitSampleRequest" class="btn-modern" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 1rem;">
-                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">send</i>
-                    SUBMIT
-                </button>
-                <button type="button" class="btn-modern-outline" data-dismiss="modal">
-                    <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">close</i>
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
     </main>
 
@@ -2082,87 +2034,7 @@
         window.location.href = '/preview-chart/' + chartId + '/';
     });
     
-    // GET SAMPLE button functionality - Show modal instead of direct download
-    $(document).on('click', '.get-sample-btn', function() {
-        var chartId = $(this).data('chart-id');
-        var chartTitle = $(this).data('chart-title');
-        
-        // Store chart info for form submission
-        $('#requestSampleModal').data('chart-id', chartId);
-        $('#requestSampleModal').data('chart-title', chartTitle);
-        
-        // Show the sample request modal
-        $('#requestSampleModal').modal('show');
-    });
-    
-    // Handle sample request form submission
-    $('#submitSampleRequest').on('click', function() {
-        var email = $('#sampleEmail').val().trim();
-        var requirements = $('#sampleRequirements').val().trim();
-        var chartId = $('#requestSampleModal').data('chart-id');
-        var chartTitle = $('#requestSampleModal').data('chart-title');
-        
-        // Basic validation
-        if (!email) {
-            showToast('error', 'Please enter your email address');
-            return;
-        }
-        
-        if (!requirements) {
-            showToast('error', 'Please provide sample requirements');
-            return;
-        }
-        
-        // Show loading state
-        var $submitBtn = $('#submitSampleRequest');
-        var originalText = $submitBtn.html();
-        $submitBtn.html('<i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem;">hourglass_empty</i>Submitting...').prop('disabled', true);
-        
-        // Submit the form via AJAX
-        $.ajax({
-            url: '/request-sample/',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() || 'dummy-csrf'
-            },
-            data: JSON.stringify({
-                email: email,
-                requirements: requirements,
-                chart_id: chartId,
-                chart_title: chartTitle
-            }),
-            success: function(response) {
-                // Hide modal
-                $('#requestSampleModal').modal('hide');
-                
-                // Reset form
-                $('#sampleRequestForm')[0].reset();
-                
-                if (response.success) {
-                    // Show success message
-                    showToast('success', response.message);
-                    
-                    // Optional: Trigger download if URL provided
-                    if (response.download_url) {
-                        setTimeout(function() {
-                            window.location.href = response.download_url;
-                        }, 1000);
-                    }
-                } else {
-                    showToast('error', response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                $('#requestSampleModal').modal('hide');
-                showToast('error', 'Failed to submit request. Please try again.');
-            },
-            complete: function() {
-                // Reset button
-                $submitBtn.html(originalText).prop('disabled', false);
-            }
-        });
-    });
+
 });
 
         </script>

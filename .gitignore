@@ -1,52 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Django
 *.log
 *.pot
 *.pyc
-__pycache__/
 db.sqlite3
-db.sqlite3-journal
-PAYMENT_SETUP.md
-README.md
+media
 
-# Media files (user uploads and generated content)
-media/img/user/
-media/chart_data/
-media/csv_files/
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
 
-
-# Environment variables
-.env
-.venv
-env/
+# Virtual environment
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 
 # IDE
-.vscode/
 .idea/
-*.swp
-*.swo
-*~
+.vscode/
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Local development settings
+local_settings.py
 
-# Python
-*.egg-info/
-.pytest_cache/
-.coverage
-htmlcov/
+# Static files
+staticfiles/
 
-# Static files (if collected)
-/static/
-
-# Sensitive files
-orgchart/info.py
+# Allow README.md
+!README.md
