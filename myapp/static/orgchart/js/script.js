@@ -183,14 +183,22 @@ $(document).ready(function() {
 
     // API Configuration
     const API_CONFIG = {
-        apiUrl: '/api/request/chart/', 
+        apiUrl: '/api/request/chart/',
         headers: {
             'Content-Type': 'application/json',
-       
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         }
     };
 
     function getChartIdFromBody() {
+        // Try to get chart ID from the chart container first
+        const container = document.getElementById('chart-container');
+        if (container && container.dataset && container.dataset.chartId) {
+            return container.dataset.chartId;
+        }
+
+        // Fallback to body attributes
         const body = document.body;
         if (!body) return null;
         if (body.dataset && body.dataset.chartId) return body.dataset.chartId;
@@ -200,14 +208,28 @@ $(document).ready(function() {
 
     // Get CSRF token from cookie 
     function getCSRFToken() {
+        // Try to get from meta tag first
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag) {
+            const token = metaTag.getAttribute('content');
+            if (token) {
+                console.log('Found CSRF token in meta tag');
+                return token;
+            }
+        }
+
+        // Fallback to cookie
         const name = 'csrftoken';
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
             if (cookie.startsWith(name + '=')) {
-                return decodeURIComponent(cookie.substring(name.length + 1));
+                const token = decodeURIComponent(cookie.substring(name.length + 1));
+                console.log('Found CSRF token in cookie');
+                return token;
             }
         }
+        console.warn('No CSRF token found');
         return '';
     }
 
@@ -216,61 +238,94 @@ $(document).ready(function() {
         const csrftoken = getCSRFToken();
         if (csrftoken) {
             API_CONFIG.headers['X-CSRFToken'] = csrftoken;
+            console.log('Added CSRF token to headers');
+        } else {
+            console.warn('No CSRF token available for headers');
         }
     }
+    
+    // Initialize headers
     updateAPIHeaders();
-   
 
-    // Function to load data from API    // Function to load data from API with access control
+    // Function to make API request with retries
+    async function makeAPIRequest(data, retries = 3) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                // Update headers before each attempt
+                updateAPIHeaders();
+                
+                const response = await fetch(API_CONFIG.apiUrl, {
+                    method: 'POST',
+                    headers: API_CONFIG.headers,
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'  // Include cookies in request
+                });
+                
+                if (response.ok) {
+                    return await response.json();
+                }
+                
+                // If we get a 403, try updating the CSRF token
+                if (response.status === 403) {
+                    console.log(`Attempt ${i + 1}: Got 403, updating CSRF token`);
+                    continue;  // Try again with updated token
+                }
+                
+                throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            } catch (error) {
+                if (i === retries - 1) throw error;  // Throw on last retry
+                console.log(`Attempt ${i + 1} failed, retrying...`);
+            }
+        }
+    }
+
+    // Update loadDataFromAPI to use the new makeAPIRequest function
     async function loadDataFromAPI() {
         try {
+            console.log('Starting to load data from API');
             
             // Check if we should skip the preloader (after export)
             const skipPreloader = sessionStorage.getItem('skipPreloader');
             if (skipPreloader) {
-                sessionStorage.removeItem('skipPreloader'); // Clean up the flag
-                $('#loadingScreen').hide();         // Or `.hide()` if you prefer keeping it
+                console.log('Skipping preloader');
+                sessionStorage.removeItem('skipPreloader');
+                $('#loadingScreen').hide();
                 $('#main').show();
-                
             }
             
             // Record start time for minimum loading duration
             const loadingStartTime = Date.now();
-            const minimumLoadingDuration = skipPreloader ? 0 : 5000; // Skip delay if after export
+            const minimumLoadingDuration = skipPreloader ? 0 : 3000;
             
             if (!skipPreloader) {
                 showLoadingScreen();
             }
+
+            // Get chart ID
+            const chartId = getChartIdFromBody();
+            console.log('Chart ID:', chartId);
             
-            const response = await fetch(API_CONFIG.apiUrl, {
-                method: 'POST',
-                headers: API_CONFIG.headers,
-                body: JSON.stringify({chart_id: getChartIdFromBody()})
-            });
+            // Make API request with retries
+            const jsonData = await makeAPIRequest({ chart_id: chartId });
+            console.log('API Response data:', jsonData);
             
-            if (!response.ok) {
-                throw new Error(`API request failed! status: ${response.status} - ${response.statusText}`);
-            }
-            
-            const jsonData = await response.json();
-              // Check access control first
+            // Process response
             if (jsonData.access === false || jsonData.access === 'false') {
                 const errorMessage = jsonData.message || 'Access denied. You do not have permission to view this organization chart.';
+                console.log('Access denied:', errorMessage);
                 
                 if (!skipPreloader) {
-                    // Ensure minimum loading time before showing error
                     const elapsedTime = Date.now() - loadingStartTime;
                     const remainingTime = Math.max(0, minimumLoadingDuration - elapsedTime);
-                    
-                    setTimeout(() => {
-                        showAccessDeniedScreen(errorMessage);
-                    }, remainingTime);
+                    setTimeout(() => showAccessDeniedScreen(errorMessage), remainingTime);
                 } else {
                     showAccessDeniedScreen(errorMessage);
                 }
                 return false;
             }
-              if (jsonData.access === true || jsonData.access === 'true') {
+            
+            if (jsonData.access === true || jsonData.access === 'true') {
+                console.log('Access granted, processing data');
                 // Map the API response to orgData.nodes
                 if (jsonData.nodes_json) {
                     orgData.nodes = jsonData.nodes_json;
@@ -284,40 +339,35 @@ $(document).ready(function() {
                     throw new Error('Invalid API response structure - nodes data not found');
                 }
                 
-                // Only handle loading screen timing if we showed it
+                console.log('Data processed, nodes count:', orgData.nodes.length);
+                
                 if (!skipPreloader) {
-                    // Ensure minimum loading time before hiding loader
                     const elapsedTime = Date.now() - loadingStartTime;
                     const remainingTime = Math.max(0, minimumLoadingDuration - elapsedTime);
-                    
-                    setTimeout(() => {
-                        hideLoadingScreen();
-                    }, remainingTime);
+                    setTimeout(() => hideLoadingScreen(), remainingTime);
                 }
                 
                 return true;
-            } else {
-                // Access field missing or invalid
-                if (!skipPreloader) {
-                    const elapsedTime = Date.now() - loadingStartTime;
-                    const remainingTime = Math.max(0, minimumLoadingDuration - elapsedTime);
-                    
-                    setTimeout(() => {
-                        showAccessDeniedScreen('Access verification failed. Please contact your administrator.');
-                    }, remainingTime);
-                } else {
-                    showAccessDeniedScreen('Access verification failed. Please contact your administrator.');
-                }
-                return false;
             }
-              } catch (error) {
+            
+            // Invalid access field
+            console.log('Invalid access field in response');
+            const message = 'Access verification failed. Please contact your administrator.';
+            if (!skipPreloader) {
+                const elapsedTime = Date.now() - loadingStartTime;
+                const remainingTime = Math.max(0, minimumLoadingDuration - elapsedTime);
+                setTimeout(() => showAccessDeniedScreen(message), remainingTime);
+            } else {
+                showAccessDeniedScreen(message);
+            }
+            return false;
+            
+        } catch (error) {
             console.error('Error loading data from API:', error);
             
             if (!skipPreloader) {
-                // Ensure minimum loading time before showing error
                 const elapsedTime = Date.now() - loadingStartTime;
                 const remainingTime = Math.max(0, minimumLoadingDuration - elapsedTime);
-                
                 setTimeout(() => {
                     hideLoadingScreen();
                     showErrorScreen('Failed to connect to the server. Please check your internet connection and try again.', error.message);

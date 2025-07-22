@@ -614,6 +614,7 @@ def serve_file_testing(request):
 
 
 
+@csrf_exempt
 @require_POST
 def serve_file(request):
     """Serve chart data with access control, supporting dual chart system"""
@@ -3899,10 +3900,24 @@ def view_orgchart_temp(request, chart_uuid):
         chart_obj = chart.objects.get(uuid=chart_uuid)
     except chart.DoesNotExist:
         context = {
-        'chart_title': '',
-        'chart_uuid': chart_uuid,
-    }
+            'chart_title': '',
+            'chart_uuid': chart_uuid,
+            'error_message': 'Chart not found'
+        }
         return render(request, 'orgcharts/orgchart-temp.html', context)
+
+    # Check if chart data exists
+    file_path = chart_obj.get_full_chart_data()
+    if not file_path or not os.path.exists(file_path):
+        file_path = chart_obj.get_marketplace_chart_data()
+        if not file_path or not os.path.exists(file_path):
+            context = {
+                'chart_title': chart_obj.title,
+                'chart_uuid': chart_uuid,
+                'error_message': 'Chart data not found'
+            }
+            return render(request, 'orgcharts/orgchart-temp.html', context)
+
     context = {
         'chart_title': chart_obj.title,
         'chart_uuid': chart_obj.uuid,
