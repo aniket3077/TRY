@@ -1287,7 +1287,6 @@
                             </thead>
                             <tbody>
                                 {% for chart in charts_data %}
-                                {% if chart.mp_status == 'Published' %}
                                 <tr data-company="{{ chart.title }}" data-country="{{ chart.country }}" data-industry="{{ chart.industry }}" data-employee-range="{{ chart.employee_range }}" data-min-employees="{{ chart.min_employees }}" data-max-employees="{{ chart.max_employees }}">
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1336,8 +1335,6 @@
                                         </div>
                                     </td>
                                 </tr>
-                                {% endif %}
-
                                 {% empty %}
                                 <tr>
                                     <td colspan="5" style="text-align: center; padding: 2rem; color: #718096;">No data available</td>
@@ -1542,14 +1539,19 @@
         
         var visibleRowsCount = 0;
 
-        $('#companyTable tbody tr').filter(function() {
-            var companyMatch = $(this).data('company').toLowerCase().indexOf(companySearch) > -1;
-            var countryMatch = selectedCountries.length === 0 || selectedCountries.includes($(this).data('country'));
-            var industryMatch = selectedIndustries.length === 0 || selectedIndustries.includes($(this).data('industry'));
-            var employeeRangeMatch = ($(this).data('min-employees') >= minRange && $(this).data('max-employees') <= maxRange);
+        $('#companyTable tbody tr').each(function() {
+            var $row = $(this);
+            var companyMatch = $row.data('company').toString().toLowerCase().indexOf(companySearch) > -1;
+            var countryMatch = selectedCountries.length === 0 || selectedCountries.includes($row.data('country'));
+            var industryMatch = selectedIndustries.length === 0 || selectedIndustries.includes($row.data('industry'));
+            
+            // Handle employee range matching
+            var minEmployees = parseInt($row.data('min-employees')) || 0;
+            var maxEmployees = parseInt($row.data('max-employees')) || Number.MAX_VALUE;
+            var employeeRangeMatch = (minEmployees >= minRange && (maxRange === Number.MAX_VALUE || maxEmployees <= maxRange));
 
             var isVisible = companyMatch && countryMatch && industryMatch && employeeRangeMatch;
-            $(this).toggle(isVisible);
+            $row.toggle(isVisible);
             
             if (isVisible) {
                 visibleRowsCount++;

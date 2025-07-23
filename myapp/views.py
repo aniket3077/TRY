@@ -1504,75 +1504,37 @@ def check_login(request):
     return JsonResponse({'isLoggedIn': True})
 
 def marketplace_dash(request):
+    """
+    View function for the marketplace dashboard.
+    Shows published charts with filtering options.
+    """
     from .models import MarketplaceSettings
-    for company in chart.objects.all():
-        # print(company.min_employees, company.max_employees)
-        company.save()  # This will trigger the updated save method
-    # charts_data = [{'chart': chart, 'last_updated': chart.last_updated, } for chart in chart.objects.all()]
-    charts_data = chart.objects.all()
+    
+    # Get marketplace settings
     marketplace_settings = MarketplaceSettings.get_current_settings()
+    
+    # Get all published charts and format them for the template
+    charts_data = []
+    for chart_obj in chart.objects.filter(mp_status='Published'):
+        charts_data.append({
+            'chart': chart_obj,
+            'title': chart_obj.title,
+            'personCount': chart_obj.personCount,
+            'price': chart_obj.price,
+            'country': chart_obj.country,
+            'industry': chart_obj.industry,
+            'employee_range': chart_obj.employee_range,
+            'last_updated': chart_obj.last_updated,
+            'mp_status': chart_obj.mp_status,
+            'id': chart_obj.id,
+            'uuid': chart_obj.uuid,
+        })
 
     # Get all unique countries and industries for filters
-    all_countries = [
-    "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antarctica",
-    "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas",
-    "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia",
-    "Bosnia and Herzegovina", "Botswana", "Brazil", "British Indian Ocean Territory", "British Virgin Islands",
-    "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands",
-    "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos Islands", "Colombia", "Comoros",
-    "Cook Islands", "Costa Rica", "Croatia", "Cuba", "Curacao", "Cyprus", "Czech Republic", "Democratic Republic of the Congo",
-    "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador", "Egypt", "El Salvador",
-    "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland",
-    "France", "French Polynesia", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland",
-    "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong",
-    "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Ivory Coast",
-    "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos",
-    "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia",
-    "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius",
-    "Mayotte", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique",
-    "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand",
-    "Nicaragua", "Niger", "Nigeria", "Niue", "North Korea", "Northern Mariana Islands", "Norway", "Oman", "Pakistan",
-    "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn", "Poland",
-    "Portugal", "Puerto Rico", "Qatar", "Republic of the Congo", "Reunion", "Romania", "Russia", "Rwanda",
-    "Saint Barthelemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin", "Saint Pierre and Miquelon",
-    "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia",
-    "Seychelles", "Sierra Leone", "Singapore", "Sint Maarten", "Slovakia", "Slovenia", "Solomon Islands", "Somalia",
-    "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Svalbard and Jan Mayen",
-    "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tokelau",
-    "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu",
-    "U.S. Virgin Islands", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
-    "Uzbekistan", "Vanuatu", "Vatican", "Venezuela", "Vietnam", "Wallis and Futuna", "Western Sahara", "Yemen", "Zambia", "Zimbabwe"
-    ]
-    all_industries = [
-    "Accounting", "Airlines/Aviation", "Alternative Dispute Resolution", "Alternative Medicine", "Animation",
-    "Apparel & Fashion", "Architecture & Planning", "Arts and Crafts", "Automotive", "Aviation & Aerospace",
-    "Banking", "Biotechnology", "Broadcast Media", "Building Materials", "Business Supplies and Equipment",
-    "Capital Markets", "Chemicals", "Civic & Social Organization", "Civil Engineering", "Commercial Real Estate",
-    "Computer & Network Security", "Computer Games", "Computer Hardware", "Computer Networking", "Computer Software",
-    "Construction", "Consumer Electronics", "Consumer Goods", "Consumer Services", "Cosmetics", "Dairy", "Defense & Space",
-    "Design", "E-Learning", "Education Management", "Electrical/Electronic Manufacturing", "Entertainment",
-    "Environmental Services", "Events Services", "Executive Office", "Facilities Services", "Farming", "Financial Services",
-    "Fine Art", "Fishery", "Food & Beverages", "Food Production", "Fund-Raising", "Furniture", "Gambling & Casinos",
-    "Glass, Ceramics & Concrete", "Government Administration", "Government Relations", "Graphic Design",
-    "Health, Wellness and Fitness", "Higher Education", "Hospital & Health Care", "Hospitality", "Human Resources",
-    "Import and Export", "Individual & Family Services", "Industrial Automation", "Information Services",
-    "Information Technology and Services", "Insurance", "International Affairs", "International Trade and Development",
-    "Internet", "Investment Banking", "Investment Management", "Judiciary", "Law Enforcement", "Law Practice",
-    "Legal Services", "Legislative Office", "Leisure, Travel & Tourism", "Libraries", "Logistics and Supply Chain",
-    "Luxury Goods & Jewelry", "Machinery", "Management Consulting", "Maritime", "Market Research", "Marketing and Advertising",
-    "Mechanical or Industrial Engineering", "Media Production", "Medical Devices", "Medical Practice", "Mental Health Care",
-    "Military", "Mining & Metals", "Motion Pictures and Film", "Museums and Institutions", "Music", "Nanotechnology",
-    "Newspapers", "Nonprofit Organization Management", "Oil & Energy", "Online Media", "Outsourcing/Offshoring",
-    "Package/Freight Delivery", "Packaging and Containers", "Paper & Forest Products", "Performing Arts", "Pharmaceuticals",
-    "Philanthropy", "Photography", "Plastics", "Political Organization", "Primary/Secondary Education", "Printing",
-    "Professional Training & Coaching", "Program Development", "Public Policy", "Public Relations and Communications",
-    "Public Safety", "Publishing", "Railroad Manufacture", "Ranching", "Real Estate", "Recreational Facilities and Services",
-    "Religious Institutions", "Renewables & Environment", "Research", "Restaurants", "Retail", "Security and Investigations",
-    "Semiconductors", "Shipbuilding", "Sporting Goods", "Sports", "Staffing and Recruiting", "Supermarkets",
-    "Telecommunications", "Textiles", "Think Tanks", "Tobacco", "Translation and Localization", "Transportation/Trucking/Railroad",
-    "Urgent Care", "Utilities", "Venture Capital & Private Equity", "Veterinary", "Warehousing", "Wholesale", "Wine and Spirits",
-    "Wireless", "Writing and Editing"
-    ]    # Get cart item count for authenticated users
+    all_countries = sorted(set(chart_obj.country for chart_obj in chart.objects.filter(mp_status='Published').exclude(country__isnull=True).exclude(country='')))
+    all_industries = sorted(set(chart_obj.industry for chart_obj in chart.objects.filter(mp_status='Published').exclude(industry__isnull=True).exclude(industry='')))
+
+    # Get cart item count for authenticated users
     cart_item_count = 0
     if request.user.is_authenticated:
         try:
