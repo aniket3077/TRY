@@ -1,5 +1,5 @@
 /*global URLify*/
-'use strict';
+
 {
     const $ = django.jQuery;
     $.fn.prepopulate = function(dependencies, maxLength, allowUnicode) {
