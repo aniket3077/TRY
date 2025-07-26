@@ -641,9 +641,13 @@ def serve_file(request):
     referer = request.META.get('HTTP_REFERER', '')
     preview_mode = data.get('preview_mode', False)
     
+    # Enhanced preview detection logic
     if ('preview-chart' in referer or 
         ('chart/' in referer and '/preview/' in referer) or 
-        preview_mode):
+        'marketplace' in referer or
+        preview_mode or
+        not request.user.is_authenticated or  # Allow anonymous access for marketplace
+        data.get('is_preview', False)):  # Check for explicit preview flag
         is_preview_request = True
     
     print(f"Request for chart {chart_instance.title}")
@@ -3736,125 +3740,7 @@ def toggle_coupon_status(request, coupon_id):
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 
-# @login_required
-# @user_passes_test(lambda user: user.is_staff or user.groups.filter(name='Admin').exists())
-# def edit_order(request, order_id):
-#     """Edit a pending order"""
-#     order = get_object_or_404(Order, id=order_id)
-    
-#     # Only allow editing of pending orders
-#     if order.status != 'pending':
-#         messages.error(request, 'Only pending orders can be edited.')
-#         return redirect('admin_order_detail', order_id=order_id)
-    
-#     if request.method == 'POST':
-#         # Get form data
-#         user_id = request.POST.get('user')
-#         chart_ids = request.POST.getlist('charts')
-#         payment_method = request.POST.get('payment_method')
-#         coupon_id = request.POST.get('coupon')
-        
-#         # Validate required fields
-#         if not user_id or not chart_ids or not payment_method:
-#             messages.error(request, 'Please fill in all required fields.')
-#             return redirect('edit_order', order_id=order_id)
-#         try:
-#             # Get user and charts
-#             user = User.objects.get(id=user_id)
-#             charts = chart.objects.filter(id__in=chart_ids)
-            
-#             # Calculate amounts
-#             subtotal = sum(Decimal(str(schart.price)) for schart in charts)
-#             processing_fee = subtotal * Decimal('0.055')  # 5.5%
-            
-#             # Handle coupon
-#             coupon = None
-#             discount_amount = Decimal('0')
-#             if coupon_id:
-#                 coupon = Coupon.objects.get(id=coupon_id, status='active')
-#                 if subtotal >= coupon.min_amount:
-#                     if coupon.discount_type == 'percentage':
-#                         discount_amount = (subtotal * coupon.discount_value) / 100
-#                         if coupon.max_discount:
-#                             discount_amount = min(discount_amount, coupon.max_discount)
-#                     else:
-#                         discount_amount = min(coupon.discount_value, subtotal)
-            
-#             total_amount = subtotal + processing_fee - discount_amount
-            
-#             # Update order
-#             order.user = user
-#             order.base_amount = subtotal
-#             order.processing_fee = processing_fee
-#             order.total_amount = total_amount
-#             order.payment_method = payment_method
-#             order.applied_coupon = coupon
-#             order.discount_amount = discount_amount
-#             order.save()
-            
-#             # Update order items
-#             order.order_items.all().delete()
-#             for schart in charts:
-#                 OrderItem.objects.create(
-#                     order=order,
-#                     chart=schart,
-#                     chart_title_at_purchase=schart.title,
-#                     price_at_purchase=schart.price,
-#                 )
-            
-#             messages.success(request, 'Order updated successfully.')
-#             return redirect('admin_order_detail', order_id=order_id)
-            
-#         except Exception as e:
-#             messages.error(request, f'Error updating order: {str(e)}')
-    
-#     # GET request
-#     users = User.objects.all().order_by('username')
-#     charts = chart.objects.all().order_by('title')
-#     coupons = Coupon.objects.filter(status='active').order_by('code')
-#     current_charts = [item.chart for item in order.order_items.all()]
-    
-#     context = {
-#         'order': order,
-#         'users': users,
-#         'charts': charts,
-#         'coupons': coupons,
-#         'current_charts': current_charts,
-#     }
-    
-#     return render(request, 'edit_order.html', context)
 
-
-# @login_required
-# @user_passes_test(lambda user: user.is_staff or user.groups.filter(name='Admin').exists())
-# def resend_payment_instructions(request, order_id):
-#     """Resend payment instructions email for an order"""
-#     order = get_object_or_404(Order, id=order_id)
-#     if request.method == 'POST':
-#         try:
-#             payment_notes = request.POST.get('payment_notes', '')
-#             payment_method = order.payment_method
-#             # Handle payment method specific actions
-#             payment_link = None
-#             if payment_method == 'razorpay':
-#                 # Create Razorpay payment link
-#                 payment_link = order.razorpay_payment_id
-#             if payment_method == 'completed':
-#                 # Send invoice for completed order
-#                 if send_invoice_email(order):
-#                     messages.success(request, f'Payment instructions email sent to {order.user.email}')
-#             elif payment_method == 'razorpay':
-#                 # Send payment link email
-#                 if payment_link and send_payment_link_email(order, payment_link, payment_notes):
-#                     messages.success(request, f'Payment instructions email sent to {order.user.email}')
-#             elif payment_method == 'bank_transfer':
-#                 # Send bank transfer instructions
-#                 if send_bank_transfer_email(order, payment_notes):
-#                     messages.success(request, f'Payment instructions email sent to {order.user.email}')            
-#         except Exception as e:
-#             messages.error(request, f'Error sending email: {str(e)}')
-    
-#     return redirect('admin_order_detail', order_id=order_id)
 
 @require_GET
 def view_orgchart_temp(request, chart_uuid):
@@ -3960,37 +3846,73 @@ def view_chart_preview(request, chart_id):
         messages.error(request, f"Error accessing chart: {str(e)}")
         return redirect('marketplace_dash')
 
-@login_required  
 def view_chart_blurred_preview(request, chart_id):
     """
     View function for showing a blurred preview of a chart.
+    This view allows anonymous access for marketplace previews.
     """
     try:
         chart_instance = get_object_or_404(chart, pk=chart_id)
         
-        # Get the chart data
-        file_path = os.path.join(settings.MEDIA_ROOT, "csv_files", f"{chart_instance.title}.csv")
+        # Try to get JSON data first (preferred for orgchart display)
+        json_file_path = chart_instance.get_marketplace_chart_data()
+        if not json_file_path or not os.path.exists(json_file_path):
+            # Fallback to full chart data if marketplace version doesn't exist
+            json_file_path = chart_instance.get_full_chart_data()
         
-        if not os.path.exists(file_path):
-            messages.error(request, "Chart data not found.")
-            return redirect('marketplace_dash')
+        if json_file_path and os.path.exists(json_file_path):
+            # Use the main orgchart template with preview mode
+            context = {
+                'chart_title': chart_instance.title,
+                'chart_uuid': chart_instance.uuid,
+                'is_preview': True,
+                'preview_mode': True
+            }
+            return render(request, 'orgcharts/orgchart-temp.html', context)
+        else:
+            # Fallback: try CSV data for the blurred preview template
+            csv_file_path = os.path.join(settings.MEDIA_ROOT, "csv_files", f"{chart_instance.title}.csv")
             
-        # Read CSV data
-        df = pd.read_csv(file_path)
-        
-        # Convert DataFrame to JSON for template
-        chart_data = df.to_json(orient='records')
-        
-        context = {
-            'chart': chart_instance,
-            'chart_data': chart_data,
-            'is_preview': True
-        }
-        
-        return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
+            if not os.path.exists(csv_file_path):
+                if request.user.is_authenticated:
+                    messages.error(request, "Chart data not found.")
+                    return redirect('marketplace_dash')
+                else:
+                    # For anonymous users, show a simple error without redirect
+                    context = {
+                        'chart_title': chart_instance.title,
+                        'chart_uuid': chart_instance.uuid,
+                        'error_message': 'Chart preview not available'
+                    }
+                    return render(request, 'orgcharts/orgchart-temp.html', context)
+                
+            # Read CSV data for blurred preview
+            import pandas as pd
+            df = pd.read_csv(csv_file_path)
+            chart_data = df.to_json(orient='records')
+            
+            context = {
+                'chart': chart_instance,
+                'chart_data': chart_data,
+                'chart_title': chart_instance.title,
+                'chart_uuid': chart_instance.uuid,
+                'is_preview': True
+            }
+            
+            return render(request, 'orgcharts/orgchart-blurred-preview.html', context)
+            
     except Exception as e:
-        messages.error(request, f"Error loading chart: {str(e)}")
-        return redirect('marketplace_dash')
+        if request.user.is_authenticated:
+            messages.error(request, f"Error loading chart: {str(e)}")
+            return redirect('marketplace_dash')
+        else:
+            # For anonymous users, show error without redirect
+            context = {
+                'chart_title': 'Chart Preview',
+                'chart_uuid': '',
+                'error_message': f'Error loading chart preview: {str(e)}'
+            }
+            return render(request, 'orgcharts/orgchart-temp.html', context)
 
 def submit_sample_request(request):
     """Handle sample request submissions"""

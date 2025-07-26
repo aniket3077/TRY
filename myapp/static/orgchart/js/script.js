@@ -1,6 +1,31 @@
 $(document).ready(function() {
     // Global variable to hold the organization data
     let orgData = { nodes: [] };
+    
+    // Preview mode detection
+    const isPreviewMode = document.body.hasAttribute('data-preview-mode') || 
+                         window.location.pathname.includes('/preview-chart/') ||
+                         document.querySelector('[data-preview-mode]') !== null;
+    
+    // Function to generate blurred data for sensitive fields
+    function generateBlurredPersonDetails(personId) {
+        return {
+            name: `<span class="blurred-text">████ ████</span>`,
+            email_id: `<span class="blurred-text">████████@████████.com</span>`,
+            boardline_number: `<span class="blurred-text">+91 ████ ████ ████</span>`,
+            primary_address: `<span class="blurred-text">████████, ████████, ████████</span>`,
+            domain: `<span class="blurred-text">████████.com</span>`,
+            linkedin: `<span class="blurred-text">linkedin.com/in/████████</span>`,
+            facebook: `<span class="blurred-text">facebook.com/████████</span>`,
+            x: `<span class="blurred-text">@████████</span>`,
+            other: `<span class="blurred-text">████████</span>`,
+            // Location data
+            city: `<span class="blurred-text">████████</span>`,
+            state: `<span class="blurred-text">████████</span>`,
+            country: `<span class="blurred-text">████████</span>`,
+            postal_code: `<span class="blurred-text">██████</span>`
+        };
+    }
 
     // Image caching and lazy loading configuration
     const IMAGE_CONFIG = {
@@ -2218,7 +2243,12 @@ function restoreNodeFromWhiteDot($nodeElement) {
         }        if (type === 'Person') {
             const person = findNode(id, 'Person');
             if (person) {
-                $('#rightPanel .panel-title').text('Person');                // Handle avatar display
+                $('#rightPanel .panel-title').text('Person');
+                
+                // Get blurred data if in preview mode
+                const blurredData = isPreviewMode ? generateBlurredPersonDetails(person.id) : null;
+                
+                // Handle avatar display
                 const avatarContent = person.img ? 
                     createLazyImage(person.img, 'profile-avatar-image', person.name + ' avatar') : 
                     `<span class="profile-avatar-text">${person.name ? person.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'UN'}</span>`;
@@ -2235,27 +2265,27 @@ function restoreNodeFromWhiteDot($nodeElement) {
                     }
                 }, 50);
                   const detailsHtml = `
-                    <div class="contact-icons">
-                        ${person.domain? `<div class="contact-icon web" title="Website">
+                    <div class="contact-icons" ${isPreviewMode ? 'style="display: none;"' : ''}>
+                        ${!isPreviewMode && person.domain? `<div class="contact-icon web" title="Website">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                             </svg>
                         </div>`: ''}
-                        ${person.email_id? `<div class="contact-icon email" title="Email">
+                        ${!isPreviewMode && person.email_id? `<div class="contact-icon email" title="Email">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                             </svg>
                         </div>` : ''}
-                        ${person.boardline_number? `<div class="contact-icon phone" title="Phone">
+                        ${!isPreviewMode && person.boardline_number? `<div class="contact-icon phone" title="Phone">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                             </svg>
                         </div>` : ''}
-                        ${person.primary_address? `<div class="contact-icon location" title="Location">
+                        ${!isPreviewMode && person.primary_address? `<div class="contact-icon location" title="Location">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         </div>` : ''}
-                        ${person.linkedin? `<div class="contact-icon linkedin" title="LinkedIn">
+                        ${!isPreviewMode && person.linkedin? `<div class="contact-icon linkedin" title="LinkedIn">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 
                                     2.76 2.24 5 5 5h14c2.76 0 5-2.24 
@@ -2270,7 +2300,7 @@ function restoreNodeFromWhiteDot($nodeElement) {
                             </svg>
                         </div>` : ''}
 
-                        ${person.facebook? `<div class="contact-icon facebook" title="Facebook">
+                        ${!isPreviewMode && person.facebook? `<div class="contact-icon facebook" title="Facebook">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22 12c0-5.52-4.48-10-10-10s-10 
                                     4.48-10 10c0 5 3.66 9.12 8.44 
@@ -2282,24 +2312,25 @@ function restoreNodeFromWhiteDot($nodeElement) {
                             </svg>
                         </div>` : ''}
 
-                        ${person.x? `<div class="contact-icon x" title="X">
+                        ${!isPreviewMode && person.x? `<div class="contact-icon x" title="X">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M20.39 3H17.7l-5.2 6.29L7.06 3H3l6.89 9.32L3 21h3.01l5.72-6.91L16.88 21H21l-7.14-9.64L20.39 3z"/>
                             </svg>
                         </div>` : ''}
 
-                        ${person.other? `<div class="contact-icon other" title="More">
+                        ${!isPreviewMode && person.other? `<div class="contact-icon other" title="More">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="5" cy="12" r="2"/>
                                 <circle cx="12" cy="12" r="2"/>
                                 <circle cx="19" cy="12" r="2"/>
                             </svg>
                         </div>` : ''}
+                        ${isPreviewMode ? `<div style="text-align: center; color: #666; font-style: italic; padding: 10px;">Contact options hidden in preview mode</div>` : ''}
                     </div>
                     <div class="details-grid">
                             <div class="detail-item">
                                 <div class="detail-label">Full Name</div>
-                                <div class="detail-value truncate-text" title="${person.name || 'N/A'}">${person.name || 'N/A'}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : (person.name || 'N/A')}">${isPreviewMode ? blurredData.name : (person.name || 'N/A')}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Designation</div>
@@ -2308,27 +2339,27 @@ function restoreNodeFromWhiteDot($nodeElement) {
                             
                             <div class="detail-item">
                                 <div class="detail-label">Email Address</div>
-                                <div class="copy-wrapper" title="${person.email_id || 'N/A'}">
+                                <div class="copy-wrapper" title="${isPreviewMode ? 'Blurred in preview' : (person.email_id || 'N/A')}">
                                 <div class="detail-value">
-                                    ${person.email_id || 'N/A'}
-                                    <button class="copy-icon" title="Copy to clipboard" data-copy="${person.email_id || ''}">
+                                    ${isPreviewMode ? blurredData.email_id : (person.email_id || 'N/A')}
+                                    ${isPreviewMode ? '' : `<button class="copy-icon" title="Copy to clipboard" data-copy="${person.email_id || ''}">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
                                         </svg>
-                                    </button>
+                                    </button>`}
                                     </div>
                                 </div>
                             </div>
                            ${person.boardline_number? `<div class="detail-item">
                                 <div class="detail-label">Boardline Number</div>
-                             <div class="copy-wrapper" title="${person.boardline_number || 'N/A'}">
+                             <div class="copy-wrapper" title="${isPreviewMode ? 'Blurred in preview' : (person.boardline_number || 'N/A')}">
                                 <div class="detail-value">
-                                    ${person.boardline_number || 'N/A'}
-                                    <button class="copy-icon" title="Copy to clipboard" data-copy="${person.boardline_number || ''}">
+                                    ${isPreviewMode ? blurredData.boardline_number : (person.boardline_number || 'N/A')}
+                                    ${isPreviewMode ? '' : `<button class="copy-icon" title="Copy to clipboard" data-copy="${person.boardline_number || ''}">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11v14z"/>
                                         </svg>
-                                    </button>
+                                    </button>`}
                                 </div>
                                  </div>
                             </div>` : ''}
@@ -2354,19 +2385,19 @@ function restoreNodeFromWhiteDot($nodeElement) {
                             
                             ${person.city ? `<div class="detail-item">
                                 <div class="detail-label">City/Town</div>
-                                <div class="detail-value truncate-text" title="${person.city}">${person.city}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : person.city}">${isPreviewMode ? blurredData.city : person.city}</div>
                             </div>` : ''}
                             ${person.state ? `<div class="detail-item">
                                 <div class="detail-label">State/Province</div>
-                                <div class="detail-value truncate-text" title="${person.state}">${person.state}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : person.state}">${isPreviewMode ? blurredData.state : person.state}</div>
                             </div>` : ''}
                             ${person.country ? `<div class="detail-item">
                                 <div class="detail-label">Country/Region</div>
-                                <div class="detail-value truncate-text" title="${person.country}">${person.country}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : person.country}">${isPreviewMode ? blurredData.country : person.country}</div>
                             </div>` : ''}
                              ${person.postal_code ? `<div class="detail-item">
                                 <div class="detail-label">Postal Code</div>
-                                <div class="detail-value truncate-text" title="${person.postal_code}">${person.postal_code}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : person.postal_code}">${isPreviewMode ? blurredData.postal_code : person.postal_code}</div>
                             </div>` : ''}
                             
             
@@ -2414,7 +2445,7 @@ function restoreNodeFromWhiteDot($nodeElement) {
                     <div style="margin-top: 20px;">
                      ${person.primary_address ? `<div class="detail-item">
                                 <div class="detail-label">Primary Address</div>
-                                <div class="detail-value truncate-text" title="${person.primary_address}">${person.primary_address}</div>
+                                <div class="detail-value truncate-text" title="${isPreviewMode ? 'Blurred in preview' : person.primary_address}">${isPreviewMode ? blurredData.primary_address : person.primary_address}</div>
                             </div>` : ''}
                     </div>
                     <!-- Custom Fields Section -->
@@ -4809,4 +4840,46 @@ function showMobileOverlayIfNeeded() {
 showMobileOverlayIfNeeded();
 window.addEventListener('resize', showMobileOverlayIfNeeded);
 window.addEventListener('orientationchange', showMobileOverlayIfNeeded);
+
+// Add CSS styles for blurred text in preview mode
+if (isPreviewMode) {
+    $('<style>').text(`
+        .blurred-text {
+            background-color: #e0e0e0 !important;
+            color: transparent !important;
+            border-radius: 4px;
+            padding: 2px 4px;
+            display: inline-block;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .blurred-text::selection {
+            background: transparent;
+        }
+        
+        .blurred-text::-moz-selection {
+            background: transparent;
+        }
+        
+        /* Preview watermark */
+        body::before {
+            content: "PREVIEW";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
+            font-family: Arial, sans-serif;
+        }
+    `).appendTo('head');
+}
+
 });

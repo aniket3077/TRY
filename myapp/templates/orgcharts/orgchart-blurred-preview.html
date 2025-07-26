@@ -38,45 +38,84 @@
         font-size: 1rem;
     }
 
-    /* Employee details blur for privacy - ONLY NAMES */
-    .person-card .person-name {
-        filter: blur(2px);
+    /* Employee details blur for privacy - ALL SENSITIVE DATA */
+    .person-card .person-name,
+    .person-name,
+    .employee-name {
+        filter: blur(4px);
         -webkit-user-select: none;
         user-select: none;
     }
 
-    /* Keep job titles visible */
-    .person-card .person-title {
-        filter: none;
+    /* Blur all sensitive personal information */
+    .blurred-text,
+    .email-address,
+    .phone-number,
+    .employee-email,
+    .employee-phone,
+    .personal-info,
+    .contact-info,
+    .address-info,
+    .boardline-number,
+    .primary-address {
+        filter: blur(4px) !important;
+        -webkit-filter: blur(4px) !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        font-family: monospace;
+        color: #666;
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+        padding: 2px 6px;
+        display: inline-block;
+        cursor: not-allowed;
+    }
+
+    /* Blur specific data fields in employee details */
+    [data-field="email"],
+    [data-field="phone"],
+    [data-field="address"],
+    [data-field="name"],
+    [data-field="personal"] {
+        filter: blur(4px) !important;
+        user-select: none !important;
+    }
+
+    /* Keep only job titles and department names visible */
+    .person-card .person-title,
+    .person-title,
+    .department-name,
+    .designation,
+    .job-title {
+        filter: none !important;
         -webkit-user-select: auto;
         user-select: auto;
     }
 
-    /* Blurred text in employee details - ONLY NAMES */
-    .blurred-text {
-        filter: blur(3px);
-        -webkit-filter: blur(3px);
+    /* Blur profile details panel content */
+    #rightPanel .profile-details .blurred-text,
+    #rightPanel .email-address,
+    #rightPanel .phone-number,
+    #rightPanel .address-info,
+    #rightPanel .personal-info {
+        filter: blur(4px) !important;
+        user-select: none !important;
+    }
+
+    /* Add preview watermark */
+    .preview-watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 48px;
+        color: rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+        pointer-events: none;
+        z-index: 1000;
         user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        font-family: monospace;
-        color: #666;
-        background-color: rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
-        padding: 2px 6px;
-        display: inline-block;
-    }
-
-    /* Keep profile information visible except names */
-    .profile-section,
-    .profile-details {
-        filter: none;
-    }
-
-    /* Override blur for the details panel when opened */
-    #rightPanel .profile-details {
-        filter: none !important;
     }
 
     /* Enhanced detail item styling */
@@ -582,6 +621,8 @@
 </head>
 
 <body data-chartid="{{ chart_uuid }}">
+    <!-- Preview watermark -->
+    <div class="preview-watermark">PREVIEW</div>
 
     <!-- Loading Screen -->
     <div id="loadingScreen" class="export-loading-overlay" style="display: none;">
@@ -1149,13 +1190,7 @@
         function showBlurredPersonDetails(card) {
             const personId = card.dataset.personId;
             
-            // In preview mode, show original employee data
-            if (window.isPreviewMode) {
-                showOriginalEmployeeData(personId);
-                return;
-            }
-            
-            // Generate blurred employee details (fallback for regular mode)
+            // Always show blurred details in preview mode for data protection
             const blurredDetails = generateBlurredPersonDetails(personId);
             
             // Show the right panel with blurred details
@@ -1253,43 +1288,43 @@
 
         // Function to generate blurred person details
         function generateBlurredPersonDetails(personId) {
-            const blurredNames = ["J*** S****", "A*** P****", "R*** K****", "M*** T****", "S*** R****", "D*** M****", "K*** L****", "N*** W****"];
+            // Completely blurred/obfuscated names
+            const blurredNames = ["████ ████", "████ ████", "████ ████", "████ ████", "████ ████", "████ ████"];
             
-            // Keep all other information visible and realistic
+            // Keep only job titles and department names visible (non-sensitive structural info)
             const departments = ["Sales", "Marketing", "IT", "HR", "Finance", "Operations", "Customer Service", "Product Development"];
-            const organizations = ["TechCorp", "InnovateInc", "SolutionsCo", "GlobalTech", "ProServices", "DataSystems", "SmartSolutions"];
-            const cities = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Pune", "Hyderabad", "Kolkata", "Ahmedabad", "Jaipur"];
-            const states = ["Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Telangana", "West Bengal", "Gujarat", "Rajasthan"];
-            const countries = ["India", "USA", "UK", "Canada", "Australia", "Singapore", "UAE"];
-            const postalCodes = ["400001", "110001", "560001", "600001", "500001", "700001", "380001", "302001"];
             const jobTitles = [
                 "Sales Executive", "Marketing Manager", "Software Engineer", "HR Specialist", "Finance Analyst", 
                 "Operations Manager", "Customer Success Manager", "Product Manager", "Data Scientist", 
                 "Business Analyst", "Team Lead", "Senior Developer", "Project Manager"
             ];
             
+            // Completely blur all sensitive information
+            const blurredEmail = "████████@████████.com";
+            const blurredPhone = "+██ ████ ████ ████";
+            const blurredOrganization = "████████ Ltd.";
+            const blurredCity = "████████";
+            const blurredState = "████████";
+            const blurredCountry = "████████";
+            const blurredPostal = "██████";
+            const blurredAddress = "████ ████████ ████, ████████, ████████";
+            
             const randomIndex = Math.floor(Math.random() * blurredNames.length);
             const name = blurredNames[randomIndex];
-            const orgIndex = Math.floor(Math.random() * organizations.length);
-            const cityIndex = Math.floor(Math.random() * cities.length);
-            
-            // Generate consistent email based on organization
-            const emailDomain = organizations[orgIndex].toLowerCase() + ".com";
-            const emailPrefix = name.toLowerCase().replace(/\*/g, '').replace(/\s+/g, '.');
             
             return {
-                initials: name.charAt(0) + name.split(' ')[1].charAt(0),
-                name: name, // Only names are blurred
-                title: jobTitles[Math.floor(Math.random() * jobTitles.length)], // Keep titles visible
-                email: `${emailPrefix}@${emailDomain}`,
-                phone: `+91 ${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-                department: departments[Math.floor(Math.random() * departments.length)],
-                organization: organizations[orgIndex],
-                city: cities[cityIndex],
-                state: states[Math.min(cityIndex, states.length - 1)],
-                country: countries[Math.floor(Math.random() * countries.length)],
-                postal: postalCodes[Math.min(cityIndex, postalCodes.length - 1)],
-                address: `${Math.floor(Math.random() * 999) + 1}, ${Math.floor(Math.random() * 50) + 1}th Street, ${cities[cityIndex]}`
+                initials: "██",
+                name: `<span class="blurred-text">${name}</span>`, // Completely blurred names
+                title: jobTitles[Math.floor(Math.random() * jobTitles.length)], // Keep titles visible for structure
+                email: `<span class="blurred-text">${blurredEmail}</span>`,
+                phone: `<span class="blurred-text">${blurredPhone}</span>`,
+                department: departments[Math.floor(Math.random() * departments.length)], // Keep for structure
+                organization: `<span class="blurred-text">${blurredOrganization}</span>`,
+                city: `<span class="blurred-text">${blurredCity}</span>`,
+                state: `<span class="blurred-text">${blurredState}</span>`,
+                country: `<span class="blurred-text">${blurredCountry}</span>`,
+                postal: `<span class="blurred-text">${blurredPostal}</span>`,
+                address: `<span class="blurred-text">${blurredAddress}</span>`
             };
         }
 

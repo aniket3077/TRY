@@ -6,7 +6,11 @@
 <meta name="csrf-token" content="{{ csrf_token }}">
 
 <!-- Chart container -->
-<div id="chart-container" class="chart-container" data-chart-id="{{ chart_uuid }}" data-has-access="{{ has_access|yesno:'true,false' }}">
+<div id="chart-container" class="chart-container" data-chart-id="{{ chart_uuid }}" data-has-access="{{ has_access|yesno:'true,false' }}" data-preview-mode="{{ preview_mode|yesno:'true,false' }}">
+    {% if preview_mode %}
+    <!-- Preview watermark -->
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 48px; color: rgba(0, 0, 0, 0.1); font-weight: bold; pointer-events: none; z-index: 1000; user-select: none;">PREVIEW</div>
+    {% endif %}
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading organization chart...</div>

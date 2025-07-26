@@ -3,18 +3,12 @@ const removeButton = document.getElementById("removeButton");
 const fileChosen = document.getElementById('file-chosen');
 
 fileInput.addEventListener("change", () => {
-    if (fileInput.files.length > 0) { 
-    // Files have been selected
-     const fileCount = fileInput.files.length;
-     let fileNames = "";
-     for (let i = 0; i < fileCount; i++) {
-         fileNames += fileInput.files[i].name;
-         if (i < fileCount - 1) {
-             fileNames += ", "; // Add comma and space if it's not the last file
-         }
-     }
-     fileChosen.textContent = `Files chosen (${fileCount}): ${fileNames}`;
-     removeButton.style.display = "inline-block"; // Show the Remove File button} 
+    const files = fileInput.files;
+    if (files.length > 0) {
+        // Files have been selected
+        const fileNames = Array.from(files).map(file => file.name).join(', ');
+        fileChosen.textContent = `Files chosen (${files.length}): ${fileNames}`;
+        removeButton.style.display = "inline-block"; // Show the Remove File button
     } else {
         // No file is selected
         fileChosen.textContent = "No file chosen";
@@ -33,12 +27,10 @@ removeButton.addEventListener("click", () => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const csvFileInput = document.getElementById("csvFileInput");
     const uploadButton = document.getElementById("uploadButton");
 
-
     uploadButton.addEventListener("click", function () {
-        const selectedFile = csvFileInput.files[0];
+        const selectedFiles = fileInput.files;
         let selectBoxValue = $("#user-select").val();
 
         if (!selectBoxValue || selectBoxValue.trim() === "") {
@@ -48,22 +40,24 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (selectedFile) {
-
+        if (selectedFiles.length > 0) {
             const allowedTypes = [".csv"];
-            const fileType = selectedFile.name.slice(((selectedFile.name.lastIndexOf(".") - 1) >>> 0) + 2);
-
-            if (!allowedTypes.includes("." + fileType)) {
-            // Show the error modal if the file type is not allowed
-            $("#errorModal .modal-body").text("Invalid File Type Please Select a CSV File...!");
-            $("#errorModal").modal("show");
-            return;
-            }
-            // Assuming you're using Django, you can use FormData to send the file to the server
             const formData = new FormData();
-            formData.append("csv_file", selectedFile);
             formData.append("user_profile", selectBoxValue);
-            
+
+            for (const file of selectedFiles) {
+                const fileExtension = file.name.slice(file.name.lastIndexOf('.'));
+
+                if (!allowedTypes.includes(fileExtension.toLowerCase())) {
+                    // Show the error modal if any file type is not allowed
+                    $("#errorModal .modal-body").text(`Invalid File Type: ${file.name}. Please select only CSV files.`);
+                    $("#errorModal").modal("show");
+                    return;
+                }
+                // Assuming you're using Django, you can use FormData to send the file to the server
+                formData.append("csv_files", file);
+            }
+
             // Send the file to a Django view for processing (replace with your Django view URL)
             $.ajax({
                 url: "/upload_csv/", // Replace with your Django view URL
@@ -71,34 +65,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function (data) {
+                success: function(data) {
                     // Handle the response from the server, e.g., display a success message
                     $("#successModal").modal("show");
+                    // Optionally reset the form
+                    fileInput.value = "";
+                    fileChosen.textContent = "No file chosen";
+                    removeButton.style.display = "none";
                 },
-                error: function (error) {
+                error: function(error) {
                     // Handle errors
                     if (error.responseJSON && error.responseJSON.error) {
                         // If the server returns an error message, show it in the modal
                         $("#errorModal .modal-body").text(error.responseJSON.error);
                     } else {
                         // If no specific error message, show a generic error message
-                        $("#errorModal .modal-body").text("An error occurred while processing your request.");
+                        $("#errorModal .modal-body").text("An error occurred while uploading the files.");
                     }
                     $("#errorModal").modal("show");
                 },
             });
-
-            
+        } else {
+            // No files selected
+            $("#errorModal .modal-body").text("Please choose a CSV file to upload.");
+            $("#errorModal").modal("show");
         }
-
     });
-    
-    
-
-    
 });
-
-
 
 
 // document.addEventListener('contextmenu', function(e) {
