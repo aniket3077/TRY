@@ -1,7 +1,7 @@
 /**
  * Persist changelist filters state (collapsed/expanded).
  */
-'use strict';
+
 {
     // Init filters.
     let filters = JSON.parse(sessionStorage.getItem('django.admin.filtersState'));

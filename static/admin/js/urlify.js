@@ -1,5 +1,5 @@
 /*global XRegExp*/
-'use strict';
+
 {
     const LATIN_MAP = {
         'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE',
